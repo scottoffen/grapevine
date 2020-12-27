@@ -4,29 +4,15 @@
         <title>Grapevine Blog</title>
         <link>https://scottoffen.github.io/grapevine/blog</link>
         <description>Grapevine Blog</description>
-        <lastBuildDate>Thu, 30 May 2019 00:00:00 GMT</lastBuildDate>
+        <lastBuildDate>Fri, 25 Dec 2020 00:00:00 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
         <item>
-            <title><![CDATA[Welcome]]></title>
-            <link>https://scottoffen.github.io/grapevine/grapevine/blog/welcome</link>
-            <guid>welcome</guid>
-            <pubDate>Thu, 30 May 2019 00:00:00 GMT</pubDate>
-            <description><![CDATA[Blog features are powered by the blog plugin. Simply add files to the blog directory. It supports tags as well!]]></description>
-        </item>
-        <item>
-            <title><![CDATA[Hello]]></title>
-            <link>https://scottoffen.github.io/grapevine/grapevine/blog/hello-world</link>
-            <guid>hello-world</guid>
-            <pubDate>Wed, 29 May 2019 00:00:00 GMT</pubDate>
-            <description><![CDATA[Welcome to this blog. This blog is created with Docusaurus 2 alpha.]]></description>
-        </item>
-        <item>
-            <title><![CDATA[Hola]]></title>
-            <link>https://scottoffen.github.io/grapevine/grapevine/blog/hola</link>
-            <guid>hola</guid>
-            <pubDate>Tue, 28 May 2019 00:00:00 GMT</pubDate>
-            <description><![CDATA[Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque elementum dignissim ultricies. Fusce rhoncus ipsum tempor eros aliquam consequat. Lorem ipsum dolor sit amet]]></description>
+            <title><![CDATA[Grapevine 5.0 Beta 0]]></title>
+            <link>https://scottoffen.github.io/grapevine/grapevine/blog/beta-0</link>
+            <guid>beta-0</guid>
+            <pubDate>Fri, 25 Dec 2020 00:00:00 GMT</pubDate>
+            <description><![CDATA[The first beta version of Grapevine 5.0 was uploaded to NuGet.org today. If you were hoping for an easy upgrade path from earlier versions to 5.0, I'm afraid you will be in for a dissapointment.]]></description>
         </item>
     </channel>
 </rss>

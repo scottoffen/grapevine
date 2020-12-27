@@ -1,0 +1,1 @@
+(window.webpackJsonp=window.webpackJsonp||[]).push([[5],{74:function(e){e.exports=JSON.parse('{"title":"Recent posts","items":[{"title":"Grapevine 5.0 Beta 0","permalink":"/grapevine/blog/beta-0"}]}')}}]);
