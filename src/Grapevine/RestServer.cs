@@ -221,28 +221,5 @@ namespace Grapevine
                 ThreadPool.QueueUserWorkItem(Router.RouteAsync, context);
             }
         }
-
-        public static IRestServer DeveloperConfiguration (Action<IServiceCollection> action, bool addDefaultEndpoint = false)
-        {
-            var services = new ServiceCollection();
-
-            // Add Console Logging by Default
-            services.AddLogging(configure => configure.AddConsole())
-                .Configure<LoggerFilterOptions>(options => options.MinLevel = LogLevel.Trace);
-
-            services.AddSingleton<IRestServer, RestServer>();
-            services.AddSingleton<IRouter, Router>();
-            services.AddSingleton<IRouteScanner, RouteScanner>();
-
-            action(services);
-
-            var server = services.BuildServiceProvider().GetRequiredService<IRestServer>();
-            server.Router.Services = services;
-
-            if (addDefaultEndpoint)
-                server.Prefixes.Add("http://localhost:1234/");
-
-            return server;
-        }
     }
 }

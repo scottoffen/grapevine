@@ -11,15 +11,20 @@ namespace Samples
         public static void Main(string[] args)
         {
             Console.WriteLine(" Starting Sample Server ");
-            using (var server = RestServer.DeveloperConfiguration((services) => { }, true))
+            // using (var server = RestServerBuilder.UseDefaults().Build())
+            using (var server = RestServerBuilder.From<Startup>().Build())
             {
-                Console.WriteLine($"Server will listen on {string.Join(", ", server.Prefixes)}");
-                server.Start();
+                server.AfterStarting += (s) => {
 
-                OpenBrowser(server.Prefixes.First());
+                    Console.WriteLine("********************************************************************************");
+                    Console.WriteLine($"* Server listening on {string.Join(", ", server.Prefixes)}");
+                    Console.WriteLine($"* Stop server by going to {server.Prefixes.First()}stop");
+                    Console.WriteLine("********************************************************************************");
 
-                Console.WriteLine("Press any key to stop the sample server.");
-                Console.ReadLine();
+                    OpenBrowser(s.Prefixes.First());
+                };
+
+                server.Run();
             }
         }
 
