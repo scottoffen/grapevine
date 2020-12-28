@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Grapevine
 {
     /// <summary>
-    /// Delegate for the <see cref="IRouter.BeforeRouting"/> and <see cref="IRouter.AfterRouting"/> events
+    /// Delegate for the <see cref="IRouter.BeforeRoutingAsync"/> and <see cref="IRouter.AfterRoutingAsync"/> events
     /// </summary>
     /// <param name="context">The <see cref="IHttpContext"/> that is being routed.</param>
     public delegate Task AsyncRoutingEventHandler(IHttpContext context);
@@ -20,7 +20,7 @@ namespace Grapevine
         /// <summary>
         /// Raised after a request has completed invoking matching routes
         /// </summary>
-        event AsyncRoutingEventHandler AfterRouting;
+        event AsyncRoutingEventHandler AfterRoutingAsync;
 
         /// <summary>
         /// Gets or sets a value that indicates whether autoscan is enabled on this router.
@@ -30,7 +30,7 @@ namespace Grapevine
         /// <summary>
         /// Raised prior to sending any request though matching routes
         /// </summary>
-        event AsyncRoutingEventHandler BeforeRouting;
+        event AsyncRoutingEventHandler BeforeRoutingAsync;
 
         /// <summary>
         /// Gets a list of registered routes in the order they were registered

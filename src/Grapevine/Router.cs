@@ -58,8 +58,8 @@ namespace Grapevine
 
         protected internal IServiceProvider ServiceProvider { get; set; } = null;
 
-        public event AsyncRoutingEventHandler AfterRouting;
-        public event AsyncRoutingEventHandler BeforeRouting;
+        public event AsyncRoutingEventHandler AfterRoutingAsync;
+        public event AsyncRoutingEventHandler BeforeRoutingAsync;
 
         public Router(ILogger<IRouter> logger)
         {
@@ -79,7 +79,7 @@ namespace Grapevine
 
             try
             {
-                Logger.LogTrace($"{context.Id} : Routing {context.Request.HttpMethod} {context.Request.PathInfo}");
+                Logger.LogDebug($"{context.Id} : Routing {context.Request.HttpMethod} {context.Request.PathInfo}");
 
                 await RouteAsync(context, RoutesFor(context));
                 if (!context.WasRespondedTo)
@@ -95,7 +95,7 @@ namespace Grapevine
             }
             catch (Exception e)
             {
-                Logger.LogError(e, $"An exception occured while routing request {context.Id}");
+                Logger.LogError(e, $"An exception occured while routing request {context.Request.HttpMethod} {context.Request.PathInfo} ({context.Id})");
                 await HandleErrorAsync(context, e);
             }
         }
@@ -109,7 +109,7 @@ namespace Grapevine
         {
             // 0. If no routes are found, there is nothing to do here
             if (!(bool)routing?.Any()) return;
-            Logger.LogTrace($"{context.Id} : Discovered {routing.Count} Routes");
+            Logger.LogDebug($"{context.Id} : Discovered {routing.Count} Routes");
 
             // 1. Create a scoped container for dependency injection
             if (ServiceProvider == null) ServiceProvider = Services.BuildServiceProvider();
@@ -117,7 +117,7 @@ namespace Grapevine
 
             // 2. Invoke before routing handlers
             Logger.LogTrace($"{context.Id} : Invoking before routing handlers");
-            if (BeforeRouting != null) await BeforeRouting.Invoke(context);
+            if (BeforeRoutingAsync != null) await BeforeRoutingAsync.Invoke(context);
             Logger.LogTrace($"{context.Id} : Before routing handlers invoked");
 
             // 3. Iterate over the routes until a response is sent
@@ -126,15 +126,15 @@ namespace Grapevine
             {
                 if (context.Response.StatusCode != HttpStatusCode.Ok) break;
                 if (context.WasRespondedTo && !ContinueRoutingAfterResponseSent) break;
-                Logger.LogTrace($"{context.Id} : Executing {route.Name}");
+                Logger.LogDebug($"{context.Id} : Executing {route.Name}");
                 await route.InvokeAsync(context);
                 count++;
             }
-            Logger.LogTrace($"{context.Id} : {count} of {routing.Count} routes invoked");
+            Logger.LogDebug($"{context.Id} : {count} of {routing.Count} routes invoked");
 
             // 4. Invoke after routing handlers
             Logger.LogTrace($"{context.Id} : Invoking after routing handlers");
-            if (AfterRouting != null) await AfterRouting.Invoke(context);
+            if (AfterRoutingAsync != null) await AfterRoutingAsync.Invoke(context);
             Logger.LogTrace($"{context.Id} : After routing handlers invoked");
         }
 
