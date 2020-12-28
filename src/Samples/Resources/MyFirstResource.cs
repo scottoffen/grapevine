@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 using Grapevine;
 using Microsoft.Extensions.Logging;
 
-namespace Samples
+namespace Samples.Resources
 {
     [RestResource]
     public class MyFirstResource
@@ -19,6 +19,14 @@ namespace Samples
         {
             await context.Response.SendResponseAsync("Hello, world!");
         }
+
+        [RestRoute("Get", "/stop", Name = "Server Stop")]
+        public async Task StopServer(IHttpContext context)
+        {
+            await context.Response.SendResponseAsync("Stopping Server");
+            context.Server.Stop();
+        }
+
 
         [RestRoute]
         public async Task GetResource(IHttpContext context)

@@ -89,5 +89,14 @@ namespace Grapevine
                 headers.Add(header.Name, header.Value);
             }
         }
+
+        /// <summary>
+        /// Starts the server and blocks the calling thread until the server shutsdown
+        /// </summary>
+        public static void Run(this IRestServer server)
+        {
+            server.Start();
+            while (server.IsListening) { }
+        }
     }
 }
