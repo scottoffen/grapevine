@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -45,6 +46,10 @@ namespace Grapevine
 
             var server = _services.BuildServiceProvider().GetRequiredService<IRestServer>();
             server.Router.Services = _services;
+
+            // Add Server Global Response Header
+            var assembly = GetType().Assembly.GetName();
+            server.GlobalResponseHeaders.Add("Server", $"{assembly.Name}/{assembly.Version} ({RuntimeInformation.OSDescription})");
 
             _configureServer?.Invoke(server);
 

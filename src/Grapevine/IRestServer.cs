@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Grapevine
 {
@@ -51,6 +52,8 @@ namespace Grapevine
         IList<GlobalResponseHeader> GlobalResponseHeaders { get; set; }
 
         HttpContextFactory HttpContextFactory { get; set; }
+
+        ILogger<IRestServer> Logger { get; }
 
         /// <summary>
         /// Gets a value that indicates whether the server has started listening.
