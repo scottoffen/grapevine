@@ -114,8 +114,8 @@ namespace Grapevine
             var routes = new List<IRoute>();
             Logger.LogTrace($"Scanning type {type.Name} for routes");
 
-            var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Instance) // TODO: Add BindingFlags.Static
-                .Where(m => m.IsDefined(typeof(RestRouteAttribute), true));
+            var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static)
+                .Where(m => !m.IsAbstract && m.IsDefined(typeof(RestRouteAttribute), true));
 
             if (methods.Any())
             {
@@ -123,6 +123,8 @@ namespace Grapevine
 
                 foreach (var method in methods)
                 {
+                    if (type.IsAbstract && !method.IsStatic) continue;
+
                     if (!attributes.Any())
                     {
                         routes.AddRange(Scan(method, basePath));
@@ -139,12 +141,16 @@ namespace Grapevine
 
             if (routes.Count > 0)
             {
-                var lifetime = type.IsDefined(typeof(ResourceLifetimeAttribute), false)
-                    ? type.GetCustomAttributes(typeof(ResourceLifetimeAttribute))
-                        .Cast<ResourceLifetimeAttribute>()
-                        .FirstOrDefault().ServiceLifetime
-                    : ServiceLifetime.Transient;
-                services.Add(new ServiceDescriptor(type, type, lifetime));
+                if (!type.IsAbstract)
+                {
+                    var lifetime = type.IsDefined(typeof(ResourceLifetimeAttribute), false)
+                        ? type.GetCustomAttributes(typeof(ResourceLifetimeAttribute))
+                            .Cast<ResourceLifetimeAttribute>()
+                            .FirstOrDefault().ServiceLifetime
+                        : ServiceLifetime.Transient;
+
+                    services.Add(new ServiceDescriptor(type, type, lifetime));
+                }
             }
 
             Logger.LogTrace($"Scan of type {type.Name} complete: {routes.Count} total routes found");
@@ -167,8 +173,10 @@ namespace Grapevine
                 // 1. Create the arguments for Route<T> constructor
                 var args = attribute.GenerateRouteConstructorArguments(methodInfo, basepath);
 
-                // 2. Create the Route<T> instance
-                var genericType = typeof(Route<>).MakeGenericType(type);
+                // 2. Create the Route instance
+                var genericType = (!methodInfo.IsStatic)
+                    ? typeof(Route<>).MakeGenericType(type)
+                    : typeof(Route);
                 var route = (IRoute)Activator.CreateInstance(genericType, args);
 
                 // 3. Add any header matches - implementation idea that failed
