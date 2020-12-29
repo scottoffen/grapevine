@@ -39,5 +39,11 @@ namespace Samples.Resources
             _logger.LogTrace($"{context.Request.HttpMethod} {context.Request.PathInfo} : Catch All Method");
             await context.Response.SendResponseAsync(HttpStatusCode.Ok);
         }
+
+        [RestRoute("Get", "/static-concrete")]
+        public static async Task StaticRoute(IHttpContext context)
+        {
+            await context.Response.SendResponseAsync("Successfully executed a static route on a non-static class");
+        }
     }
 }

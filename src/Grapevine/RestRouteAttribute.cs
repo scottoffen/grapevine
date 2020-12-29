@@ -1,7 +1,6 @@
 using System;
-using System.Collections.Specialized;
 using System.Reflection;
-using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace Grapevine
 {
@@ -46,7 +45,17 @@ namespace Grapevine
         public static object[] GenerateRouteConstructorArguments(this RestRouteAttribute attribute, MethodInfo methodInfo, string basePath = null)
         {
             var args = new object[6];
-            args[0] = methodInfo;
+
+            if (!methodInfo.IsStatic)
+            {
+                args[0] = methodInfo;
+            }
+            else
+            {
+                Func<IHttpContext, Task> action = async (context) => await (Task) methodInfo.Invoke(null, new object[] {context});
+                args[0] = action;
+            }
+
             args[1] = attribute.HttpMethod;
 
             args[2] = (string.IsNullOrWhiteSpace(basePath))
