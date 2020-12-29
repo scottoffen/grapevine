@@ -1,6 +1,4 @@
-using System.Linq;
-using System.Net;
-using System.Reflection;
+using System.Collections.Generic;
 
 namespace Grapevine
 {
@@ -17,6 +15,14 @@ namespace Grapevine
             Name = name;
             Value = Value;
             Suppress = suppress;
+        }
+    }
+
+    public static class GlobalResponseHeaderExtensions
+    {
+        public static void Add(this IList<GlobalResponseHeader> headers, string key, string value)
+        {
+            headers.Add(new GlobalResponseHeader(key, value));
         }
     }
 }
