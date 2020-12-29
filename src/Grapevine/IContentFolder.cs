@@ -7,6 +7,8 @@ namespace Grapevine
     {
          Task SendFileAsync(IHttpContext context);
 
+        Task SendFileAsync(IHttpContext context, string filename);
+
          Action<IHttpContext> FileNotFoundHandler { get; set; }
     }
 }
