@@ -1,0 +1,1 @@
+(window.webpackJsonp=window.webpackJsonp||[]).push([[16],{87:function(a){a.exports=JSON.parse('{"allTagsPath":"/grapevine/blog/tags","slug":"docs","name":"docs","count":1,"permalink":"/grapevine/blog/tags/docs"}')}}]);

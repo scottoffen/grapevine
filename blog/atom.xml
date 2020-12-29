@@ -8,18 +8,18 @@
     <subtitle>Grapevine Blog</subtitle>
     <icon>https://scottoffen.github.io/grapevine/img/favicon.ico</icon>
     <entry>
-        <title type="html"><![CDATA[Grapevine 5.0 Beta 1]]></title>
-        <id>beta-1</id>
-        <link href="https://scottoffen.github.io/grapevine/grapevine/blog/beta-1"/>
-        <updated>2020-12-29T00:00:00.000Z</updated>
-        <summary type="html"><![CDATA[The second beta version of Grapevine 5.0 was uploaded to NuGet.org today, December 28, 2020. Here are some updated code samples to start playing around with.]]></summary>
-    </entry>
-    <entry>
         <title type="html"><![CDATA[Grapevine Docs]]></title>
         <id>docusaurus</id>
         <link href="https://scottoffen.github.io/grapevine/grapevine/blog/docusaurus"/>
         <updated>2020-12-29T00:00:00.000Z</updated>
         <summary type="html"><![CDATA[I'm using Docusaurus 2 to generate the Grapevine documentation. It can be found in it's own repository, grapevine-docs. I'm still configuring the generator, so you will still see some of the default content for a while until it's all cleaned up.]]></summary>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Grapevine 5.0 Beta 1]]></title>
+        <id>beta-1</id>
+        <link href="https://scottoffen.github.io/grapevine/grapevine/blog/beta-1"/>
+        <updated>2020-12-29T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[The second beta version of Grapevine 5.0 was uploaded to NuGet.org today, December 28, 2020. Here are some updated code samples to start playing around with.]]></summary>
     </entry>
     <entry>
         <title type="html"><![CDATA[Grapevine 5.0 Beta 0]]></title>
