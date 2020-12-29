@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Grapevine
 {
@@ -15,5 +16,16 @@ namespace Grapevine
         /// This value will be prepended to the PathInfo value on all RestRoutes in the class; defaults to an empty string.
         /// </summary>
         public string BasePath { get; set; } = string.Empty;
+    }
+
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
+    public class ResourceLifetimeAttribute : Attribute
+    {
+        public ResourceLifetimeAttribute(ServiceLifetime serviceLifetime)
+        {
+            ServiceLifetime = serviceLifetime;
+        }
+
+        public ServiceLifetime ServiceLifetime { get; }
     }
 }

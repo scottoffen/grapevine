@@ -87,12 +87,11 @@ namespace Grapevine
             try
             {
                 var types = assembly.GetTypes()
-                                .Where(t => t.GetCustomAttributes(true).Any(a => a is RestResourceAttribute))
+                                .Where(t => t.IsClass && t.IsDefined(typeof(RestResourceAttribute), false))
                                 .OrderBy(t => t.Name);
 
                 foreach (var type in types)
                 {
-                    if (type.IsAbstract || !type.IsClass) continue;
                     routes.AddRange(Scan(type, services, basePath));
                 }
             }
@@ -116,12 +115,11 @@ namespace Grapevine
             Logger.LogTrace($"Scanning type {type.Name} for routes");
 
             var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Instance) // TODO: Add BindingFlags.Static
-                .Where(m => m.GetCustomAttributes(true).Any(a => a is RestRouteAttribute));
+                .Where(m => m.IsDefined(typeof(RestRouteAttribute), true));
 
             if (methods.Any())
             {
                 var attributes = type.GetCustomAttributes(typeof(RestResourceAttribute)).Cast<RestResourceAttribute>();
-                services?.AddScoped(type);
 
                 foreach (var method in methods)
                 {
@@ -137,6 +135,16 @@ namespace Grapevine
                         routes.AddRange(Scan(method, basePath));
                     }
                 }
+            }
+
+            if (routes.Count > 0)
+            {
+                var lifetime = type.IsDefined(typeof(ResourceLifetimeAttribute), false)
+                    ? type.GetCustomAttributes(typeof(ResourceLifetimeAttribute))
+                        .Cast<ResourceLifetimeAttribute>()
+                        .FirstOrDefault().ServiceLifetime
+                    : ServiceLifetime.Transient;
+                services.Add(new ServiceDescriptor(type, type, lifetime));
             }
 
             Logger.LogTrace($"Scan of type {type.Name} complete: {routes.Count} total routes found");
