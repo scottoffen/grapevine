@@ -6,13 +6,13 @@
     <PackageVersion>$(Version)</PackageVersion>
     <Authors>Scott Offen</Authors>
     <Owners>Scott Offen</Owners>
-    <Title>The embeddable, unopinionated minimalist REST framework for .NET</Title>
-    <Description>Easily embedd a REST/HTTP server or consume REST APIs in your application.</Description>
+    <Title>Fast, unopinionated, embeddable, minimalist REST framework for .NET</Title>
+    <Description>Easily embedd a REST/HTTP server in your application.</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageTags>rest http api web router client server express json xml embedded</PackageTags>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <FileVersion>$(Version)</FileVersion>
-    <Version>5.0.0-beta.1</Version>
+    <Version>5.0.0-beta.2</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <RepositoryUrl>https://github.com/scottoffen/grapevine</RepositoryUrl>
