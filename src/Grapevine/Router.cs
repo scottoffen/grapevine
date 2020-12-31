@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Grapevine
 {
-    public class Router : IRouter
+    public class Router : RouterOptions, IRouter
     {
         public static Func<IHttpContext, Exception, Task> DefaultErrorHandler { get; set; } = async (context, exception) =>
         {
@@ -36,23 +36,11 @@ namespace Grapevine
         public Dictionary<HttpStatusCode, Func<IHttpContext, Exception, Task>> LocalErrorHandlers =
             new Dictionary<HttpStatusCode, Func<IHttpContext, Exception, Task>>();
 
-        /// <summary>
-        /// Gets or sets a value to indicate whether request routing should continue even after a response has been sent.
-        /// </summary>
-        public bool ContinueRoutingAfterResponseSent { get; set; } = false;
-
-        public bool EnableAutoScan { get; set; } = true;
-
         public ILogger<IRouter> Logger { get; }
 
         protected internal readonly IList<IRoute> RegisteredRoutes = new List<IRoute>();
 
         public IList<IRoute> RoutingTable => RegisteredRoutes.ToList().AsReadOnly();
-
-        /// <summary>
-        /// Gets or sets a value to indicate whether exception text, where available, should be sent in http responses
-        /// </summary>
-        public bool SendExceptionMessages { get; set; }
 
         public IServiceCollection Services { get; set; } = new ServiceCollection();
 
@@ -81,8 +69,8 @@ namespace Grapevine
             {
                 Logger.LogDebug($"{context.Id} : Routing {context.Request.HttpMethod} {context.Request.PathInfo}");
 
-                await RouteAsync(context, RoutesFor(context));
-                if (!context.WasRespondedTo)
+                var routesExecuted = await RouteAsync(context, RoutesFor(context));
+                if (routesExecuted == 0 || ((context.Response.StatusCode != HttpStatusCode.Ok || RequireRouteResponse) && !context.WasRespondedTo))
                 {
                     if (context.Response.StatusCode == HttpStatusCode.Ok)
                         context.Response.StatusCode = HttpStatusCode.NotImplemented;
@@ -105,10 +93,10 @@ namespace Grapevine
         /// </summary>
         /// <param name="context"></param>
         /// <param name="routing"></param>
-        public virtual async Task RouteAsync(IHttpContext context, IList<IRoute> routing)
+        public virtual async Task<int> RouteAsync(IHttpContext context, IList<IRoute> routing)
         {
             // 0. If no routes are found, there is nothing to do here
-            if (!(bool)routing?.Any()) return;
+            if (!(bool)routing?.Any() && !RouteAnyway) return 0;
             Logger.LogDebug($"{context.Id} : Discovered {routing.Count} Routes");
 
             // 1. Create a scoped container for dependency injection
@@ -136,6 +124,8 @@ namespace Grapevine
             Logger.LogTrace($"{context.Id} : Invoking after routing handlers");
             if (AfterRoutingAsync != null) await AfterRoutingAsync.Invoke(context);
             Logger.LogTrace($"{context.Id} : After routing handlers invoked");
+
+            return count;
         }
 
         /// <summary>

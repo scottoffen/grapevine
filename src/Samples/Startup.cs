@@ -19,6 +19,12 @@ namespace Samples
         public void ConfigureServer(IRestServer server)
         {
             server.Prefixes.Add("http://localhost:1234/");
+
+            /* Configure Router Options (if supported) */
+            server.Router.ConfigureOptions((options) =>
+            {
+                options.SendExceptionMessages = true;
+            });
         }
     }
 }
