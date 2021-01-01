@@ -1,3 +1,4 @@
+using System;
 using Grapevine;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -23,6 +24,7 @@ namespace Samples
             /* Configure Router Options (if supported) */
             server.Router.ConfigureOptions((options) =>
             {
+                options.ContentExpiresDuration = TimeSpan.FromSeconds(1);
                 options.SendExceptionMessages = true;
             });
         }

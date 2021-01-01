@@ -93,14 +93,5 @@ namespace Grapevine
                 router.Register(route);
             }
         }
-
-        public static bool ConfigureOptions(this IRouter router, Action<RouterOptions> action)
-        {
-            var options = router as RouterOptions;
-            if (options == null) return false;
-
-            action(options);
-            return true;
-        }
     }
 }

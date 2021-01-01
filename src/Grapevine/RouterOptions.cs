@@ -1,3 +1,5 @@
+using System;
+
 namespace Grapevine
 {
     public abstract class RouterOptions
@@ -31,5 +33,38 @@ namespace Grapevine
         /// </summary>
         /// <value>false</value>
         public bool SendExceptionMessages { get; set; }
+
+        /// <summary>
+        /// Gets or sets a timespan value to use when setting the Expires header for static content
+        /// </summary>
+        /// <value>TimeSpan.FromDays(1)</value>
+        public TimeSpan ContentExpiresDuration { get; set; } = TimeSpan.FromDays(1);
+
+        /// <summary>
+        /// Gets or sets an integer to indicate the minimum number of bytes after which content will potentially be compressed before being returned to the client
+        /// </summary>
+        /// <value>1024</value>
+        public int CompressIfBytesGreaterThan { get; set; } = 1024;
+    }
+
+    public sealed class DefaultOptions : RouterOptions {}
+
+    public static class RouterOptionsExtensions
+    {
+        private static DefaultOptions defaultOptions = new DefaultOptions();
+
+        public static bool ConfigureOptions(this IRouter router, Action<RouterOptions> action)
+        {
+            var options = router as RouterOptions;
+            if (options == null) return false;
+
+            action(options);
+            return true;
+        }
+
+        public static RouterOptions FromOptions(this IRouter router)
+        {
+            return router as RouterOptions ?? defaultOptions;
+        }
     }
 }
