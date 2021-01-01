@@ -44,8 +44,13 @@ namespace Grapevine
 
             _configureServices?.Invoke(_services);
 
-            var server = _services.BuildServiceProvider().GetRequiredService<IRestServer>();
+            var provider = _services.BuildServiceProvider();
+
+            var server = provider.GetRequiredService<IRestServer>();
             server.Router.Services = _services;
+
+            var factory = provider.GetService<ILoggerFactory>();
+            if (factory != null) server.SetDefaultLogger(factory);
 
             // Add Server Global Response Header
             var assembly = GetType().Assembly.GetName();
