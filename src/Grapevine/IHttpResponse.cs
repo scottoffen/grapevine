@@ -1,4 +1,6 @@
+using System;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,6 +13,11 @@ namespace Grapevine
         /// Gets or sets the Encoding for this response's OutputStream
         /// </summary>
         Encoding ContentEncoding { get; set; }
+
+        /// <summary>
+        /// Gets or sets an integer to indicate the minimum number of bytes after which content will potentially be compressed before being returned to the client
+        /// </summary>
+        TimeSpan ContentExpiresDuration { get; set; }
 
         /// <summary>
         /// Gets or sets the number of bytes in the body data included in the response
@@ -102,6 +109,10 @@ namespace Grapevine
     {
         public static async Task SendResponseAsync(this IHttpResponse response, Stream content)
         {
+            if (!response.Headers.AllKeys.ToArray().Contains("Expires"))
+                response.AddHeader("Expires",
+                    DateTime.Now.Add(response.ContentExpiresDuration).ToString("R"));
+
             using (var buffer = new MemoryStream())
             {
                 await content.CopyToAsync(buffer);
