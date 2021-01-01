@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using Grapevine;
 
 namespace Samples
@@ -15,11 +16,12 @@ namespace Samples
             using (var server = RestServerBuilder.From<Startup>().Build())
             {
                 server.AfterStarting += (s) => {
-
-                    Console.WriteLine("********************************************************************************");
-                    Console.WriteLine($"* Server listening on {string.Join(", ", server.Prefixes)}");
-                    Console.WriteLine($"* Stop server by going to {server.Prefixes.First()}stop");
-                    Console.WriteLine("********************************************************************************");
+                    var sb = new StringBuilder();
+                    sb.Append($"********************************************************************************{Environment.NewLine}");
+                    sb.Append($"* Server listening on {string.Join(", ", server.Prefixes)}{Environment.NewLine}");
+                    sb.Append($"* Stop server by going to {server.Prefixes.First()}stop{Environment.NewLine}");
+                    sb.Append($"********************************************************************************{Environment.NewLine}");
+                    Console.Write(sb.ToString());
 
                     OpenBrowser(s.Prefixes.First());
                 };
