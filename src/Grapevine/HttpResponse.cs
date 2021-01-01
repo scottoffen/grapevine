@@ -117,10 +117,12 @@ namespace Grapevine
             if (!IsCompressible || contents.Length < CompressIfBytesGreaterThan) return contents;
 
             Headers["Content-Encoding"] = "gzip";
+
             using (var ms = new MemoryStream())
-            using (var gzip = new GZipStream(ms, CompressionMode.Compress))
+            using (var gzip = new GZipStream(ms, CompressionLevel.Fastest))
             {
                 await gzip.WriteAsync(contents, 0, contents.Length);
+                gzip.Close();
                 return ms.ToArray();
             }
         }

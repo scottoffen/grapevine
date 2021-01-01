@@ -200,9 +200,9 @@ namespace Grapevine
             // 2. Execute OnRequest event handlers
             try
             {
-                Logger.LogTrace($"{context.Id} : Invoking OnRequest handlers");
+                Logger.LogTrace($"{context.Id} : Invoking OnRequest Handlers");
                 if (OnRequestAsync != null) await OnRequestAsync.Invoke(context);
-                Logger.LogTrace($"{context.Id} : On request handlers invoked");
+                Logger.LogTrace($"{context.Id} : OnRequest Handlers Invoked");
             }
             catch (System.Net.HttpListenerException hl) when (hl.ErrorCode == 1229)
             {

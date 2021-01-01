@@ -3,8 +3,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 using Grapevine;
+using Microsoft.Extensions.Logging;
 
 namespace Samples
 {
@@ -19,16 +19,19 @@ namespace Samples
                 server.AfterStarting += (s) =>
                 {
                     // This will produce a weird name in the output like `<Main>b__0_2` or something unless you add a name argument.
-                    s.Router.Register(new Route(async (ctx) => { await ctx.Response.SendResponseAsync("What's my name?"); }, "Get", "/addhoc"));
+                    s.Router.Register(new Route(async (ctx) =>
+                    {
+                        await ctx.Response.SendResponseAsync($"Add hoc route {ctx.Server.Router.RoutingTable.Count}");
+                    }, "Get", "/addhoc"));
                 };
 
                 server.AfterStarting += (s) => {
-                    var sb = new StringBuilder();
+                    var sb = new StringBuilder(Environment.NewLine);
                     sb.Append($"********************************************************************************{Environment.NewLine}");
                     sb.Append($"* Server listening on {string.Join(", ", server.Prefixes)}{Environment.NewLine}");
                     sb.Append($"* Stop server by going to {server.Prefixes.First()}stop{Environment.NewLine}");
                     sb.Append($"********************************************************************************{Environment.NewLine}");
-                    Console.Write(sb.ToString());
+                    s.Logger.LogDebug(sb.ToString());
 
                     OpenBrowser(s.Prefixes.First());
                 };

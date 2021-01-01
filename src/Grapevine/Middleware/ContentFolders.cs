@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 
 namespace Grapevine.Middleware
@@ -15,12 +16,17 @@ namespace Grapevine.Middleware
 
                     // If a matching file *should have* been found, but wasn't,
                     // then the status code on the response will no longer be 200.
-                    if (context.Response.StatusCode != HttpStatusCode.Ok)
+                    if (context.Response.StatusCode == HttpStatusCode.NotFound)
                     {
                         await folder.FileNotFoundHandler(context);
                     }
 
                     if (context.WasRespondedTo) return;
+                }
+
+                if (!context.WasRespondedTo && context.Request.PathInfo.Equals("/favicon.ico", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    await ContentFolderBase.DefaultFileNotFoundHandler(context);
                 }
             }
         }
