@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading.Tasks;
 using Grapevine;
 
 namespace Samples
@@ -15,6 +16,12 @@ namespace Samples
             // using (var server = RestServerBuilder.UseDefaults().Build())
             using (var server = RestServerBuilder.From<Startup>().Build())
             {
+                server.AfterStarting += (s) =>
+                {
+                    // This will produce a weird name in the output like `<Main>b__0_2` or something unless you add a name argument.
+                    s.Router.Register(new Route(async (ctx) => { await ctx.Response.SendResponseAsync("What's my name?"); }, "Get", "/addhoc"));
+                };
+
                 server.AfterStarting += (s) => {
                     var sb = new StringBuilder();
                     sb.Append($"********************************************************************************{Environment.NewLine}");

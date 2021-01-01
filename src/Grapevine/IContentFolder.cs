@@ -9,6 +9,6 @@ namespace Grapevine
 
         Task SendFileAsync(IHttpContext context, string filename);
 
-         Action<IHttpContext> FileNotFoundHandler { get; set; }
+         Func<IHttpContext, Task> FileNotFoundHandler { get; set; }
     }
 }

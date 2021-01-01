@@ -17,7 +17,7 @@ namespace Grapevine.Middleware
                     // then the status code on the response will no longer be 200.
                     if (context.Response.StatusCode != HttpStatusCode.Ok)
                     {
-                        folder.FileNotFoundHandler(context);
+                        await folder.FileNotFoundHandler(context);
                     }
 
                     if (context.WasRespondedTo) return;

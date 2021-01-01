@@ -63,7 +63,10 @@ namespace Grapevine
                 : $"{basePath.SanitizePath()}{attribute.PathInfo.SanitizePath()}";
 
             args[3] = attribute.Enabled;
-            args[4] = attribute.Name;
+            args[4] = (!string.IsNullOrWhiteSpace(attribute.Name))
+                ? attribute.Name
+                : $"{methodInfo.DeclaringType.Name}.{methodInfo.Name}";
+
             args[5] = attribute.Description;
 
             return args;
