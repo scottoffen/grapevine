@@ -18,6 +18,12 @@ namespace Grapevine
         public string BasePath { get; set; } = string.Empty;
     }
 
+    /// <summary>
+    /// <para>Class attribute for defining the ServiceLifetime of a RestResource</para>
+    /// <para>Targets: Class</para>
+    /// <para>&#160;</para>
+    /// <para>When used in conjunction with the RestResource attribute, the route scanner will use the service lifetime specified when registering the type with the service collection.</para>
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
     public class ResourceLifetimeAttribute : Attribute
     {
