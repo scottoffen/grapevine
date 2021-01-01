@@ -202,7 +202,7 @@ namespace Grapevine
             Assemblies = new List<Assembly>();
             foreach (
                 var assembly in
-                    AppDomain.CurrentDomain.GetAssemblies().ToList()
+                    AppDomain.CurrentDomain.GetAssemblies()
                         .Where(a => a.GetName().Name != "Grapevine"
                             && !a.GetName().Name.StartsWith(IgnoredAssemblies.ToArray())
                         )
