@@ -107,6 +107,14 @@ namespace Grapevine
 
     public static class IHttpResponseExtensions
     {
+        public static async Task SendResponseAsync(this IHttpResponse response, Stream content, string filename)
+        {
+            if (!string.IsNullOrWhiteSpace(filename))
+                response.AddHeader("Content-Disposition", $"attachment; filename=\"{filename}\"");
+
+            await response.SendResponseAsync(content);
+        }
+
         public static async Task SendResponseAsync(this IHttpResponse response, Stream content)
         {
             if (!response.Headers.AllKeys.ToArray().Contains("Expires"))
