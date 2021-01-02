@@ -195,14 +195,14 @@ namespace Grapevine
         {
             // 1. Create context
             var context = HttpContextFactory(state as HttpListenerContext, this, TokenSource.Token);
-            Logger.LogTrace($"{context.Id} : Request Received");
+            Logger.LogTrace($"{context.Id} : Request Received {context.Request.HttpMethod} {context.Request.PathInfo}");
 
             // 2. Execute OnRequest event handlers
             try
             {
-                Logger.LogTrace($"{context.Id} : Invoking OnRequest handlers");
+                Logger.LogTrace($"{context.Id} : Invoking OnRequest Handlers");
                 if (OnRequestAsync != null) await OnRequestAsync.Invoke(context);
-                Logger.LogTrace($"{context.Id} : On request handlers invoked");
+                Logger.LogTrace($"{context.Id} : OnRequest Handlers Invoked");
             }
             catch (System.Net.HttpListenerException hl) when (hl.ErrorCode == 1229)
             {
@@ -210,7 +210,7 @@ namespace Grapevine
             }
             catch (Exception e)
             {
-                Logger.LogError(e, $"An exception occured while routing request {context.Id}");
+                Logger.LogError(e, $"An exception occured while routing request {context.Request.HttpMethod} {context.Request.PathInfo} ({context.Id})");
             }
 
             // 3. Optionally route request

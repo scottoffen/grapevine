@@ -2,7 +2,9 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using Grapevine;
+using Microsoft.Extensions.Logging;
 
 namespace Samples
 {
@@ -14,12 +16,22 @@ namespace Samples
             // using (var server = RestServerBuilder.UseDefaults().Build())
             using (var server = RestServerBuilder.From<Startup>().Build())
             {
-                server.AfterStarting += (s) => {
+                server.AfterStarting += (s) =>
+                {
+                    // This will produce a weird name in the output like `<Main>b__0_2` or something unless you add a name argument to the route constructor.
+                    s.Router.Register(new Route(async (ctx) =>
+                    {
+                        await ctx.Response.SendResponseAsync($"Add hoc route {ctx.Server.Router.RoutingTable.Count}");
+                    }, "Get", "/addhoc"));
+                };
 
-                    Console.WriteLine("********************************************************************************");
-                    Console.WriteLine($"* Server listening on {string.Join(", ", server.Prefixes)}");
-                    Console.WriteLine($"* Stop server by going to {server.Prefixes.First()}stop");
-                    Console.WriteLine("********************************************************************************");
+                server.AfterStarting += (s) => {
+                    var sb = new StringBuilder(Environment.NewLine);
+                    sb.Append($"********************************************************************************{Environment.NewLine}");
+                    sb.Append($"* Server listening on {string.Join(", ", server.Prefixes)}{Environment.NewLine}");
+                    sb.Append($"* Stop server by going to {server.Prefixes.First()}stop{Environment.NewLine}");
+                    sb.Append($"********************************************************************************{Environment.NewLine}");
+                    s.Logger.LogDebug(sb.ToString());
 
                     OpenBrowser(s.Prefixes.First());
                 };

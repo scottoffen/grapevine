@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.IO.Compression;
 using System.Net;
@@ -15,6 +16,8 @@ namespace Grapevine
             get { return Advanced.ContentEncoding; }
             set { Advanced.ContentEncoding = value; }
         }
+
+        public TimeSpan ContentExpiresDuration { get; set; } = TimeSpan.FromDays(1);
 
         public long ContentLength64
         {
@@ -102,7 +105,7 @@ namespace Grapevine
     {
         public bool IsCompressible { get; protected internal set; }
 
-        public static int CompressIfBytesGreaterThan { get; set; } = 1024;
+        public int CompressIfBytesGreaterThan { get; set; } = 1024;
 
         public HttpResponse(HttpListenerResponse response) : base(response)
         {
@@ -114,10 +117,12 @@ namespace Grapevine
             if (!IsCompressible || contents.Length < CompressIfBytesGreaterThan) return contents;
 
             Headers["Content-Encoding"] = "gzip";
+
             using (var ms = new MemoryStream())
-            using (var gzip = new GZipStream(ms, CompressionMode.Compress))
+            using (var gzip = new GZipStream(ms, CompressionLevel.Fastest))
             {
                 await gzip.WriteAsync(contents, 0, contents.Length);
+                gzip.Close();
                 return ms.ToArray();
             }
         }
@@ -129,6 +134,7 @@ namespace Grapevine
                 contents = await CompressContentsAsync(contents);
                 ContentLength64 = contents.Length;
 
+                // if (((ContentType)ContentType).IsBinary) SendChunked = true;
                 await Advanced.OutputStream.WriteAsync(contents, 0, (int)ContentLength64);
                 Advanced.OutputStream.Close();
             }

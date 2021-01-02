@@ -1,3 +1,5 @@
+using System;
+using System.IO;
 using Grapevine;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -18,11 +20,15 @@ namespace Samples
 
         public void ConfigureServer(IRestServer server)
         {
+            server.ContentFolders.Add(new ContentFolder(Path.Combine(AppContext.BaseDirectory, "images"), "img"));
+            server.UseContentFolders();
+
             server.Prefixes.Add("http://localhost:1234/");
 
-            /* Configure Router Options (if supported) */
+            /* Configure Router Options (if supported by your router implementation) */
             server.Router.ConfigureOptions((options) =>
             {
+                options.ContentExpiresDuration = TimeSpan.FromSeconds(1);
                 options.SendExceptionMessages = true;
             });
         }

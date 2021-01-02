@@ -93,13 +93,17 @@ namespace Grapevine
         public Route(Func<IHttpContext, Task> action, HttpMethod method, string urlPattern, bool enabled = true, string name = null, string description = null) : base(method, urlPattern, enabled, name, description)
         {
             RouteAction = action;
-            if (string.IsNullOrWhiteSpace(Name)) Name = action.Method.Name;
+            Name = (string.IsNullOrWhiteSpace(name))
+                ?action.Method.Name
+                : name;
         }
 
         public Route(Func<IHttpContext, Task> action, HttpMethod method, Regex urlPattern, bool enabled = true, string name = null, string description = null) : base(method, urlPattern, enabled, name, description)
         {
             RouteAction = action;
-            if (string.IsNullOrWhiteSpace(Name)) Name = action.Method.Name;
+            Name = (string.IsNullOrWhiteSpace(name))
+                ?action.Method.Name
+                : name;
         }
 
         public override async Task InvokeAsync(IHttpContext context)
