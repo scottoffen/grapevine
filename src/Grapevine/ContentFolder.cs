@@ -186,10 +186,7 @@ namespace Grapevine
                 if (!string.IsNullOrWhiteSpace(filename))
                     context.Response.AddHeader("Content-Disposition", $"attachment; filename=\"{filename}\"");
 
-                // TODO: Figure out how to set the content type header here
-                context.Response.ContentType = (filepath.EndsWith("html", StringComparison.CurrentCultureIgnoreCase))
-                    ? ContentType.Html
-                    : ContentType.Jpg;
+                context.Response.ContentType = ContentType.FindKey(Path.GetExtension(filepath).TrimStart('.').ToLower());
 
                 using (var stream = new FileStream(filepath, FileMode.Open))
                 {

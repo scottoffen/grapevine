@@ -67,7 +67,7 @@ namespace Grapevine
 
         public HttpRequest(HttpListenerRequest request) : base(request)
         {
-            PathInfo = request.RawUrl.Split(new[] { '?' }, 2)[0];
+            PathInfo = request.RawUrl.Split(new[] { '?' }, 2)[0].TrimEnd('/');
         }
     }
 }

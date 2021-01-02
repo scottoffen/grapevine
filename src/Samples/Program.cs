@@ -18,7 +18,7 @@ namespace Samples
             {
                 server.AfterStarting += (s) =>
                 {
-                    // This will produce a weird name in the output like `<Main>b__0_2` or something unless you add a name argument.
+                    // This will produce a weird name in the output like `<Main>b__0_2` or something unless you add a name argument to the route constructor.
                     s.Router.Register(new Route(async (ctx) =>
                     {
                         await ctx.Response.SendResponseAsync($"Add hoc route {ctx.Server.Router.RoutingTable.Count}");
