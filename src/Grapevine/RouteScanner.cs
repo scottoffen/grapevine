@@ -146,7 +146,7 @@ namespace Grapevine
                         ? type.GetCustomAttributes(typeof(ResourceLifetimeAttribute))
                             .Cast<ResourceLifetimeAttribute>()
                             .FirstOrDefault().ServiceLifetime
-                        : ServiceLifetime.Transient;
+                        : ServiceLifetime.Scoped;
 
                     services.Add(new ServiceDescriptor(type, type, lifetime));
                 }
