@@ -3,16 +3,16 @@ using Grapevine;
 
 namespace Samples.Resources
 {
-    [RestResource]
+    [RestResource(BasePath = "api/abstract")]
     public abstract class AbstractResource
     {
-        [RestRoute("Get", "/abstract")]
+        [RestRoute("Get", "/instance", Name = "Unaccessible", Description = "This route is not accessible")]
         public async Task AbstractRoute(IHttpContext context)
         {
             await context.Response.SendResponseAsync("Instance methods on an abstract class should never execute");
         }
 
-        [RestRoute("Get", "/static-abstract")]
+        [RestRoute("Get", "/static")]
         public static async Task AbstractStaticRoute(IHttpContext context)
         {
             await context.Response.SendResponseAsync("Successfully executed a static route on an abstract class");
@@ -22,6 +22,6 @@ namespace Samples.Resources
 
     public class Resource : AbstractResource
     {
-        // Even though this class is concrete, the /abstract route should not be executed
+        // Even though this class is concrete, the /api/abstract/instance route will not be accessible
     }
 }

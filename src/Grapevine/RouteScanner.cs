@@ -132,24 +132,23 @@ namespace Grapevine
 
                     foreach (var attribute in attributes)
                     {
-                        var basepath = attribute.BasePath ?? basePath;
-                        routes.AddRange(Scan(method, basePath));
+                        var basepath = (basePath != null)
+                            ? string.Join("/", new string[]{basePath, attribute.BasePath})
+                            : attribute.BasePath;
+                        routes.AddRange(Scan(method, basepath));
                     }
                 }
             }
 
-            if (routes.Count > 0)
+            if (routes.Count > 0 && !type.IsAbstract)
             {
-                if (!type.IsAbstract)
-                {
-                    var lifetime = type.IsDefined(typeof(ResourceLifetimeAttribute), false)
-                        ? type.GetCustomAttributes(typeof(ResourceLifetimeAttribute))
-                            .Cast<ResourceLifetimeAttribute>()
-                            .FirstOrDefault().ServiceLifetime
-                        : ServiceLifetime.Scoped;
+                var lifetime = type.IsDefined(typeof(ResourceLifetimeAttribute), false)
+                    ? type.GetCustomAttributes(typeof(ResourceLifetimeAttribute))
+                        .Cast<ResourceLifetimeAttribute>()
+                        .FirstOrDefault().ServiceLifetime
+                    : ServiceLifetime.Scoped;
 
-                    services.Add(new ServiceDescriptor(type, type, lifetime));
-                }
+                services.Add(new ServiceDescriptor(type, type, lifetime));
             }
 
             Logger.LogTrace($"Scan of type {type.Name} complete: {routes.Count} total routes found");
@@ -160,7 +159,7 @@ namespace Grapevine
         public virtual IList<IRoute> Scan(MethodInfo methodInfo, string basePath = null)
         {
             var basepath = basePath ?? BasePath;
-            basepath.SanitizePath();
+            basepath = basepath.SanitizePath();
 
             var routes = new List<IRoute>();
             var type = methodInfo.ReflectedType;

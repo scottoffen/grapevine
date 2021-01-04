@@ -1,13 +1,10 @@
 using System.Threading.Tasks;
 using Grapevine;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Samples.Resources
 {
-    [RestResource]
-    [ResourceLifetime(ServiceLifetime.Scoped)]
-
+    [RestResource(BasePath = "api")]
     public class HelloResource
     {
         private static int Count = 0;
@@ -20,15 +17,17 @@ namespace Samples.Resources
             Count++;
         }
 
-        [RestRoute("Get", "/hello", Name = "Hello, world!", Description = "The obligatory Hello, world! route")]
+        [RestRoute("Get", "/hello", Name = "Hello, world!", Description = "The obligatory \"Hello, world!\" route")]
         public async Task HelloWorld(IHttpContext context)
         {
+            _logger.LogTrace($"{context.Request.HttpMethod} {context.Request.PathInfo} : Hello, world!");
             await context.Response.SendResponseAsync($"Hello, world! ({Count})");
         }
 
         [RestRoute("Get", "/stop", Name = "Server Stop")]
         public async Task StopServer(IHttpContext context)
         {
+            _logger.LogTrace($"{context.Request.HttpMethod} {context.Request.PathInfo} : Stopping Server");
             await context.Response.SendResponseAsync("Stopping Server");
             context.Server.Stop();
         }
@@ -40,7 +39,7 @@ namespace Samples.Resources
             await context.Response.SendResponseAsync(HttpStatusCode.Ok);
         }
 
-        [RestRoute("Get", "/static-concrete")]
+        [RestRoute("Get", "/static")]
         public static async Task StaticRoute(IHttpContext context)
         {
             await context.Response.SendResponseAsync("Successfully executed a static route on a non-static class");
