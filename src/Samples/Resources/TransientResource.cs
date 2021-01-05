@@ -8,11 +8,11 @@ namespace Samples.Resources
 {
     [RestResource(BasePath = "api/transient")]
     [ResourceLifetime(ServiceLifetime.Transient)]
-    public class TransientClass
+    public class TransientResource
     {
         public static int Counter = 0;
 
-        public TransientClass()
+        public TransientResource()
         {
             Counter++;
         }

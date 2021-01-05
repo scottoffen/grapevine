@@ -9,7 +9,7 @@ namespace Grapevine
 
         public static ILogger<T> GetInstance<T>() => LoggerFactory.CreateLogger<T>();
 
-        public static IRestServer SetDefaultLogger (this IRestServer server, ILoggerFactory factory)
+        public static IRestServer SetDefaultLogger(this IRestServer server, ILoggerFactory factory)
         {
             LoggerFactory = factory;
             return server;

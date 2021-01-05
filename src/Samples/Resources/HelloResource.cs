@@ -40,6 +40,7 @@ namespace Samples.Resources
         }
 
         [RestRoute("Get", "/static")]
+        [Header("Host", "localhost:1234")]
         public static async Task StaticRoute(IHttpContext context)
         {
             await context.Response.SendResponseAsync("Successfully executed a static route on a non-static class");

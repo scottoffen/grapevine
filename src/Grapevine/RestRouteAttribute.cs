@@ -1,5 +1,6 @@
 using System;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Grapevine
@@ -40,6 +41,19 @@ namespace Grapevine
         }
     }
 
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
+    public class HeaderAttribute : Attribute
+    {
+        public string Key { get; set; }
+        public Regex Value { get; set; }
+
+        public HeaderAttribute(string key, string value)
+        {
+            Key = key;
+            Value = new Regex(value);
+        }
+    }
+
     public static class RestRouteAttributeExtensions
     {
         public static object[] GenerateRouteConstructorArguments(this RestRouteAttribute attribute, MethodInfo methodInfo, string basePath = null)
@@ -52,7 +66,7 @@ namespace Grapevine
             }
             else
             {
-                Func<IHttpContext, Task> action = async (context) => await (Task) methodInfo.Invoke(null, new object[] {context});
+                Func<IHttpContext, Task> action = async (context) => await (Task)methodInfo.Invoke(null, new object[] { context });
                 args[0] = action;
             }
 

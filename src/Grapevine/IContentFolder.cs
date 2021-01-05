@@ -25,7 +25,7 @@ namespace Grapevine
         /// </summary>
         /// <param name="context"></param>
         /// <returns>Task</returns>
-         Task SendFileAsync(IHttpContext context);
+        Task SendFileAsync(IHttpContext context);
 
         /// <summary>
         /// If the file specified in the path info of the request matches a file in the content folder, that file will be sent in the response as an attachment using the specified file name.
@@ -39,6 +39,6 @@ namespace Grapevine
         /// The action to take if the file is not found but should be. This occures when prefix is found at the begining of the path info, but the file name specified isn't found in the content folder.
         /// </summary>
         /// <value>Action<IHttpContext></value>
-         Func<IHttpContext, Task> FileNotFoundHandler { get; set; }
+        Func<IHttpContext, Task> FileNotFoundHandler { get; set; }
     }
 }

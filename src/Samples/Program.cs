@@ -25,7 +25,8 @@ namespace Samples
                     }, "Get", "/addhoc"));
                 };
 
-                server.AfterStarting += (s) => {
+                server.AfterStarting += (s) =>
+                {
                     var sb = new StringBuilder(Environment.NewLine);
                     sb.Append($"********************************************************************************{Environment.NewLine}");
                     sb.Append($"* Server listening on {string.Join(", ", server.Prefixes)}{Environment.NewLine}");

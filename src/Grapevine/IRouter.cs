@@ -60,7 +60,7 @@ namespace Grapevine
     {
         public static IRouter Register(this IRouter router, IEnumerable<IRoute> routes)
         {
-            foreach(var route in routes.ToList())
+            foreach (var route in routes.ToList())
             {
                 router.Register(route);
             }

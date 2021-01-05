@@ -6,9 +6,9 @@ namespace Grapevine
     {
         bool Contains(string key);
 
-         object Get(string key);
+        object Get(string key);
 
-         void Set(string key, object val);
+        void Set(string key, object val);
     }
 
     public static class ILocalsExtensions
@@ -16,7 +16,7 @@ namespace Grapevine
         public static T GetAs<T>(this ILocals locals, string key)
         {
             var val = locals.Get(key);
-            return (T) val;
+            return (T)val;
         }
     }
 

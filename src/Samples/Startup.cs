@@ -20,12 +20,9 @@ namespace Samples
 
         public void ConfigureServer(IRestServer server)
         {
-            // Use this if you want to live-edit the website
-            server.ContentFolders.Add(new ContentFolder(Path.Combine(Directory.GetCurrentDirectory(), "website")));
-
-            // Use this if you want to use the published website (for production)
-            // server.ContentFolders.Add(new ContentFolder(Path.Combine(AppContext.BaseDirectory, "website")));
-
+            // The path to your static content
+            var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "website");
+            server.ContentFolders.Add(new ContentFolder(folderPath));
             server.UseContentFolders();
 
             server.Prefixes.Add("http://localhost:1234/");

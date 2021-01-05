@@ -23,7 +23,7 @@ namespace Grapevine
             var converter = TypeDescriptor.GetConverter(typeof(T));
 
             if (!converter.CanConvertFrom(typeof(string))) throw new ArgumentException($"Cannot convert '{value}' to {typeof(T)}");
-            return (T) converter.ConvertFrom(value);
+            return (T)converter.ConvertFrom(value);
         }
 
         /// <summary>
@@ -40,7 +40,7 @@ namespace Grapevine
             {
                 return collection.GetValue<T>(key);
             }
-            catch(Exception)
+            catch (Exception)
             {
                 return defaultValue;
             }

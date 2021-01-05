@@ -50,10 +50,10 @@ namespace Grapevine
 
         private static Dictionary<string, ContentType> _extensions = new Dictionary<string, ContentType>();
 
-        static ContentType ()
+        static ContentType()
         {
             var ct = typeof(ContentType);
-            var fields = typeof(ContentType).GetFields(BindingFlags.Public|BindingFlags.Static).ToList();
+            var fields = typeof(ContentType).GetFields(BindingFlags.Public | BindingFlags.Static).ToList();
 
             foreach (var field in fields)
             {

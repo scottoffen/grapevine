@@ -87,7 +87,7 @@ namespace Grapevine
     {
         public static void ApplyGlobalResponseHeaders(this IRestServer server, WebHeaderCollection headers)
         {
-            foreach(var header in server.GlobalResponseHeaders.Where(g => !g.Suppress))
+            foreach (var header in server.GlobalResponseHeaders.Where(g => !g.Suppress))
             {
                 headers.Add(header.Name, header.Value);
             }

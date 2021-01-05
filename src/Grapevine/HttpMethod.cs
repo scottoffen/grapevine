@@ -10,10 +10,10 @@ namespace Grapevine
 
         private static Dictionary<string, HttpMethod> _httpMethods = new Dictionary<string, HttpMethod>();
 
-        static HttpMethod ()
+        static HttpMethod()
         {
             var ct = typeof(HttpMethod);
-            var methods = typeof(HttpMethod).GetFields(BindingFlags.Public|BindingFlags.Static)
+            var methods = typeof(HttpMethod).GetFields(BindingFlags.Public | BindingFlags.Static)
                 .Select(f => f.GetValue(null))
                 .Where(f => f.GetType() == ct)
                 .Cast<HttpMethod>()
@@ -47,7 +47,7 @@ namespace Grapevine
             return _httpMethods[key];
         }
 
-        public static string Add (string value)
+        public static string Add(string value)
         {
             var key = value.ToLower();
             if (!_httpMethods.ContainsKey(key)) _httpMethods.Add(key, new HttpMethod(value));

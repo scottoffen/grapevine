@@ -23,7 +23,7 @@ namespace Grapevine.Middleware
 
         public CorsPolicy(Uri allowOrigin)
         {
-            _allowedOrigins = new List<string>(){ allowOrigin.ToString() };
+            _allowedOrigins = new List<string>() { allowOrigin.ToString() };
         }
 
         public CorsPolicy(IEnumerable<Uri> allowOrigins)

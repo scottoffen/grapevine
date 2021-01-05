@@ -83,11 +83,11 @@ namespace Grapevine
 
         public ILogger<IContentFolder> Logger { get; protected set; }
 
-        public ContentFolder(string path) : this (path, null, null) { }
+        public ContentFolder(string path) : this(path, null, null) { }
 
         public ContentFolder(string path, string prefix) : this(path, prefix, null) { }
 
-        public ContentFolder(string path, Func<IHttpContext, Task> handler) : this (path, null, handler) { }
+        public ContentFolder(string path, Func<IHttpContext, Task> handler) : this(path, null, handler) { }
 
         public ContentFolder(string path, string prefix, Func<IHttpContext, Task> handler)
         {

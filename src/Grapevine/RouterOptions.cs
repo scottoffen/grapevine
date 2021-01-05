@@ -47,7 +47,7 @@ namespace Grapevine
         public int CompressIfBytesGreaterThan { get; set; } = 1024;
     }
 
-    public sealed class DefaultOptions : RouterOptions {}
+    public sealed class DefaultOptions : RouterOptions { }
 
     public static class RouterOptionsExtensions
     {

@@ -338,10 +338,10 @@ namespace Grapevine
 
         private static Dictionary<int, HttpStatusCode> _statusCodes = new Dictionary<int, HttpStatusCode>();
 
-        static HttpStatusCode ()
+        static HttpStatusCode()
         {
             var ct = typeof(HttpStatusCode);
-            var codes = typeof(HttpStatusCode).GetFields(BindingFlags.Public|BindingFlags.Static)
+            var codes = typeof(HttpStatusCode).GetFields(BindingFlags.Public | BindingFlags.Static)
                 .Select(f => f.GetValue(null))
                 .Where(f => f.GetType() == ct)
                 .Cast<HttpStatusCode>()

@@ -94,7 +94,7 @@ namespace Grapevine
         {
             RouteAction = action;
             Name = (string.IsNullOrWhiteSpace(name))
-                ?action.Method.Name
+                ? action.Method.Name
                 : name;
         }
 
@@ -102,7 +102,7 @@ namespace Grapevine
         {
             RouteAction = action;
             Name = (string.IsNullOrWhiteSpace(name))
-                ?action.Method.Name
+                ? action.Method.Name
                 : name;
         }
 

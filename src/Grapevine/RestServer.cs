@@ -23,7 +23,7 @@ namespace Grapevine
 
         public IList<GlobalResponseHeader> GlobalResponseHeaders { get; set; } = new List<GlobalResponseHeader>();
 
-        public HttpContextFactory HttpContextFactory { get; set; } = (context, server, token) =>  new HttpContext(context, server, token);
+        public HttpContextFactory HttpContextFactory { get; set; } = (context, server, token) => new HttpContext(context, server, token);
 
         public bool IsListening => (bool)(Listener?.IsListening);
 

@@ -133,7 +133,7 @@ namespace Grapevine
                     foreach (var attribute in attributes)
                     {
                         var basepath = (basePath != null)
-                            ? string.Join("/", new string[]{basePath, attribute.BasePath})
+                            ? string.Join("/", new string[] { basePath, attribute.BasePath })
                             : attribute.BasePath;
                         routes.AddRange(Scan(method, basepath));
                     }
@@ -166,6 +166,7 @@ namespace Grapevine
 
             Logger.LogTrace($"Scanning method {methodInfo.Name} for routes");
 
+            var headers = methodInfo.GetCustomAttributes(true).Where(a => a is HeaderAttribute).Cast<HeaderAttribute>();
             foreach (var attribute in methodInfo.GetCustomAttributes(true).Where(a => a is RestRouteAttribute).Cast<RestRouteAttribute>())
             {
                 // 1. Create the arguments for Route<T> constructor
@@ -177,13 +178,8 @@ namespace Grapevine
                     : typeof(Route);
                 var route = (IRoute)Activator.CreateInstance(genericType, args);
 
-                // 3. Add any header matches - implementation idea that failed
-                // foreach (var key in attribute.Headers.AllKeys)
-                // {
-                //     var vals = attribute.Headers.GetValues(key);
-                //     var val = (vals.Length > 1) ? $"^({string.Join("|", vals)})$" : $"^{vals[0]}$";
-                //     route.MatchOn(key, new Regex(val));
-                // }
+                // 3. Add any header matches
+                foreach (var header in headers) route.MatchOn(header.Key, header.Value);
 
                 // 4. Add route to routing table
                 routes.Add(route);
@@ -209,7 +205,7 @@ namespace Grapevine
                         .Where(a => !a.GlobalAssemblyCache)
 #endif
                         .OrderBy(a => a.FullName))
-                { Assemblies.Add(assembly); }
+            { Assemblies.Add(assembly); }
         }
     }
 }

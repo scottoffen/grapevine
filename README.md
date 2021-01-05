@@ -1,2 +1,3 @@
-# grapevine
-Embedding A REST Server In Your Application Should Be Simple
+# Grapevine
+
+Fast, unopinionated, embeddable, minimalist web framework for .NET

@@ -12,7 +12,7 @@ namespace Grapevine
         private Action<IServiceCollection> _configureServices;
         private Action<IRestServer> _configureServer;
 
-        public RestServerBuilder() : this(new ServiceCollection(), null, null) {}
+        public RestServerBuilder() : this(new ServiceCollection(), null, null) { }
 
         public RestServerBuilder(IServiceCollection services) : this(services, null, null) { }
 
@@ -63,11 +63,13 @@ namespace Grapevine
 
         public static RestServerBuilder UseDefaults()
         {
-            Action<IServiceCollection> configServices = (services) => {
+            Action<IServiceCollection> configServices = (services) =>
+            {
                 services.Configure<LoggerFilterOptions>(options => options.MinLevel = LogLevel.Trace);
             };
 
-            Action<IRestServer> configServer = (server) => {
+            Action<IRestServer> configServer = (server) =>
+            {
                 server.Prefixes.Add("http://localhost:1234/");
             };
 
@@ -77,7 +79,7 @@ namespace Grapevine
         public static RestServerBuilder From<T>()
         {
             var type = typeof(T);
-            var obj = Activator.CreateInstance(type, new object[] {});
+            var obj = Activator.CreateInstance(type, new object[] { });
             var methods = type.GetMethods();
 
             // Initialize Services: ReturnType(IServiceCollection), Args(null)
@@ -85,7 +87,7 @@ namespace Grapevine
             Func<IServiceCollection> serviceInitializer = () =>
             {
                 if (msi == null) return new ServiceCollection();
-                return (IServiceCollection) msi.Invoke(obj, null);
+                return (IServiceCollection)msi.Invoke(obj, null);
             };
 
             // Configure Services: ReturnType(void), Arg[0](IServiceCollection)
@@ -93,7 +95,7 @@ namespace Grapevine
             Action<IServiceCollection> configureServices = (s) =>
             {
                 if (mcs == null) return;
-                mcs.Invoke(obj, new object[]{s});
+                mcs.Invoke(obj, new object[] { s });
             };
 
             // Configure Server: ReturnType(void), Arg[0](IRestServer)
@@ -101,7 +103,7 @@ namespace Grapevine
             Action<IRestServer> configureServer = (s) =>
             {
                 if (mcs == null) return;
-                mcv.Invoke(obj, new object[]{s});
+                mcv.Invoke(obj, new object[] { s });
             };
 
             return new RestServerBuilder(serviceInitializer, configureServices, configureServer);
