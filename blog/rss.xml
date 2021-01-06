@@ -4,15 +4,15 @@
         <title>Grapevine Blog</title>
         <link>https://scottoffen.github.io/grapevine/blog</link>
         <description>Grapevine Blog</description>
-        <lastBuildDate>Tue, 29 Dec 2020 00:00:00 GMT</lastBuildDate>
+        <lastBuildDate>Tue, 05 Jan 2021 00:00:00 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
         <item>
-            <title><![CDATA[Grapevine Docs]]></title>
-            <link>https://scottoffen.github.io/grapevine/grapevine/blog/docusaurus</link>
-            <guid>docusaurus</guid>
-            <pubDate>Tue, 29 Dec 2020 00:00:00 GMT</pubDate>
-            <description><![CDATA[I'm using Docusaurus 2 to generate the Grapevine documentation. It can be found in it's own repository, grapevine-docs. I'm still configuring the generator, so you will still see some of the default content for a while until it's all cleaned up.]]></description>
+            <title><![CDATA[Three Release Candidates And A Website]]></title>
+            <link>https://scottoffen.github.io/grapevine/grapevine/blog/three-release-candidates-and-a-website</link>
+            <guid>three-release-candidates-and-a-website</guid>
+            <pubDate>Tue, 05 Jan 2021 00:00:00 GMT</pubDate>
+            <description><![CDATA[img]]></description>
         </item>
         <item>
             <title><![CDATA[Grapevine 5.0 Beta 1]]></title>
@@ -20,6 +20,13 @@
             <guid>beta-1</guid>
             <pubDate>Tue, 29 Dec 2020 00:00:00 GMT</pubDate>
             <description><![CDATA[The second beta version of Grapevine 5.0 was uploaded to NuGet.org today, December 29, 2020. Here are some updated code samples to start playing around with.]]></description>
+        </item>
+        <item>
+            <title><![CDATA[Grapevine Docs]]></title>
+            <link>https://scottoffen.github.io/grapevine/grapevine/blog/docusaurus</link>
+            <guid>docusaurus</guid>
+            <pubDate>Tue, 29 Dec 2020 00:00:00 GMT</pubDate>
+            <description><![CDATA[I'm using Docusaurus 2 to generate the Grapevine documentation. It can be found in it's own repository, grapevine-docs. I'm still configuring the generator, so you will still see some of the default content for a while until it's all cleaned up.]]></description>
         </item>
         <item>
             <title><![CDATA[Grapevine 5.0 Beta 0]]></title>
