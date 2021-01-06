@@ -18,7 +18,7 @@
     <RepositoryUrl>https://github.com/scottoffen/grapevine</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageProjectUrl>https://scottoffen.github.io/grapevine/</PackageProjectUrl>
-    <!-- <PackageIcon>https://raw.githubusercontent.com/scottoffen/Grapevine/main/img/grapevine.png</PackageIcon> -->
+    <PackageIcon>https://raw.githubusercontent.com/scottoffen/grapevine/main/grapevine.png</PackageIcon>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
