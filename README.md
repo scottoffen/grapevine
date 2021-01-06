@@ -1,4 +1,4 @@
-# <img src="logo.png" width=25px> Grapevine
+# <img src="grapevine.png" width=25px> Grapevine
 
 Grapevine is a fast, unopinionated, embeddable, minimalist web framework for .NET. Grapevine is not intended to be a replacement for IIS or ASP.NET, but rather to function as an embedded REST/HTTP server in non-ASP.NET projects.
 
