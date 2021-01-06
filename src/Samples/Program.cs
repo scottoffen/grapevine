@@ -30,7 +30,7 @@ namespace Samples
                     var sb = new StringBuilder(Environment.NewLine);
                     sb.Append($"********************************************************************************{Environment.NewLine}");
                     sb.Append($"* Server listening on {string.Join(", ", server.Prefixes)}{Environment.NewLine}");
-                    sb.Append($"* Stop server by going to {server.Prefixes.First()}stop{Environment.NewLine}");
+                    sb.Append($"* Stop server by going to {server.Prefixes.First()}/api/stop{Environment.NewLine}");
                     sb.Append($"********************************************************************************{Environment.NewLine}");
                     s.Logger.LogDebug(sb.ToString());
 
