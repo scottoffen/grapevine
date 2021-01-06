@@ -18,7 +18,7 @@
     <RepositoryUrl>https://github.com/scottoffen/grapevine</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageProjectUrl>https://scottoffen.github.io/grapevine/</PackageProjectUrl>
-    <PackageIcon>https://raw.githubusercontent.com/scottoffen/grapevine/main/grapevine.png</PackageIcon>
+    <PackageIcon>grapevine.png</PackageIcon>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
@@ -53,6 +53,10 @@
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\grapevine.png" Pack="true" PackagePath="\"/>
   </ItemGroup>
 
 </Project>
