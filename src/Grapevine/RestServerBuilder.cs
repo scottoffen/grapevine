@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -40,6 +41,7 @@ namespace Grapevine
             _services.AddSingleton<IRestServer, RestServer>();
             _services.AddSingleton<IRouter, Router>();
             _services.AddSingleton<IRouteScanner, RouteScanner>();
+            _services.AddTransient<IContentFolder, ContentFolder>();
             _services.AddLogging(configure => configure.AddConsole());
 
             _configureServices?.Invoke(_services);
@@ -80,7 +82,7 @@ namespace Grapevine
         {
             var type = typeof(T);
             var obj = Activator.CreateInstance(type, new object[] { });
-            var methods = type.GetMethods();
+            var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Instance);
 
             // Initialize Services: ReturnType(IServiceCollection), Args(null)
             var msi = methods.Where(m => m.ReturnParameter.ParameterType == typeof(IServiceCollection) && m.GetParameters().Length == 0).FirstOrDefault();
