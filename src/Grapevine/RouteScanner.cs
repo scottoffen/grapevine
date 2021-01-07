@@ -178,8 +178,8 @@ namespace Grapevine
                     : typeof(Route);
                 var route = (IRoute)Activator.CreateInstance(genericType, args);
 
-                // 3. Add any header matches
-                foreach (var header in headers) route.MatchOn(header.Key, header.Value);
+                // 3. Add any header conditions
+                foreach (var header in headers) route.WithHeader(header.Key, header.Value);
 
                 // 4. Add route to routing table
                 routes.Add(route);

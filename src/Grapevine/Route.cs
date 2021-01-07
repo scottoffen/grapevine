@@ -11,7 +11,7 @@ namespace Grapevine
     {
         public static readonly Regex DefaultPattern = new Regex(@"^.*$");
         public List<string> PatternKeys = new List<string>();
-        public readonly Dictionary<string, Regex> MatchesOn = new Dictionary<string, Regex>();
+        public readonly Dictionary<string, Regex> HeaderConditions = new Dictionary<string, Regex>();
 
         public string Description { get; set; }
         public bool Enabled { get; set; }
@@ -44,11 +44,11 @@ namespace Grapevine
 
         public abstract Task InvokeAsync(IHttpContext context);
 
-        public virtual bool Matches(IHttpContext context)
+        public virtual bool IsMatch(IHttpContext context)
         {
             if (!Enabled || !context.Request.HttpMethod.Equivalent(HttpMethod) || !UrlPattern.IsMatch(context.Request.PathInfo)) return false;
 
-            foreach (var condition in MatchesOn)
+            foreach (var condition in HeaderConditions)
             {
                 var value = context.Request.Headers.Get(condition.Key) ?? string.Empty;
                 if (condition.Value.IsMatch(value)) continue;
@@ -58,9 +58,9 @@ namespace Grapevine
             return true;
         }
 
-        public virtual IRoute MatchOn(string header, Regex pattern)
+        public virtual IRoute WithHeader(string header, Regex pattern)
         {
-            MatchesOn[header] = pattern;
+            HeaderConditions[header] = pattern;
             return this;
         }
 

@@ -9,8 +9,8 @@ namespace Grapevine
 
         Task InvokeAsync(IHttpContext context);
 
-        bool Matches(IHttpContext context);
+        bool IsMatch(IHttpContext context);
 
-        IRoute MatchOn(string header, Regex pattern);
+        IRoute WithHeader(string header, Regex pattern);
     }
 }

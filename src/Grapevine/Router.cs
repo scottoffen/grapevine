@@ -135,7 +135,7 @@ namespace Grapevine
         /// <returns>IList&lt;IRoute&gt;</returns>
         public virtual IList<IRoute> RoutesFor(IHttpContext context)
         {
-            return RegisteredRoutes.Where(r => r.Matches(context) && r.Enabled).ToList();
+            return RegisteredRoutes.Where(r => r.IsMatch(context) && r.Enabled).ToList();
         }
 
         protected internal async Task HandleErrorAsync(IHttpContext context, Exception e = null)
