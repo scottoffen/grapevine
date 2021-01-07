@@ -13,7 +13,7 @@ namespace Grapevine
         bool Enabled { get; set; }
 
         /// <summary>
-        /// Gets the HttpMethod that this route responds to; defaults to HttpMethod.ALL
+        /// Gets the HttpMethod that this route responds to; defaults to HttpMethod.Any
         /// </summary>
         HttpMethod HttpMethod { get; }
 
