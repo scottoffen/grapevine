@@ -20,11 +20,11 @@ namespace Grapevine
             }
             else if (context.Response.StatusCode == HttpStatusCode.NotFound)
             {
-                content = $"File Not Found: {context.Request.PathInfo}";
+                content = $"File Not Found: {context.Request.Endpoint}";
             }
             else if (context.Response.StatusCode == HttpStatusCode.NotImplemented)
             {
-                content = $"Method Not Implemented: {context.Request.PathInfo}";
+                content = $"Method Not Implemented: {context.Request.Name}";
             }
 
             await context.Response.SendResponseAsync(content);
@@ -67,7 +67,7 @@ namespace Grapevine
 
             try
             {
-                Logger.LogDebug($"{context.Id} : Routing {context.Request.HttpMethod} {context.Request.PathInfo}");
+                Logger.LogDebug($"{context.Id} : Routing {context.Request.Name}");
 
                 var routesExecuted = await RouteAsync(context, RoutesFor(context));
                 if (routesExecuted == 0 || ((context.Response.StatusCode != HttpStatusCode.Ok || RequireRouteResponse) && !context.WasRespondedTo))
@@ -83,7 +83,7 @@ namespace Grapevine
             }
             catch (Exception e)
             {
-                Logger.LogError(e, $"An exception occured while routing request {context.Request.HttpMethod} {context.Request.PathInfo} ({context.Id})");
+                Logger.LogError(e, $"An exception occured while routing request {context.Request.Name} ({context.Id})");
                 await HandleErrorAsync(context, e);
             }
         }

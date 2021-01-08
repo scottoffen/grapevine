@@ -54,7 +54,7 @@ namespace Grapevine
         /// <summary>
         /// Gets the URL information (without the host, port or query string) requested by the client
         /// </summary>
-        string PathInfo { get; }
+        string Endpoint { get; }
 
         /// <summary>
         /// Gets or sets a dictionary of parameters provided in the PathInfo as identified by the processing route

@@ -20,14 +20,14 @@ namespace Samples.Resources
         [RestRoute("Get", "/hello", Name = "Hello, world!", Description = "The obligatory \"Hello, world!\" route")]
         public async Task HelloWorld(IHttpContext context)
         {
-            _logger.LogTrace($"{context.Request.HttpMethod} {context.Request.PathInfo} : Hello, world!");
+            _logger.LogTrace($"{context.Request.Name} : Hello, world!");
             await context.Response.SendResponseAsync($"Hello, world! ({Count})");
         }
 
         [RestRoute("Get", "/stop", Name = "Server Stop")]
         public async Task StopServer(IHttpContext context)
         {
-            _logger.LogTrace($"{context.Request.HttpMethod} {context.Request.PathInfo} : Stopping Server");
+            _logger.LogTrace($"{context.Request.Name} : Stopping Server");
             await context.Response.SendResponseAsync("Stopping Server");
             context.Server.Stop();
         }
@@ -35,7 +35,7 @@ namespace Samples.Resources
         [RestRoute(Name = "Default Route", Description = "The default route is diabled by default", Enabled = false)]
         public async Task DefaultRoute(IHttpContext context)
         {
-            _logger.LogTrace($"{context.Request.HttpMethod} {context.Request.PathInfo} : Catch All Method");
+            _logger.LogTrace($"{context.Request.Name} : Catch All Method");
             await context.Response.SendResponseAsync(HttpStatusCode.Ok);
         }
 

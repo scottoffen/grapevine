@@ -29,7 +29,7 @@ namespace Grapevine
 
         public abstract string Name { get; }
 
-        public abstract string PathInfo { get; }
+        public abstract string Endpoint { get; }
 
         public abstract Dictionary<string, string> PathParameters { get; set; }
 
@@ -59,15 +59,15 @@ namespace Grapevine
 
     public class HttpRequest : HttpRequestBase, IHttpRequest
     {
-        public override string Name => $"{HttpMethod} {this.PathInfo}";
+        public override string Name => $"{HttpMethod} {Endpoint}";
 
-        public override string PathInfo { get; }
+        public override string Endpoint { get; }
 
         public override Dictionary<string, string> PathParameters { get; set; } = new Dictionary<string, string>();
 
         public HttpRequest(HttpListenerRequest request) : base(request)
         {
-            PathInfo = request.RawUrl.Split(new[] { '?' }, 2)[0].TrimEnd('/');
+            Endpoint = request.RawUrl.Split(new[] { '?' }, 2)[0].TrimEnd('/');
         }
     }
 }

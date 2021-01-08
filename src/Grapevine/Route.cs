@@ -46,7 +46,7 @@ namespace Grapevine
 
         public virtual bool IsMatch(IHttpContext context)
         {
-            if (!Enabled || !context.Request.HttpMethod.Equivalent(HttpMethod) || !UrlPattern.IsMatch(context.Request.PathInfo)) return false;
+            if (!Enabled || !context.Request.HttpMethod.Equivalent(HttpMethod) || !UrlPattern.IsMatch(context.Request.Endpoint)) return false;
 
             foreach (var condition in HeaderConditions)
             {
@@ -109,7 +109,7 @@ namespace Grapevine
         public override async Task InvokeAsync(IHttpContext context)
         {
             if (!Enabled) return;
-            context.Request.PathParameters = ParseParams(context.Request.PathInfo);
+            context.Request.PathParameters = ParseParams(context.Request.Endpoint);
             await RouteAction(context).ConfigureAwait(false);
         }
     }
@@ -133,7 +133,7 @@ namespace Grapevine
         public override async Task InvokeAsync(IHttpContext context)
         {
             if (!Enabled) return;
-            context.Request.PathParameters = ParseParams(context.Request.PathInfo);
+            context.Request.PathParameters = ParseParams(context.Request.Endpoint);
             await RouteAction(context.Services.GetRequiredService<T>(), context).ConfigureAwait(false);
         }
     }
