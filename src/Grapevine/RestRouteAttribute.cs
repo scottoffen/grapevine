@@ -72,9 +72,19 @@ namespace Grapevine
 
             args[1] = attribute.HttpMethod;
 
-            args[2] = (string.IsNullOrWhiteSpace(basePath))
-                ? attribute.PathInfo.SanitizePath()
-                : $"{basePath.SanitizePath()}{attribute.PathInfo.SanitizePath()}";
+            var basepath = basePath.SanitizePath();
+            if (!string.IsNullOrWhiteSpace(attribute.PathInfo))
+            {
+                var appendStart = "";
+                if (attribute.PathInfo.StartsWith("^"))
+                {
+                    appendStart = "^";
+                    attribute.PathInfo = attribute.PathInfo.TrimStart('^');
+                }
+                basepath = $"{appendStart}{basepath}{attribute.PathInfo.SanitizePath()}";
+            }
+
+            args[2] = basepath;
 
             args[3] = attribute.Enabled;
             args[4] = (!string.IsNullOrWhiteSpace(attribute.Name))

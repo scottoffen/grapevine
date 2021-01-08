@@ -8,7 +8,7 @@ namespace Grapevine
 {
     public static class InternalExtensions
     {
-        private static readonly Regex ParseForParams = new Regex(@"\[(\w+)\]", RegexOptions.IgnoreCase);
+        private static readonly Regex ParseForParams = new Regex(@"\{(\w+)\}", RegexOptions.IgnoreCase);
 
         internal static string SanitizePath(this string path)
         {
