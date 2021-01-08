@@ -5,7 +5,7 @@ namespace Grapevine
 {
     public interface IRoute : IRouteProperties
     {
-        Regex UrlPattern { get; }
+        IRouteTemplate RouteTemplate { get; }
 
         Task InvokeAsync(IHttpContext context);
 
