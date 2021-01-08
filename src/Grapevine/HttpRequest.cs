@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Grapevine
 {
-    public abstract class HttpRequestBase : IHttpRequest
+    public class HttpRequest : IHttpRequest
     {
         public HttpListenerRequest Advanced { get; }
 
@@ -27,11 +27,11 @@ namespace Grapevine
 
         public Stream InputStream => Advanced.InputStream;
 
-        public abstract string Name { get; }
+        public string Name => $"{HttpMethod} {Endpoint}";
 
-        public abstract string Endpoint { get; }
+        public string Endpoint { get; protected set; }
 
-        public abstract Dictionary<string, string> PathParameters { get; set; }
+        public IDictionary<string, string> PathParameters { get; set; } = new Dictionary<string, string>();
 
         public NameValueCollection QueryString => Advanced.QueryString;
 
@@ -50,23 +50,9 @@ namespace Grapevine
         public string UserHostname => Advanced.UserHostName;
 
         public string[] UserLanguages => Advanced.UserLanguages;
-
-        public HttpRequestBase(HttpListenerRequest request)
+        public HttpRequest(HttpListenerRequest request)
         {
             Advanced = request;
-        }
-    }
-
-    public class HttpRequest : HttpRequestBase, IHttpRequest
-    {
-        public override string Name => $"{HttpMethod} {Endpoint}";
-
-        public override string Endpoint { get; }
-
-        public override Dictionary<string, string> PathParameters { get; set; } = new Dictionary<string, string>();
-
-        public HttpRequest(HttpListenerRequest request) : base(request)
-        {
             Endpoint = request.RawUrl.Split(new[] { '?' }, 2)[0].TrimEnd('/');
         }
     }

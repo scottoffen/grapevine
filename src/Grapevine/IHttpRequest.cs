@@ -59,7 +59,7 @@ namespace Grapevine
         /// <summary>
         /// Gets or sets a dictionary of parameters provided in the PathInfo as identified by the processing route
         /// </summary>
-        Dictionary<string, string> PathParameters { get; set; }
+        IDictionary<string, string> PathParameters { get; set; }
 
         /// <summary>
         /// Gets the query string included in the request
