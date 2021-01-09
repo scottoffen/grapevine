@@ -69,7 +69,7 @@ namespace Grapevine
             if (string.IsNullOrEmpty(pattern)) return Default;
             if (pattern.StartsWith("^")) return new Regex(pattern);
 
-            var builder = new StringBuilder("^");
+            var builder = new StringBuilder("(?i)^");
             var sections = pattern.SanitizePath() // Ensures the string begins with '/'
                 .TrimEnd('$')                     // Removes any trailing '$'
                 .Split(new char[] { '{', '}' });  // splits into sections
