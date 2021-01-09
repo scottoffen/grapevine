@@ -13,7 +13,7 @@ namespace Grapevine
     public class RestResourceAttribute : Attribute
     {
         /// <summary>
-        /// This value will be prepended to the PathInfo value on all RestRoutes in the class; defaults to an empty string.
+        /// This value will be prepended to the route template value on all RestRoutes in the class; defaults to an empty string.
         /// </summary>
         public string BasePath { get; set; } = string.Empty;
     }

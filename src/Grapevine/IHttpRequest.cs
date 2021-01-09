@@ -47,7 +47,7 @@ namespace Grapevine
         Stream InputStream { get; }
 
         /// <summary>
-        /// Gets a representation of the HttpMethod and PathInfo of the request
+        /// Gets a representation of the HttpMethod and Endpoint of the request
         /// </summary>
         string Name { get; }
 
@@ -57,7 +57,7 @@ namespace Grapevine
         string Endpoint { get; }
 
         /// <summary>
-        /// Gets or sets a dictionary of parameters provided in the PathInfo as identified by the processing route
+        /// Gets or sets a dictionary of parameters provided in the Endpoint as identified by the processing route
         /// </summary>
         IDictionary<string, string> PathParameters { get; set; }
 
