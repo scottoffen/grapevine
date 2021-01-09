@@ -75,7 +75,7 @@ namespace Grapevine
         public override async Task InvokeAsync(IHttpContext context)
         {
             if (!Enabled) return;
-            context.Request.PathParameters = RouteTemplate.Parse(context.Request.Endpoint);
+            context.Request.PathParameters = RouteTemplate.ParseEndpoint(context.Request.Endpoint);
             await RouteAction(context).ConfigureAwait(false);
         }
     }
@@ -99,7 +99,7 @@ namespace Grapevine
         public override async Task InvokeAsync(IHttpContext context)
         {
             if (!Enabled) return;
-            context.Request.PathParameters = RouteTemplate.Parse(context.Request.Endpoint);
+            context.Request.PathParameters = RouteTemplate.ParseEndpoint(context.Request.Endpoint);
             await RouteAction(context.Services.GetRequiredService<T>(), context).ConfigureAwait(false);
         }
     }
