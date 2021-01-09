@@ -17,7 +17,7 @@ namespace Samples.Resources
             Counter++;
         }
 
-        [RestRoute("Get", "{key}/{value}")]
+        [RestRoute("Get", "{key:maxlength(20)}/{value}")]
         public async Task TransientCallA(IHttpContext context)
         {
             if (!context.Contains("PathParameters")) context.Set("PathParameters", new StringBuilder());
@@ -43,7 +43,7 @@ namespace Samples.Resources
             await Task.CompletedTask;
         }
 
-        [RestRoute("Get", "{thing1}/{thing2}")]
+        [RestRoute("Get", "{thing1}/{thing2:num}")]
         public async Task TransientCallC(IHttpContext context)
         {
             if (!context.Contains("PathParameters")) context.Set("PathParameters", new StringBuilder());
