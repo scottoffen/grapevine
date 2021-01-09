@@ -46,7 +46,7 @@ namespace Grapevine.Tests
             [Fact]
             public void returns_matches_with_provided_keys()
             {
-                var pattern = new Regex(@"^/api/([^/]{1,20})/(\d+)$");
+                var pattern = new Regex(@"(?i)^/api/([^/]{1,20})/(\d+)$");
                 var patterKeys = new List<string>()
                 {
                     "resource",
@@ -72,7 +72,7 @@ namespace Grapevine.Tests
             public void returns_regex_with_no_capture_groups_when_no_constraints_are_included()
             {
                 var pattern = "/api/resource/id";
-                var expected = $"^{pattern}$";
+                var expected = $"(?i)^{pattern}$";
                 var patternKeys = new List<string>();
 
                 var regex = RouteTemplate.ConvertToRegex(pattern, out patternKeys);
@@ -86,7 +86,7 @@ namespace Grapevine.Tests
             public void returns_regex_with_default_capture_groups_when_using_generic_contraints()
             {
                 var pattern = "/api/{resource}/{id}";
-                var expected = @"^/api/([^/]+)/([^/]+)$";
+                var expected = @"(?i)^/api/([^/]+)/([^/]+)$";
                 var sample = "/api/thing1/thing2";
                 var patternKeys = new List<string>();
 
@@ -117,7 +117,7 @@ namespace Grapevine.Tests
             public void returns_regex_with_capture_group_based_on_constraints()
             {
                 var pattern = "/api/{resource:maxlength(20)}/{id:num}";
-                var expected = @"^/api/([^/]{1,20})/(\d+)$";
+                var expected = @"(?i)^/api/([^/]{1,20})/(\d+)$";
                 var sample = "/api/users/1234";
                 var patternKeys = new List<string>();
 
