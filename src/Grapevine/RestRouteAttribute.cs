@@ -22,7 +22,7 @@ namespace Grapevine
 
         public string Name { get; set; } = string.Empty;
 
-        public string PathInfo { get; set; } = string.Empty;
+        public string RouteTemplate { get; set; } = string.Empty;
 
         public RestRouteAttribute()
         {
@@ -34,10 +34,10 @@ namespace Grapevine
             HttpMethod = httpMethod;
         }
 
-        public RestRouteAttribute(string httpMethod, string pathInfo)
+        public RestRouteAttribute(string httpMethod, string routeTemplate)
         {
             HttpMethod = httpMethod;
-            PathInfo = pathInfo;
+            RouteTemplate = routeTemplate;
         }
     }
 
@@ -73,15 +73,15 @@ namespace Grapevine
             args[1] = attribute.HttpMethod;
 
             var basepath = basePath.SanitizePath();
-            if (!string.IsNullOrWhiteSpace(attribute.PathInfo))
+            if (!string.IsNullOrWhiteSpace(attribute.RouteTemplate))
             {
                 var appendStart = "";
-                if (attribute.PathInfo.StartsWith("^"))
+                if (attribute.RouteTemplate.StartsWith("^"))
                 {
                     appendStart = "^";
-                    attribute.PathInfo = attribute.PathInfo.TrimStart('^');
+                    attribute.RouteTemplate = attribute.RouteTemplate.TrimStart('^');
                 }
-                basepath = $"{appendStart}{basepath}{attribute.PathInfo.SanitizePath()}";
+                basepath = $"{appendStart}{basepath}{attribute.RouteTemplate.SanitizePath()}";
             }
 
             args[2] = basepath;

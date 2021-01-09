@@ -24,7 +24,7 @@ namespace Grapevine.Middleware
                     if (context.WasRespondedTo) return;
                 }
 
-                if (!context.WasRespondedTo && context.Request.PathInfo.Equals("/favicon.ico", StringComparison.CurrentCultureIgnoreCase))
+                if (!context.WasRespondedTo && context.Request.Endpoint.Equals("/favicon.ico", StringComparison.CurrentCultureIgnoreCase))
                 {
                     await ContentFolderBase.DefaultFileNotFoundHandler(context);
                 }

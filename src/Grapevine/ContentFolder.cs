@@ -14,7 +14,7 @@ namespace Grapevine
         public static Func<IHttpContext, Task> DefaultFileNotFoundHandler { get; set; } = async (context) =>
         {
             context.Response.StatusCode = HttpStatusCode.NotFound;
-            var content = $"File Not Found: {context.Request.PathInfo}";
+            var content = $"File Not Found: {context.Request.Endpoint}";
             await context.Response.SendResponseAsync(content);
         };
 
@@ -167,9 +167,9 @@ namespace Grapevine
         public async override Task SendFileAsync(IHttpContext context, string filename)
         {
             PopulateDirectoryListing();
-            if (DirectoryListing.ContainsKey(context.Request.PathInfo))
+            if (DirectoryListing.ContainsKey(context.Request.Endpoint))
             {
-                var filepath = DirectoryListing[context.Request.PathInfo];
+                var filepath = DirectoryListing[context.Request.Endpoint];
                 context.Response.StatusCode = HttpStatusCode.Ok;
 
                 var lastModified = File.GetLastWriteTimeUtc(filepath).ToString("R");
@@ -195,7 +195,7 @@ namespace Grapevine
             }
 
             // File not found, but should have been based on the path info
-            else if (!string.IsNullOrEmpty(Prefix) && context.Request.PathInfo.StartsWith(Prefix, StringComparison.CurrentCultureIgnoreCase))
+            else if (!string.IsNullOrEmpty(Prefix) && context.Request.Endpoint.StartsWith(Prefix, StringComparison.CurrentCultureIgnoreCase))
             {
                 context.Response.StatusCode = HttpStatusCode.NotFound;
             }

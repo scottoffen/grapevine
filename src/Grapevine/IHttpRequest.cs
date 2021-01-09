@@ -47,19 +47,19 @@ namespace Grapevine
         Stream InputStream { get; }
 
         /// <summary>
-        /// Gets a representation of the HttpMethod and PathInfo of the request
+        /// Gets a representation of the HttpMethod and Endpoint of the request
         /// </summary>
         string Name { get; }
 
         /// <summary>
         /// Gets the URL information (without the host, port or query string) requested by the client
         /// </summary>
-        string PathInfo { get; }
+        string Endpoint { get; }
 
         /// <summary>
-        /// Gets or sets a dictionary of parameters provided in the PathInfo as identified by the processing route
+        /// Gets or sets a dictionary of parameters provided in the Endpoint as identified by the processing route
         /// </summary>
-        Dictionary<string, string> PathParameters { get; set; }
+        IDictionary<string, string> PathParameters { get; set; }
 
         /// <summary>
         /// Gets the query string included in the request

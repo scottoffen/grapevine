@@ -17,16 +17,13 @@ namespace Samples.Resources
             Counter++;
         }
 
-        [RestRoute("Get", "{key}/{value}")]
+        [RestRoute("Get", "{key:maxlength(20)}/{value}")]
         public async Task TransientCallA(IHttpContext context)
         {
-            if (!context.Contains("Call-Order")) context.Set("Call-Order", new StringBuilder());
-            context.GetAs<StringBuilder>("Call-Order").Append($"A-{Counter}{Environment.NewLine}");
-
             if (!context.Contains("PathParameters")) context.Set("PathParameters", new StringBuilder());
             var sb = context.GetAs<StringBuilder>("PathParameters");
 
-            sb.Append($"A: Count: {context.Request.PathParameters.Count}{Environment.NewLine}");
+            sb.Append($"A{Counter}: Count: {context.Request.PathParameters.Count}{Environment.NewLine}");
             sb.Append($"\tkey: {context.Request.PathParameters["key"]}{Environment.NewLine}");
             sb.Append($"\tvalue: {context.Request.PathParameters["value"]}{Environment.NewLine}");
 
@@ -36,34 +33,27 @@ namespace Samples.Resources
         [RestRoute("Get", @"^/([a-zA-Z]+)/(\d{1,})")]
         public async Task TransientCallB(IHttpContext context)
         {
-            if (!context.Contains("Call-Order")) context.Set("Call-Order", new StringBuilder());
-            context.GetAs<StringBuilder>("Call-Order").Append($"B-{Counter}{Environment.NewLine}");
-
             if (!context.Contains("PathParameters")) context.Set("PathParameters", new StringBuilder());
             var sb = context.GetAs<StringBuilder>("PathParameters");
 
-            sb.Append($"B: Count: {context.Request.PathParameters.Count}{Environment.NewLine}");
+            sb.Append($"B{Counter}: Count: {context.Request.PathParameters.Count}{Environment.NewLine}");
             sb.Append($"\tp0: {context.Request.PathParameters["p0"]}{Environment.NewLine}");
             sb.Append($"\tp1: {context.Request.PathParameters["p1"]}{Environment.NewLine}");
 
             await Task.CompletedTask;
         }
 
-        [RestRoute("Get", "{thing1}/{thing2}")]
+        [RestRoute("Get", "{thing1}/{thing2:num}")]
         public async Task TransientCallC(IHttpContext context)
         {
-            if (!context.Contains("Call-Order")) context.Set("Call-Order", new StringBuilder());
-            var co = context.GetAs<StringBuilder>("Call-Order");
-            co.Append($"C-{Counter}{Environment.NewLine}");
-
             if (!context.Contains("PathParameters")) context.Set("PathParameters", new StringBuilder());
             var sb = context.GetAs<StringBuilder>("PathParameters");
 
-            sb.Append($"C: Count: {context.Request.PathParameters.Count}{Environment.NewLine}");
+            sb.Append($"C{Counter}: Count: {context.Request.PathParameters.Count}{Environment.NewLine}");
             sb.Append($"\tthing1: {context.Request.PathParameters["thing1"]}{Environment.NewLine}");
             sb.Append($"\tthing2: {context.Request.PathParameters["thing2"]}{Environment.NewLine}");
 
-            await context.Response.SendResponseAsync($"{sb.ToString()}{Environment.NewLine}{co.ToString()}");
+            await context.Response.SendResponseAsync($"{sb.ToString()}{Environment.NewLine}");
         }
     }
 }

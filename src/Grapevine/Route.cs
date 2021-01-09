@@ -9,34 +9,22 @@ namespace Grapevine
 {
     public abstract class RouteBase : IRoute
     {
-        public static readonly Regex DefaultPattern = new Regex(@"^.*$");
-        public List<string> PatternKeys = new List<string>();
-        public readonly Dictionary<string, Regex> HeaderConditions = new Dictionary<string, Regex>();
-
         public string Description { get; set; }
+
         public bool Enabled { get; set; }
 
-        public HttpMethod HttpMethod { get; protected set; }
+        public readonly Dictionary<string, Regex> HeaderConditions = new Dictionary<string, Regex>();
 
-        public string Name { get; protected set; }
+        public HttpMethod HttpMethod { get; set; }
 
-        public Regex UrlPattern { get; protected set; }
+        public string Name { get; set; }
 
-        protected RouteBase(HttpMethod httpMethod, Regex urlPattern, bool enabled, string name, string description) : this(httpMethod, enabled, name, description)
-        {
-            UrlPattern = urlPattern;
-        }
+        public IRouteTemplate RouteTemplate { get; set; }
 
-        protected RouteBase(HttpMethod httpMethod, string urlPattern, bool enabled, string name, string description) : this(httpMethod, enabled, name, description)
-        {
-            UrlPattern = (!string.IsNullOrEmpty(urlPattern))
-                ? urlPattern.ToRegex(out PatternKeys)
-                : DefaultPattern;
-        }
-
-        private RouteBase(HttpMethod httpMethod, bool enabled, string name, string description)
+        protected RouteBase(HttpMethod httpMethod, IRouteTemplate routeTemplate, bool enabled, string name, string description)
         {
             HttpMethod = httpMethod;
+            RouteTemplate = routeTemplate;
             Name = name;
             Description = description;
             Enabled = enabled;
@@ -46,7 +34,7 @@ namespace Grapevine
 
         public virtual bool IsMatch(IHttpContext context)
         {
-            if (!Enabled || !context.Request.HttpMethod.Equivalent(HttpMethod) || !UrlPattern.IsMatch(context.Request.PathInfo)) return false;
+            if (!Enabled || !context.Request.HttpMethod.Equivalent(HttpMethod) || !RouteTemplate.Matches(context.Request.Endpoint)) return false;
 
             foreach (var condition in HeaderConditions)
             {
@@ -63,42 +51,20 @@ namespace Grapevine
             HeaderConditions[header] = pattern;
             return this;
         }
-
-        /// <summary>
-        /// Gets a dictionary of parameter values from the PathInfo of the request
-        /// </summary>
-        /// <param name="pathinfo"></param>
-        /// <returns></returns>
-        public Dictionary<string, string> ParseParams(string pathinfo)
-        {
-            var parsed = new Dictionary<string, string>();
-            var idx = 0;
-
-            var matches = UrlPattern.Matches(pathinfo)[0].Groups;
-            for (int i = 1; i < matches.Count; i++)
-            {
-                var key = PatternKeys.Count > 0 && PatternKeys.Count > idx ? PatternKeys[idx] : $"p{idx}";
-                parsed.Add(key, matches[i].Value);
-                idx++;
-            }
-
-            return parsed;
-        }
     }
 
     public class Route : RouteBase, IRoute
     {
         protected Func<IHttpContext, Task> RouteAction;
 
-        public Route(Func<IHttpContext, Task> action, HttpMethod method, string urlPattern, bool enabled = true, string name = null, string description = null) : base(method, urlPattern, enabled, name, description)
-        {
-            RouteAction = action;
-            Name = (string.IsNullOrWhiteSpace(name))
-                ? action.Method.Name
-                : name;
-        }
+        public Route(Func<IHttpContext, Task> action, HttpMethod method, string routePattern, bool enabled = true, string name = null, string description = null)
+            : this(action, method, new RouteTemplate(routePattern), enabled, name, description) { }
 
-        public Route(Func<IHttpContext, Task> action, HttpMethod method, Regex urlPattern, bool enabled = true, string name = null, string description = null) : base(method, urlPattern, enabled, name, description)
+        public Route(Func<IHttpContext, Task> action, HttpMethod method, Regex routePattern, bool enabled = true, string name = null, string description = null)
+            : this(action, method, new RouteTemplate(routePattern), enabled, name, description) { }
+
+        public Route(Func<IHttpContext, Task> action, HttpMethod method, IRouteTemplate routeTemplate, bool enabled = true, string name = null, string description = null)
+            : base(method, routeTemplate, enabled, name, description)
         {
             RouteAction = action;
             Name = (string.IsNullOrWhiteSpace(name))
@@ -109,7 +75,7 @@ namespace Grapevine
         public override async Task InvokeAsync(IHttpContext context)
         {
             if (!Enabled) return;
-            context.Request.PathParameters = ParseParams(context.Request.PathInfo);
+            context.Request.PathParameters = RouteTemplate.ParseEndpoint(context.Request.Endpoint);
             await RouteAction(context).ConfigureAwait(false);
         }
     }
@@ -118,13 +84,13 @@ namespace Grapevine
     {
         protected Func<T, IHttpContext, Task> RouteAction;
 
-        public Route(MethodInfo methodInfo, HttpMethod method, string urlPattern, bool enabled = true, string name = null, string description = null) : base(method, urlPattern, enabled, name, description)
-        {
-            RouteAction = (Func<T, IHttpContext, Task>)Delegate.CreateDelegate(typeof(Func<T, IHttpContext, Task>), null, methodInfo);
-            if (string.IsNullOrWhiteSpace(Name)) Name = methodInfo.Name;
-        }
+        public Route(MethodInfo methodInfo, HttpMethod method, string routePattern, bool enabled = true, string name = null, string description = null)
+            : this(methodInfo, method, new RouteTemplate(routePattern), enabled, name, description) { }
 
-        public Route(MethodInfo methodInfo, HttpMethod method, Regex urlPattern, bool enabled = true, string name = null, string description = null) : base(method, urlPattern, enabled, name, description)
+        public Route(MethodInfo methodInfo, HttpMethod method, Regex routePattern, bool enabled = true, string name = null, string description = null)
+            : this(methodInfo, method, new RouteTemplate(routePattern), enabled, name, description) { }
+
+        public Route(MethodInfo methodInfo, HttpMethod method, IRouteTemplate routeTemplate, bool enabled = true, string name = null, string description = null) : base(method, routeTemplate, enabled, name, description)
         {
             RouteAction = (Func<T, IHttpContext, Task>)Delegate.CreateDelegate(typeof(Func<T, IHttpContext, Task>), null, methodInfo);
             if (string.IsNullOrWhiteSpace(Name)) Name = methodInfo.Name;
@@ -133,7 +99,7 @@ namespace Grapevine
         public override async Task InvokeAsync(IHttpContext context)
         {
             if (!Enabled) return;
-            context.Request.PathParameters = ParseParams(context.Request.PathInfo);
+            context.Request.PathParameters = RouteTemplate.ParseEndpoint(context.Request.Endpoint);
             await RouteAction(context.Services.GetRequiredService<T>(), context).ConfigureAwait(false);
         }
     }

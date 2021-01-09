@@ -195,7 +195,7 @@ namespace Grapevine
         {
             // 1. Create context
             var context = HttpContextFactory(state as HttpListenerContext, this, TokenSource.Token);
-            Logger.LogTrace($"{context.Id} : Request Received {context.Request.HttpMethod} {context.Request.PathInfo}");
+            Logger.LogTrace($"{context.Id} : Request Received {context.Request.Name}");
 
             // 2. Execute OnRequest event handlers
             try
@@ -210,7 +210,7 @@ namespace Grapevine
             }
             catch (Exception e)
             {
-                Logger.LogError(e, $"An exception occured while routing request {context.Request.HttpMethod} {context.Request.PathInfo} ({context.Id})");
+                Logger.LogError(e, $"An exception occured while routing request {context.Request.Name} ({context.Id})");
             }
 
             // 3. Optionally route request
