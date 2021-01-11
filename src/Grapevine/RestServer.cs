@@ -8,17 +8,17 @@ namespace Grapevine
 {
     public abstract class RestServerBase : Locals, IRestServer
     {
-        public bool EnableAutoScan { get; set; } = true;
-
         public IList<IContentFolder> ContentFolders { get; } = new List<IContentFolder>();
 
         public IList<GlobalResponseHeader> GlobalResponseHeaders { get; set; } = new List<GlobalResponseHeader>();
 
         public HttpContextFactory HttpContextFactory { get; set; } = (context, server, token) => new HttpContext(context, server, token);
 
+        public virtual bool IsListening { get; }
+
         public ILogger<IRestServer> Logger { get; protected set; }
 
-        public virtual bool IsListening { get; }
+        public ServerOptions Options { get; } = new ServerOptions();
 
         public virtual HttpListenerPrefixCollection Prefixes { get; }
 
@@ -135,7 +135,7 @@ namespace Grapevine
                 BeforeStarting?.Invoke(this);
 
                 // 3. Optionally autoscan for routes
-                if (Router.RoutingTable.Count == 0 && EnableAutoScan)
+                if (Router.RoutingTable.Count == 0 && Options.EnableAutoScan)
                     Router.Register(RouteScanner.Scan());
 
                 // 4. Configure and start the listener

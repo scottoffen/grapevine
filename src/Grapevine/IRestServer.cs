@@ -32,12 +32,6 @@ namespace Grapevine
     public interface IRestServer : ILocals, IDisposable
     {
         /// <summary>
-        /// Gets or sets a value that indicates whether autoscan is enabled on this router.
-        /// </summary>
-        /// <value>true</value>
-        bool EnableAutoScan { get; set; }
-
-        /// <summary>
         /// Gets the list of all ContentFolder objects used for serving static content.
         /// </summary>
         /// <value></value>
@@ -56,15 +50,21 @@ namespace Grapevine
         HttpContextFactory HttpContextFactory { get; set; }
 
         /// <summary>
+        /// Gets a value that indicates whether the server is currently listening.
+        /// </summary>
+        bool IsListening { get; }
+
+        /// <summary>
         /// Gets the logger for this IRestServer object.
         /// </summary>
         /// <value></value>
         ILogger<IRestServer> Logger { get; }
 
         /// <summary>
-        /// Gets a value that indicates whether the server is currently listening.
+        /// Gets the server options object used by this IRestServer object
         /// </summary>
-        bool IsListening { get; }
+        /// <value></value>
+        ServerOptions Options { get; }
 
         /// <summary>
         /// Gets the Uniform Resource Identifier (URI) prefixes handled by this IRestServer object.
