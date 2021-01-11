@@ -2,19 +2,13 @@ using System;
 
 namespace Grapevine
 {
-    public abstract class RouterOptions
+    public class RouterOptions
     {
         /// <summary>
         /// Gets or sets a value to indicate whether request routing should continue even after a response has been sent.
         /// </summary>
         /// <value>false</value>
         public bool ContinueRoutingAfterResponseSent { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value that indicates whether autoscan is enabled on this router.
-        /// </summary>
-        /// <value>true</value>
-        public bool EnableAutoScan { get; set; } = true;
 
         /// <summary>
         /// Gets or sets a value to indicate whether routing should be required to send a response.
@@ -45,26 +39,5 @@ namespace Grapevine
         /// </summary>
         /// <value>1024</value>
         public int CompressIfBytesGreaterThan { get; set; } = 1024;
-    }
-
-    public sealed class DefaultOptions : RouterOptions { }
-
-    public static class RouterOptionsExtensions
-    {
-        private static DefaultOptions defaultOptions = new DefaultOptions();
-
-        public static bool ConfigureOptions(this IRouter router, Action<RouterOptions> action)
-        {
-            var options = router as RouterOptions;
-            if (options == null) return false;
-
-            action(options);
-            return true;
-        }
-
-        public static RouterOptions FromOptions(this IRouter router)
-        {
-            return router as RouterOptions ?? defaultOptions;
-        }
     }
 }

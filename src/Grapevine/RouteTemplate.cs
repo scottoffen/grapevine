@@ -95,7 +95,7 @@ namespace Grapevine
         }
     }
 
-    public static class RouteConstraints
+    internal static class RouteConstraints
     {
         public static readonly string DefaultPattern = "([^/]+)";
 

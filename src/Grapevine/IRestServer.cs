@@ -20,10 +20,69 @@ namespace Grapevine
     /// <param name="context"></param>
     public delegate Task RequestReceivedAsyncEventHandler(IHttpContext context);
 
+    /// <summary>
+    /// Delegate for the <see cref="IRestServer.HttpContextFactory"/> factory
+    /// </summary>
+    /// <param name="context"></param>
+    /// <param name="server"></param>
+    /// <param name="token"></param>
+    /// <returns></returns>
     public delegate IHttpContext HttpContextFactory(HttpListenerContext context, IRestServer server, CancellationToken token);
 
     public interface IRestServer : ILocals, IDisposable
     {
+        /// <summary>
+        /// Gets or sets a value that indicates whether autoscan is enabled on this router.
+        /// </summary>
+        /// <value>true</value>
+        bool EnableAutoScan { get; set; }
+
+        /// <summary>
+        /// Gets the list of all ContentFolder objects used for serving static content.
+        /// </summary>
+        /// <value></value>
+        IList<IContentFolder> ContentFolders { get; }
+
+        /// <summary>
+        /// Gets or sets a list of header keys and values that should be applied to all outbound responses.
+        /// </summary>
+        /// <value></value>
+        IList<GlobalResponseHeader> GlobalResponseHeaders { get; set; }
+
+        /// <summary>
+        /// Gets or sets the delegate that creates IHttpContext objects.
+        /// </summary>
+        /// <value></value>
+        HttpContextFactory HttpContextFactory { get; set; }
+
+        /// <summary>
+        /// Gets the logger for this IRestServer object.
+        /// </summary>
+        /// <value></value>
+        ILogger<IRestServer> Logger { get; }
+
+        /// <summary>
+        /// Gets a value that indicates whether the server is currently listening.
+        /// </summary>
+        bool IsListening { get; }
+
+        /// <summary>
+        /// Gets the Uniform Resource Identifier (URI) prefixes handled by this IRestServer object.
+        /// </summary>
+        /// <value></value>
+        HttpListenerPrefixCollection Prefixes { get; }
+
+        /// <summary>
+        /// Gets or sets the IRouter object to be used by this IRestServer to route incoming HTTP requests.
+        /// </summary>
+        IRouter Router { get; set; }
+
+        /// <summary>
+        /// Gets or sets the IRouteScanner object to be used by this IRestServer to scan for routes.
+        /// </summary>
+        /// <value></value>
+        IRouteScanner RouteScanner { get; set; }
+
         /// <summary>
         /// Raised after the server has finished starting.
         /// </summary>
@@ -45,32 +104,9 @@ namespace Grapevine
         event ServerEventHandler BeforeStopping;
 
         /// <summary>
-        /// Gets the list of all ContentFolder objects used for serving static content.
-        /// </summary>
-        IList<IContentFolder> ContentFolders { get; }
-
-        IList<GlobalResponseHeader> GlobalResponseHeaders { get; set; }
-
-        HttpContextFactory HttpContextFactory { get; set; }
-
-        ILogger<IRestServer> Logger { get; }
-
-        /// <summary>
-        /// Gets a value that indicates whether the server has started listening.
-        /// </summary>
-        bool IsListening { get; }
-
-        /// <summary>
         /// Raised after an incoming request is received, but before routing the request.
         /// </summary>
         event RequestReceivedAsyncEventHandler OnRequestAsync;
-
-        HttpListenerPrefixCollection Prefixes { get; }
-
-        /// <summary>
-        /// Gets or sets the instance of IRouter to be used by this server to route incoming HTTP requests.
-        /// </summary>
-        IRouter Router { get; set; }
 
         /// <summary>
         /// Starts the server, raising BeforeStart and AfterStart events appropriately.
@@ -85,16 +121,18 @@ namespace Grapevine
 
     public static class IRestServerExtensions
     {
+        /// <summary>
+        /// Applies the global headers to the provided response header collection.
+        /// </summary>
+        /// <param name="server"></param>
+        /// <param name="headers"></param>
         public static void ApplyGlobalResponseHeaders(this IRestServer server, WebHeaderCollection headers)
         {
-            foreach (var header in server.GlobalResponseHeaders.Where(g => !g.Suppress))
-            {
-                headers.Add(header.Name, header.Value);
-            }
+            foreach (var header in server.GlobalResponseHeaders.Where(g => !g.Suppress)) headers.Add(header.Name, header.Value);
         }
 
         /// <summary>
-        /// Starts the server and blocks the calling thread until the server shutsdown
+        /// Starts the server and blocks the calling thread until the server stops listening
         /// </summary>
         public static void Run(this IRestServer server)
         {

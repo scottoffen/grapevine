@@ -28,11 +28,8 @@ namespace Samples
             server.Prefixes.Add("http://localhost:1234/");
 
             /* Configure Router Options (if supported by your router implementation) */
-            server.Router.ConfigureOptions((options) =>
-            {
-                options.ContentExpiresDuration = TimeSpan.FromSeconds(1);
-                options.SendExceptionMessages = true;
-            });
+            server.Router.Options.ContentExpiresDuration = TimeSpan.FromSeconds(1);
+            server.Router.Options.SendExceptionMessages = true;
         }
     }
 }

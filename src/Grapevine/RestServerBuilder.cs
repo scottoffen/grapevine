@@ -50,6 +50,7 @@ namespace Grapevine
 
             var server = provider.GetRequiredService<IRestServer>();
             server.Router.Services = _services;
+            server.RouteScanner.Services = _services;
 
             var factory = provider.GetService<ILoggerFactory>();
             if (factory != null) server.SetDefaultLogger(factory);
