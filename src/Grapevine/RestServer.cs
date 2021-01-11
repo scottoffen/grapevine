@@ -6,18 +6,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Grapevine
 {
-    public class RestServer : Locals, IRestServer
+    public abstract class RestServerBase : Locals, IRestServer
     {
-        protected CancellationTokenSource TokenSource { get; set; }
-        public readonly Thread RequestHandler;
-
-        public bool IsDisposed { get; private set; }
-        public bool IsStopping { get; protected set; }
-        public bool IsStarting { get; protected set; }
-
-        public HttpListener Listener { get; protected internal set; }
-
-        public ILogger<IRestServer> Logger { get; protected internal set; }
+        public bool EnableAutoScan { get; set; } = true;
 
         public IList<IContentFolder> ContentFolders { get; } = new List<IContentFolder>();
 
@@ -25,19 +16,75 @@ namespace Grapevine
 
         public HttpContextFactory HttpContextFactory { get; set; } = (context, server, token) => new HttpContext(context, server, token);
 
-        public bool IsListening => (bool)(Listener?.IsListening);
+        public ILogger<IRestServer> Logger { get; protected set; }
 
-        public HttpListenerPrefixCollection Prefixes => Listener?.Prefixes;
+        public virtual bool IsListening { get; }
+
+        public virtual HttpListenerPrefixCollection Prefixes { get; }
 
         public IRouter Router { get; set; }
 
         public IRouteScanner RouteScanner { get; set; }
 
-        public event ServerEventHandler AfterStarting;
-        public event ServerEventHandler AfterStopping;
-        public event ServerEventHandler BeforeStarting;
-        public event ServerEventHandler BeforeStopping;
-        public event RequestReceivedAsyncEventHandler OnRequestAsync;
+        public abstract event ServerEventHandler AfterStarting;
+        public abstract event ServerEventHandler AfterStopping;
+        public abstract event ServerEventHandler BeforeStarting;
+        public abstract event ServerEventHandler BeforeStopping;
+        public abstract event RequestReceivedAsyncEventHandler OnRequestAsync;
+
+        public abstract void Dispose();
+
+        public abstract void Start();
+
+        public abstract void Stop();
+    }
+
+    public class RestServer : RestServerBase
+    {
+        /// <summary>
+        /// Gets or sets the CancellationTokeSource for this RestServer object.
+        /// </summary>
+        /// <value></value>
+        protected CancellationTokenSource TokenSource { get; set; }
+
+        /// <summary>
+        /// The thread that listens for incoming requests.
+        /// </summary>
+        public readonly Thread RequestHandler;
+
+        /// <summary>
+        /// Gets a value that indicates whether the object has been disposed.
+        /// </summary>
+        /// <value></value>
+        public bool IsDisposed { get; private set; }
+
+        public override bool IsListening => (bool)(Listener?.IsListening);
+
+        /// <summary>
+        /// Gets a value that indicates whether the server is in the process of stopping.
+        /// </summary>
+        /// <value></value>
+        public bool IsStopping { get; protected set; }
+
+        /// <summary>
+        /// Gets a value that indicates whether the server is in the process of starting.
+        /// </summary>
+        /// <value></value>
+        public bool IsStarting { get; protected set; }
+
+        /// <summary>
+        /// Gets the HttpListener object used by this RestServer object.
+        /// </summary>
+        /// <value></value>
+        public HttpListener Listener { get; protected internal set; }
+
+        public override HttpListenerPrefixCollection Prefixes => Listener?.Prefixes;
+
+        public override event ServerEventHandler AfterStarting;
+        public override event ServerEventHandler AfterStopping;
+        public override event ServerEventHandler BeforeStarting;
+        public override event ServerEventHandler BeforeStopping;
+        public override event RequestReceivedAsyncEventHandler OnRequestAsync;
 
         public RestServer(IRouter router, IRouteScanner scanner, ILogger<IRestServer> logger)
         {
@@ -48,11 +95,13 @@ namespace Grapevine
             RouteScanner = scanner ?? new RouteScanner(DefaultLogger.GetInstance<IRouteScanner>());
             Logger = logger ?? DefaultLogger.GetInstance<IRestServer>();
 
+            RouteScanner.Services = Router.Services;
+
             Listener = new HttpListener();
             RequestHandler = new Thread(RequestListenerAsync);
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             if (IsDisposed) return;
 
@@ -68,7 +117,7 @@ namespace Grapevine
             }
         }
 
-        public void Start()
+        public override void Start()
         {
             if (IsDisposed) throw new ObjectDisposedException(GetType().FullName);
             if (IsListening || IsStarting || IsStopping) return;
@@ -86,12 +135,13 @@ namespace Grapevine
                 BeforeStarting?.Invoke(this);
 
                 // 3. Optionally autoscan for routes
-                Router.MaybeAutoScan(RouteScanner);
+                if (Router.RoutingTable.Count == 0 && EnableAutoScan)
+                    Router.Register(RouteScanner.Scan());
 
                 // 4. Configure and start the listener
                 Listener.Start();
 
-                // 5. Start the listening thread
+                // 5. Start the request handler thread
                 RequestHandler.Start();
 
                 // 6. Execute AfterStarting event handlers
@@ -131,7 +181,7 @@ namespace Grapevine
             }
         }
 
-        public void Stop()
+        public override void Stop()
         {
             if (IsDisposed) throw new ObjectDisposedException(GetType().FullName);
             if (IsStopping || IsStarting) return;
@@ -200,23 +250,23 @@ namespace Grapevine
             // 2. Execute OnRequest event handlers
             try
             {
-                Logger.LogTrace($"{context.Id} : Invoking OnRequest Handlers");
+                Logger.LogTrace($"{context.Id} : Invoking OnRequest Handlers for {context.Request.Name}");
                 if (OnRequestAsync != null) await OnRequestAsync.Invoke(context);
-                Logger.LogTrace($"{context.Id} : OnRequest Handlers Invoked");
+                Logger.LogTrace($"{context.Id} : OnRequest Handlers Invoked for {context.Request.Name}");
             }
             catch (System.Net.HttpListenerException hl) when (hl.ErrorCode == 1229)
             {
-                Logger.LogDebug("The remote connection was closed before a response could be sent.");
+                Logger.LogDebug($"{context.Id} : The remote connection was closed before a response could be sent for {context.Request.Name}.");
             }
             catch (Exception e)
             {
-                Logger.LogError(e, $"An exception occured while routing request {context.Request.Name} ({context.Id})");
+                Logger.LogError(e, $"{context.Id} An exception occured while routing request {context.Request.Name}");
             }
 
             // 3. Optionally route request
             if (!context.WasRespondedTo)
             {
-                Logger.LogTrace($"{context.Id} : Sending to router");
+                Logger.LogTrace($"{context.Id} : Routing request {context.Request.Name}");
                 ThreadPool.QueueUserWorkItem(Router.RouteAsync, context);
             }
         }

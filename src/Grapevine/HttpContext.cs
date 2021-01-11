@@ -32,8 +32,8 @@ namespace Grapevine
             Response = new HttpResponse(context.Response)
             {
                 IsCompressible = (bool)(context.Request.Headers["Accept-Encoding"]?.Contains("gzip")),
-                CompressIfBytesGreaterThan = server.Router.FromOptions().CompressIfBytesGreaterThan,
-                ContentExpiresDuration = server.Router.FromOptions().ContentExpiresDuration
+                CompressIfBytesGreaterThan = server.Router.Options.CompressIfBytesGreaterThan,
+                ContentExpiresDuration = server.Router.Options.ContentExpiresDuration
             };
 
             server.ApplyGlobalResponseHeaders(Response.Headers);
