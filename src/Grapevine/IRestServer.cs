@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -20,15 +19,6 @@ namespace Grapevine
     /// <param name="context"></param>
     public delegate Task RequestReceivedAsyncEventHandler(IHttpContext context);
 
-    /// <summary>
-    /// Delegate for the <see cref="IRestServer.HttpContextFactory"/> factory
-    /// </summary>
-    /// <param name="context"></param>
-    /// <param name="server"></param>
-    /// <param name="token"></param>
-    /// <returns></returns>
-    public delegate IHttpContext HttpContextFactory(HttpListenerContext context, IRestServer server, CancellationToken token);
-
     public interface IRestServer : ILocals, IDisposable
     {
         /// <summary>
@@ -42,12 +32,6 @@ namespace Grapevine
         /// </summary>
         /// <value></value>
         IList<GlobalResponseHeader> GlobalResponseHeaders { get; set; }
-
-        /// <summary>
-        /// Gets or sets the delegate that creates IHttpContext objects.
-        /// </summary>
-        /// <value></value>
-        HttpContextFactory HttpContextFactory { get; set; }
 
         /// <summary>
         /// Gets a value that indicates whether the server is currently listening.

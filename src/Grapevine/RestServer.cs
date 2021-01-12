@@ -12,8 +12,6 @@ namespace Grapevine
 
         public IList<GlobalResponseHeader> GlobalResponseHeaders { get; set; } = new List<GlobalResponseHeader>();
 
-        public HttpContextFactory HttpContextFactory { get; set; } = (context, server, token) => new HttpContext(context, server, token);
-
         public virtual bool IsListening { get; }
 
         public ILogger<IRestServer> Logger { get; protected set; }
@@ -25,6 +23,12 @@ namespace Grapevine
         public IRouter Router { get; set; }
 
         public IRouteScanner RouteScanner { get; set; }
+
+        /// <summary>
+        /// Gets or sets the CancellationTokeSource for this RestServer object.
+        /// </summary>
+        /// <value></value>
+        protected CancellationTokenSource TokenSource { get; set; }
 
         public abstract event ServerEventHandler AfterStarting;
         public abstract event ServerEventHandler AfterStopping;
@@ -41,12 +45,6 @@ namespace Grapevine
 
     public class RestServer : RestServerBase
     {
-        /// <summary>
-        /// Gets or sets the CancellationTokeSource for this RestServer object.
-        /// </summary>
-        /// <value></value>
-        protected CancellationTokenSource TokenSource { get; set; }
-
         /// <summary>
         /// The thread that listens for incoming requests.
         /// </summary>
@@ -244,7 +242,7 @@ namespace Grapevine
         protected async void RequestHandlerAsync(object state)
         {
             // 1. Create context
-            var context = HttpContextFactory(state as HttpListenerContext, this, TokenSource.Token);
+            var context = Options.HttpContextFactory(state, this, TokenSource.Token);
             Logger.LogTrace($"{context.Id} : Request Received {context.Request.Name}");
 
             // 2. Execute OnRequest event handlers
