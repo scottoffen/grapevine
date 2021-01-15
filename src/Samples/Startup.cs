@@ -1,31 +1,43 @@
 using System;
 using System.IO;
 using Grapevine;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using NLog.Extensions.Logging;
 
 namespace Samples
 {
     public class Startup
     {
-        public IServiceCollection GetServices()
+        private IConfiguration _configuration;
+
+        public Startup(IConfiguration configuration)
         {
-            return new ServiceCollection();
+            _configuration = configuration;
         }
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<LoggerFilterOptions>(options => options.MinLevel = LogLevel.Trace);
+            services.AddLogging(loggingBuilder =>
+            {
+                loggingBuilder.ClearProviders();
+                loggingBuilder.AddNLog(_configuration);
+            });
         }
 
         public void ConfigureServer(IRestServer server)
         {
             // The path to your static content
             var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "website");
-            server.ContentFolders.Add(new ContentFolder(folderPath));
+
+            // The following line is shorthand for:
+            //     server.ContentFolders.Add(new ContentFolder(folderPath));
+            server.ContentFolders.Add(folderPath);
             server.UseContentFolders();
 
-            server.Prefixes.Add("http://localhost:1234/");
+            var port = PortFinder.FindNextLocalOpenPort(1234);
+            server.Prefixes.Add($"http://localhost:{port}/");
 
             /* Configure Router Options (if supported by your router implementation) */
             server.Router.Options.ContentExpiresDuration = TimeSpan.FromSeconds(1);
