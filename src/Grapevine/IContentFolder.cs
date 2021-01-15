@@ -1,10 +1,17 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Grapevine
 {
     public interface IContentFolder
     {
+        /// <summary>
+        /// Returns a list of relative paths for all files and folders in the directory
+        /// </summary>
+        /// <value></value>
+        IList<string> DirectoryListing { get; }
+
         /// <summary>
         /// Gets or sets the default file to return when a directory is requested
         /// </summary>
@@ -18,7 +25,7 @@ namespace Grapevine
         /// <summary>
         /// Gets the folder used when scanning for static content requests
         /// </summary>
-        string FolderPath { get; }
+        string FolderPath { get; set; }
 
         /// <summary>
         /// If the file specified in the path info of the request matches a file in the content folder, that file will be sent in the response.
@@ -40,5 +47,13 @@ namespace Grapevine
         /// </summary>
         /// <value>Action<IHttpContext></value>
         Func<IHttpContext, Task> FileNotFoundHandler { get; set; }
+    }
+
+    public static class IContentFolderExtensions
+    {
+        public static void Add(this ICollection<IContentFolder> collection, string folderPath)
+        {
+            collection.Add(new ContentFolder(folderPath));
+        }
     }
 }

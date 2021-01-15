@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -18,7 +19,7 @@ namespace Grapevine
             await context.Response.SendResponseAsync(content);
         };
 
-        public ConcurrentDictionary<string, string> DirectoryListing { get; protected set; }
+        public ConcurrentDictionary<string, string> DirectoryMapping { get; protected set; }
 
         protected FileSystemWatcher Watcher;
 
@@ -30,15 +31,17 @@ namespace Grapevine
 
         public Func<IHttpContext, Task> FileNotFoundHandler { get; set; } = DefaultFileNotFoundHandler;
 
+        public IList<string> DirectoryListing => DirectoryMapping.Values.ToList();
+
         public virtual void AddToDirectoryListing(string fullPath)
         {
-            if (DirectoryListing == null)
-                DirectoryListing = new ConcurrentDictionary<string, string>();
+            if (DirectoryMapping == null)
+                DirectoryMapping = new ConcurrentDictionary<string, string>();
 
-            DirectoryListing[CreateDirectoryListingKey(fullPath)] = fullPath;
+            DirectoryMapping[CreateDirectoryListingKey(fullPath)] = fullPath;
 
             if (fullPath.EndsWith($"\\{IndexFileName}", StringComparison.CurrentCultureIgnoreCase))
-                DirectoryListing[CreateDirectoryListingKey(fullPath.Replace($"\\{IndexFileName}", ""))] = fullPath;
+                DirectoryMapping[CreateDirectoryListingKey(fullPath.Replace($"\\{IndexFileName}", ""))] = fullPath;
         }
 
         public virtual string CreateDirectoryListingKey(string item)
@@ -48,7 +51,7 @@ namespace Grapevine
 
         public virtual void PopulateDirectoryListing()
         {
-            if (DirectoryListing?.Count > 0) return;
+            if (DirectoryMapping?.Count > 0) return;
 
             Directory.GetFiles(FolderPath, "*", SearchOption.AllDirectories)
                 .ToList()
@@ -57,11 +60,11 @@ namespace Grapevine
 
         public virtual void RemoveFromDirectoryListing(string fullPath)
         {
-            if (DirectoryListing == null) return;
+            if (DirectoryMapping == null) return;
 
-            DirectoryListing.Where(x => x.Value == fullPath)
+            DirectoryMapping.Where(x => x.Value == fullPath)
                 .ToList()
-                .ForEach(pair => DirectoryListing.TryRemove(pair.Key, out string key));
+                .ForEach(pair => DirectoryMapping.TryRemove(pair.Key, out string key));
         }
 
         public virtual void RenameInDirectoryListing(string oldFullPath, string newFullPath)
@@ -109,7 +112,7 @@ namespace Grapevine
 
                 if (!Directory.Exists(path)) path = Directory.CreateDirectory(path).FullName;
                 _path = path;
-                DirectoryListing?.Clear();
+                DirectoryMapping?.Clear();
 
                 Watcher?.Dispose();
                 Watcher = new FileSystemWatcher
@@ -134,7 +137,7 @@ namespace Grapevine
             {
                 if (string.IsNullOrWhiteSpace(value) || _indexFileName.Equals(value, StringComparison.CurrentCultureIgnoreCase)) return;
                 _indexFileName = value;
-                DirectoryListing?.Clear();
+                DirectoryMapping?.Clear();
             }
         }
 
@@ -150,7 +153,7 @@ namespace Grapevine
                 if (_prefix.Equals(prefix, StringComparison.CurrentCultureIgnoreCase)) return;
 
                 _prefix = prefix;
-                DirectoryListing?.Clear();
+                DirectoryMapping?.Clear();
             }
         }
 
@@ -167,9 +170,9 @@ namespace Grapevine
         public async override Task SendFileAsync(IHttpContext context, string filename)
         {
             PopulateDirectoryListing();
-            if (DirectoryListing.ContainsKey(context.Request.Endpoint))
+            if (DirectoryMapping.ContainsKey(context.Request.Endpoint))
             {
-                var filepath = DirectoryListing[context.Request.Endpoint];
+                var filepath = DirectoryMapping[context.Request.Endpoint];
                 context.Response.StatusCode = HttpStatusCode.Ok;
 
                 var lastModified = File.GetLastWriteTimeUtc(filepath).ToString("R");
