@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NLog.Extensions.Logging;
+using Samples.Resources;
 
 namespace Samples
 {
@@ -23,6 +24,13 @@ namespace Samples
             {
                 loggingBuilder.ClearProviders();
                 loggingBuilder.AddNLog(_configuration);
+            });
+
+            services.AddHttpClient<GitHubClient>(c =>
+            {
+                c.BaseAddress = new Uri("https://api.github.com/");
+                c.DefaultRequestHeaders.Add("Accept", "application/vnd.github.v3+json");
+                c.DefaultRequestHeaders.Add("User-Agent", "Grapevine-Client");
             });
         }
 
