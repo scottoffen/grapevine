@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Grapevine.Client
 {
-    public class RestRequestBuilder : IRestRequestBuilder
+    public class RestRequestBuilder
     {
         private readonly HttpClient _client;
 
