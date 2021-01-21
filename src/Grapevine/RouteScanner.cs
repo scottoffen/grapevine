@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace Grapevine
@@ -180,7 +181,7 @@ namespace Grapevine
                         .FirstOrDefault().ServiceLifetime
                     : ServiceLifetime.Scoped;
 
-                Services.Add(new ServiceDescriptor(type, type, lifetime));
+                Services.TryAdd(new ServiceDescriptor(type, type, lifetime));
             }
 
             Logger.LogTrace($"Scan of type {type.Name} complete: {routes.Count} total routes found");
