@@ -31,10 +31,13 @@ namespace Samples.Resources
                         {"direction", "desc"},
                     };
 
-            await context.Response.SendResponseAsync(await _client.WithRoute($"/repos/{owner}/{repo}/issues")
-                .WithQueryParams(query)
-                .GetAsync()
-                .GetResponseStreamAsync()
+            await context.Response.SendResponseAsync
+            (
+                await _client
+                    .UsingRoute($"/repos/{owner}/{repo}/issues")
+                    .WithQueryParams(query)
+                    .GetAsync()
+                    .GetResponseStreamAsync()
             );
         }
     }
