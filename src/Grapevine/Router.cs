@@ -60,6 +60,8 @@ namespace Grapevine
         public Dictionary<HttpStatusCode, HandleErrorAsync> LocalErrorHandlers =
             new Dictionary<HttpStatusCode, HandleErrorAsync>();
 
+        public string Id { get; } = Guid.NewGuid().ToString();
+
         public RouterOptions Options { get; } = new RouterOptions();
 
         public abstract IList<IRoute> RoutingTable { get; }

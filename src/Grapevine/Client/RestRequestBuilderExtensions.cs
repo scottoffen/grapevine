@@ -9,7 +9,10 @@ using System.Threading.Tasks;
 
 namespace Grapevine.Client
 {
-    public static class RestRequestBuilderExtensions
+    /// <summary>
+    /// Extensions for chaining modifications to the HttpRequestMessage
+    /// </summary>
+    public static partial class RestRequestBuilderExtensions
     {
         public static RestRequestBuilder UsingRoute(this RestRequestBuilder builder, string route)
         {
@@ -103,7 +106,13 @@ namespace Grapevine.Client
             builder.QueryParams.Add(queryParams);
             return builder;
         }
+    }
 
+    /// <summary>
+    /// Extensions for sending the HttpRequestMessage via SendAsync
+    /// </summary>
+    public static partial class RestRequestBuilderExtensions
+    {
         public static async Task<HttpResponseMessage> DeleteAsync(this RestRequestBuilder builder)
         {
             return await builder.DeleteAsync(CancellationToken.None).ConfigureAwait(false);
@@ -122,6 +131,11 @@ namespace Grapevine.Client
         public static async Task<HttpResponseMessage> GetAsync(this RestRequestBuilder builder, CancellationToken token)
         {
             return await builder.SendAsync("Get", token).ConfigureAwait(false);
+        }
+
+        public static async Task<HttpResponseMessage> SendAsync(this RestRequestBuilder builder, HttpMethod method)
+        {
+            return await builder.SendAsync(method, CancellationToken.None);
         }
 
         public static async Task<HttpResponseMessage> PostAsync(this RestRequestBuilder builder)

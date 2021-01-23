@@ -18,6 +18,12 @@ namespace Grapevine
     public interface IRouter
     {
         /// <summary>
+        /// Gets a unique identifier for this IRouter object
+        /// </summary>
+        /// <value></value>
+        string Id { get; }
+
+        /// <summary>
         /// Gets the router options object used by this IRouter object
         /// </summary>
         /// <value></value>
@@ -57,7 +63,7 @@ namespace Grapevine
         void RouteAsync(object state);
     }
 
-    public static class IRouterExtensions
+    public static partial class IRouterExtensions
     {
         /// <summary>
         /// Adds all the routes specified to the routing table
@@ -73,6 +79,17 @@ namespace Grapevine
             }
 
             return router;
+        }
+    }
+
+    public static partial class IRouterExtensions
+    {
+        private static IDictionary<string, IServiceProvider> _providers = new Dictionary<string, IServiceProvider>();
+
+        public static IServiceProvider GetServiceProvider(this IRouter router)
+        {
+            if (!_providers.ContainsKey(router.Id)) _providers.Add(router.Id, router.Services.BuildServiceProvider());
+            return _providers[router.Id];
         }
     }
 }

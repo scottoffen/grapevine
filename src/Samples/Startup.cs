@@ -5,13 +5,15 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NLog.Extensions.Logging;
-using Samples.Resources;
+using Samples.Clients;
 
 namespace Samples
 {
     public class Startup
     {
         private IConfiguration _configuration;
+
+        private string _serverPort = PortFinder.FindNextLocalOpenPort(1234);
 
         public Startup(IConfiguration configuration)
         {
@@ -24,6 +26,11 @@ namespace Samples
             {
                 loggingBuilder.ClearProviders();
                 loggingBuilder.AddNLog(_configuration);
+            });
+
+            services.AddHttpClient<LocalClient>(c =>
+            {
+                c.BaseAddress = new Uri($"http://localhost:{_serverPort}/");
             });
 
             services.AddHttpClient<GitHubClient>(c =>
@@ -44,11 +51,9 @@ namespace Samples
             server.ContentFolders.Add(folderPath);
             server.UseContentFolders();
 
-            var port = PortFinder.FindNextLocalOpenPort(1234);
-            server.Prefixes.Add($"http://localhost:{port}/");
+            server.Prefixes.Add($"http://localhost:{_serverPort}/");
 
             /* Configure Router Options (if supported by your router implementation) */
-            server.Router.Options.ContentExpiresDuration = TimeSpan.FromSeconds(1);
             server.Router.Options.SendExceptionMessages = true;
         }
     }
