@@ -13,7 +13,7 @@ namespace Grapevine
         public GlobalResponseHeader(string name, string defaultValue, bool suppress = false)
         {
             Name = name;
-            Value = Value;
+            Value = defaultValue;
             Suppress = suppress;
         }
     }
