@@ -9,8 +9,17 @@ using System.Threading.Tasks;
 
 namespace Grapevine.Client
 {
-    public static class RestRequestBuilderExtensions
+    /// <summary>
+    /// Extensions for chaining modifications to the HttpRequestMessage
+    /// </summary>
+    public static partial class RestRequestBuilderExtensions
     {
+        public static RestRequestBuilder UsingRoute(this RestRequestBuilder builder, string route)
+        {
+            builder.Route = route;
+            return builder;
+        }
+
         public static RestRequestBuilder WithAuthentication(this RestRequestBuilder builder, string scheme, string token)
         {
             builder.Request.Headers.Authorization = new AuthenticationHeaderValue(scheme, token);
@@ -40,15 +49,27 @@ namespace Grapevine.Client
             return builder;
         }
 
+        public static RestRequestBuilder WithCookie(this RestRequestBuilder builder, string key, string value)
+        {
+            builder.Cookies[key] = value;
+            return builder;
+        }
+
+        public static RestRequestBuilder WithCookies(this RestRequestBuilder builder, IEnumerable<KeyValuePair<string, string>> cookies)
+        {
+            foreach (var cookie in cookies) builder.Cookies[cookie.Key] = cookie.Value;
+            return builder;
+        }
+
         public static RestRequestBuilder WithHeader(this RestRequestBuilder builder, string key, string value)
         {
-            builder.Request.Headers.Add(key, value);
+            builder.Headers[key] = value;
             return builder;
         }
 
         public static RestRequestBuilder WithHeaders(this RestRequestBuilder builder, IEnumerable<KeyValuePair<string, string>> headers)
         {
-            foreach (var header in headers) builder.Request.Headers.Add(header.Key, header.Value);
+            foreach (var header in headers) builder.Headers[header.Key] = header.Value;
             return builder;
         }
 
@@ -59,13 +80,12 @@ namespace Grapevine.Client
 
         public static RestRequestBuilder WithRequestTimeout(this RestRequestBuilder builder, int seconds)
         {
-            builder.Timeout = TimeSpan.FromSeconds(seconds);
-            return builder;
+            return builder.WithRequestTimeout(TimeSpan.FromSeconds(seconds));
         }
 
-        public static RestRequestBuilder WithRoute(this RestRequestBuilder builder, string route)
+        public static RestRequestBuilder WithRequestTimeout(this RestRequestBuilder builder, TimeSpan timeout)
         {
-            builder.Route = route;
+            builder.Timeout = timeout;
             return builder;
         }
 
@@ -83,10 +103,16 @@ namespace Grapevine.Client
 
         public static RestRequestBuilder WithQueryParams(this RestRequestBuilder builder, NameValueCollection queryParams)
         {
-            foreach (string name in queryParams.Keys) builder.QueryParams.Add(name, queryParams.GetValue<string>(name));
+            builder.QueryParams.Add(queryParams);
             return builder;
         }
+    }
 
+    /// <summary>
+    /// Extensions for sending the HttpRequestMessage via SendAsync
+    /// </summary>
+    public static partial class RestRequestBuilderExtensions
+    {
         public static async Task<HttpResponseMessage> DeleteAsync(this RestRequestBuilder builder)
         {
             return await builder.DeleteAsync(CancellationToken.None).ConfigureAwait(false);
@@ -107,15 +133,14 @@ namespace Grapevine.Client
             return await builder.SendAsync("Get", token).ConfigureAwait(false);
         }
 
-        public static async Task<HttpResponseMessage> PostAsync(this RestRequestBuilder builder)
+        public static async Task<HttpResponseMessage> SendAsync(this RestRequestBuilder builder, HttpMethod method)
         {
-            return await builder.SendAsync("Post", CancellationToken.None).ConfigureAwait(false);
+            return await builder.SendAsync(method, CancellationToken.None);
         }
 
-        public static async Task<HttpResponseMessage> PostAsync(this RestRequestBuilder builder, HttpContent content)
+        public static async Task<HttpResponseMessage> PostAsync(this RestRequestBuilder builder)
         {
-            builder.Content = content;
-            return await builder.SendAsync("Post", CancellationToken.None).ConfigureAwait(false);
+            return await builder.PostAsync(CancellationToken.None).ConfigureAwait(false);
         }
 
         public static async Task<HttpResponseMessage> PostAsync(this RestRequestBuilder builder, CancellationToken token)
@@ -123,31 +148,13 @@ namespace Grapevine.Client
             return await builder.SendAsync("Post", token).ConfigureAwait(false);
         }
 
-        public static async Task<HttpResponseMessage> PostAsync(this RestRequestBuilder builder, HttpContent content, CancellationToken token)
-        {
-            builder.Content = content;
-            return await builder.SendAsync("Post", token).ConfigureAwait(false);
-        }
-
         public static async Task<HttpResponseMessage> PutAsync(this RestRequestBuilder builder)
         {
-            return await builder.SendAsync("Put", CancellationToken.None).ConfigureAwait(false);
-        }
-
-        public static async Task<HttpResponseMessage> PutAsync(this RestRequestBuilder builder, HttpContent content)
-        {
-            builder.Content = content;
-            return await builder.SendAsync("Put", CancellationToken.None).ConfigureAwait(false);
+            return await builder.PutAsync(CancellationToken.None).ConfigureAwait(false);
         }
 
         public static async Task<HttpResponseMessage> PutAsync(this RestRequestBuilder builder, CancellationToken token)
         {
-            return await builder.SendAsync("Put", token).ConfigureAwait(false);
-        }
-
-        public static async Task<HttpResponseMessage> PutAsync(this RestRequestBuilder builder, HttpContent content, CancellationToken token)
-        {
-            builder.Content = content;
             return await builder.SendAsync("Put", token).ConfigureAwait(false);
         }
     }

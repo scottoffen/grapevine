@@ -1,10 +1,22 @@
-using System.Collections.Generic;
+using System;
 using System.Net.Http;
 
 namespace Grapevine.Client
 {
     public static class HttpClientExtensions
     {
+        public static HttpClient CallService(this HttpClient client, string baseAddress)
+        {
+            client.BaseAddress = new Uri(baseAddress);
+            return client;
+        }
+
+        public static HttpClient CallService(this HttpClient client, Uri baseAddress)
+        {
+            client.BaseAddress = baseAddress;
+            return client;
+        }
+
         /// <summary>
         /// Allows setting a route for the HTTP request and initiates the chaining of extensions
         /// </summary>
@@ -13,10 +25,7 @@ namespace Grapevine.Client
         /// <returns></returns>
         public static RestRequestBuilder UsingRoute(this HttpClient client, string route = "")
         {
-            return new RestRequestBuilder(client)
-            {
-                Route = route
-            };
+            return new RestRequestBuilder(client).UsingRoute(route);
         }
     }
 }

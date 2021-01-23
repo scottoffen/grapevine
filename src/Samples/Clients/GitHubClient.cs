@@ -1,11 +1,10 @@
-using System;
 using System.Collections.Specialized;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Grapevine;
 using Grapevine.Client;
 
-namespace Samples.Resources
+namespace Samples.Clients
 {
     [RestResource(BasePath = "github")]
     public class GitHubClient
@@ -21,7 +20,7 @@ namespace Samples.Resources
         public async Task GetIssues(IHttpContext context)
         {
             var owner = context.Request.PathParameters["owner"];
-            var repo  = context.Request.PathParameters["repo"];
+            var repo = context.Request.PathParameters["repo"];
             var query = (context.Request.QueryString.Count > 0)
                 ? context.Request.QueryString
                 : new NameValueCollection()

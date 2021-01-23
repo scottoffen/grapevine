@@ -28,10 +28,12 @@ namespace Grapevine
             Server = server;
             CancellationToken = token;
 
+            var encoding = context.Request.Headers.Get("Accept-Encoding") ?? string.Empty;
+
             Request = new HttpRequest(context.Request);
             Response = new HttpResponse(context.Response)
             {
-                IsCompressible = (bool)(context.Request.Headers["Accept-Encoding"]?.Contains("gzip")),
+                IsCompressible = (encoding.Contains("gzip")),
                 CompressIfBytesGreaterThan = server.Router.Options.CompressIfBytesGreaterThan,
                 ContentExpiresDuration = server.Router.Options.ContentExpiresDuration
             };

@@ -4,7 +4,9 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using Grapevine;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Samples.Clients;
 
 namespace Samples
 {
@@ -37,6 +39,7 @@ namespace Samples
                     OpenBrowser(s.Prefixes.First());
                 };
 
+                server.Router.GetServiceProvider().GetRequiredService<LocalClient>().RunInteractiveShell(server);
                 server.Run();
             }
         }
