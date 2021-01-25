@@ -255,7 +255,7 @@ namespace Grapevine
         /// <returns></returns>
         public static IEnumerable<T> GetAttributes<T>(MethodInfo method) where T : Attribute
         {
-            foreach(var attribute in method.GetCustomAttributes(true)
+            foreach (var attribute in method.GetCustomAttributes(true)
                 .Where(a => a is T)
                 .Cast<T>()) yield return attribute;
         }
