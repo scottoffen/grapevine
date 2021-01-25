@@ -24,6 +24,6 @@ namespace Grapevine
         /// Gets or sets the delegate that creates IHttpContext objects.
         /// </summary>
         /// <value></value>
-        public HttpContextFactory HttpContextFactory { get; set; }  = (state, server, token) => new HttpContext(state as HttpListenerContext, server, token);
+        public HttpContextFactory HttpContextFactory { get; set; } = (state, server, token) => new HttpContext(state as HttpListenerContext, server, token);
     }
 }

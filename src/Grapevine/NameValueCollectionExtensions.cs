@@ -52,7 +52,7 @@ namespace Grapevine
             var unparsed = collection.GetValue<string>(key, string.Empty);
 
             if (string.IsNullOrWhiteSpace(unparsed)) return new List<string>();
-            if (!unparsed.Contains(",")) return new List<string>(){ unparsed };
+            if (!unparsed.Contains(",")) return new List<string>() { unparsed };
 
             return QualityValues.Parse(unparsed);
         }

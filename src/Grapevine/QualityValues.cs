@@ -16,7 +16,7 @@ namespace Grapevine
         {
             var values = new List<string>();
 
-            foreach(var item in GroupByQualityFactor(header))
+            foreach (var item in GroupByQualityFactor(header))
                 values.AddRange(SortBySpecificity(item.Value));
 
             return values;
@@ -25,9 +25,9 @@ namespace Grapevine
         public static SortedDictionary<decimal, List<string>> GroupByQualityFactor(string value)
         {
             SortedDictionary<decimal, List<string>> factors = new SortedDictionary<decimal, List<string>>();
-            foreach(var entry in value.Split(','))
+            foreach (var entry in value.Split(','))
             {
-                var itemFactorPair = entry.Trim().Split(new string[]{";q="}, StringSplitOptions.None);
+                var itemFactorPair = entry.Trim().Split(new string[] { ";q=" }, StringSplitOptions.None);
                 var item = itemFactorPair[0];
                 var factor = (itemFactorPair.Length == 2)
                     ? Convert.ToDecimal(itemFactorPair[1])
@@ -51,7 +51,7 @@ namespace Grapevine
             foreach (var value in values)
             {
                 if (specificities[0].IsMatch(value)) totally.Add(value);
-                else if(specificities[1].IsMatch(value)) partial.Add(value);
+                else if (specificities[1].IsMatch(value)) partial.Add(value);
                 else nonspec.Add(value);
             }
 

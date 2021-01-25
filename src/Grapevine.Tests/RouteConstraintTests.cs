@@ -146,7 +146,7 @@ namespace Grapevine.Tests
                 var customKey = "custom";
                 RouteConstraints.AddResolver(customKey, customResolver);
 
-                var actual = RouteConstraints.Resolve(new List<string>(){ customKey });
+                var actual = RouteConstraints.Resolve(new List<string>() { customKey });
 
                 actual.ShouldBe(expectedResult);
             }
@@ -168,7 +168,7 @@ namespace Grapevine.Tests
                 };
 
                 var notguid = guidBase.Replace("-", "=");
-                var constraints = new List<string>(){ "guid" };
+                var constraints = new List<string>() { "guid" };
                 var pattern = new Regex($"^{RouteConstraints.Resolve(constraints)}$");
 
                 foreach (var guid in guids)
