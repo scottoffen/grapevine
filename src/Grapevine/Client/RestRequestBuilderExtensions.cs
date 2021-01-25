@@ -51,13 +51,13 @@ namespace Grapevine.Client
 
         public static RestRequestBuilder WithCookie(this RestRequestBuilder builder, string key, string value)
         {
-            builder.Cookies[key] = value;
+            builder.Cookies.Add(key, value);
             return builder;
         }
 
         public static RestRequestBuilder WithCookies(this RestRequestBuilder builder, IEnumerable<KeyValuePair<string, string>> cookies)
         {
-            foreach (var cookie in cookies) builder.Cookies[cookie.Key] = cookie.Value;
+            foreach (var cookie in cookies) builder.Cookies.Add(cookie.Key, cookie.Value);
             return builder;
         }
 
@@ -113,47 +113,22 @@ namespace Grapevine.Client
     /// </summary>
     public static partial class RestRequestBuilderExtensions
     {
-        public static async Task<HttpResponseMessage> DeleteAsync(this RestRequestBuilder builder)
-        {
-            return await builder.DeleteAsync(CancellationToken.None).ConfigureAwait(false);
-        }
-
-        public static async Task<HttpResponseMessage> DeleteAsync(this RestRequestBuilder builder, CancellationToken token)
+        public static async Task<HttpResponseMessage> DeleteAsync(this RestRequestBuilder builder, CancellationToken? token = null)
         {
             return await builder.SendAsync("Delete", token).ConfigureAwait(false);
         }
 
-        public static async Task<HttpResponseMessage> GetAsync(this RestRequestBuilder builder)
-        {
-            return await builder.GetAsync(CancellationToken.None).ConfigureAwait(false);
-        }
-
-        public static async Task<HttpResponseMessage> GetAsync(this RestRequestBuilder builder, CancellationToken token)
+        public static async Task<HttpResponseMessage> GetAsync(this RestRequestBuilder builder, CancellationToken? token = null)
         {
             return await builder.SendAsync("Get", token).ConfigureAwait(false);
         }
 
-        public static async Task<HttpResponseMessage> SendAsync(this RestRequestBuilder builder, HttpMethod method)
-        {
-            return await builder.SendAsync(method, CancellationToken.None);
-        }
-
-        public static async Task<HttpResponseMessage> PostAsync(this RestRequestBuilder builder)
-        {
-            return await builder.PostAsync(CancellationToken.None).ConfigureAwait(false);
-        }
-
-        public static async Task<HttpResponseMessage> PostAsync(this RestRequestBuilder builder, CancellationToken token)
+        public static async Task<HttpResponseMessage> PostAsync(this RestRequestBuilder builder, CancellationToken? token = null)
         {
             return await builder.SendAsync("Post", token).ConfigureAwait(false);
         }
 
-        public static async Task<HttpResponseMessage> PutAsync(this RestRequestBuilder builder)
-        {
-            return await builder.PutAsync(CancellationToken.None).ConfigureAwait(false);
-        }
-
-        public static async Task<HttpResponseMessage> PutAsync(this RestRequestBuilder builder, CancellationToken token)
+        public static async Task<HttpResponseMessage> PutAsync(this RestRequestBuilder builder, CancellationToken? token = null)
         {
             return await builder.SendAsync("Put", token).ConfigureAwait(false);
         }

@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Specialized;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Grapevine.Client
@@ -7,42 +7,34 @@ namespace Grapevine.Client
     /// <summary>
     /// Provides access the cookies for the request
     /// </summary>
-    public class Cookies : NameValueCollection
+    public class Cookies : Dictionary<string, string>
     {
         private static char[] _invalidNameChars = @"()<>@,;:\/[]?={}""".ToCharArray();
-
         private static char[] _invalidValueChars = @",;\""".ToCharArray();
 
-        public override void Add(string name, string value)
+        public new string this[string key]
         {
-            ValidateName(name);
-            ValidateValue(value);
-            base.Add(name, value);
-        }
-
-        public new void Add(NameValueCollection c)
-        {
-            c.AllKeys.ToList().ForEach(k =>
+            get { return base[key]; }
+            set
             {
-                ValidateName(k);
-                ValidateValue(c[k]);
-            });
-
-            base.Add(c);
+                ValidateName(key);
+                ValidateValue(value);
+                base[key] = value;
+            }
         }
 
-        public override void Set(string name, string value)
+        public new void Add(string key, string value)
         {
-            ValidateName(name);
-            ValidateValue(value);
-            base.Set(name, value);
+                ValidateName(key);
+                ValidateValue(value);
+                base.Add(key, value);
         }
 
         public override string ToString()
         {
             return Count <= 0
                 ? string.Empty
-                : string.Join("; ", (from key in AllKeys let value = Get(key) select Uri.EscapeDataString(key) + "=" + Uri.EscapeDataString(value)).ToArray());
+                : string.Join("; ", (from key in Keys let value = base[key] select $"{key}={Uri.EscapeUriString(value)}").ToArray());
         }
 
         private void ValidateName(string name)
