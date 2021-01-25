@@ -30,6 +30,8 @@ namespace Samples.Clients
                         {"direction", "desc"},
                     };
 
+            context.Response.ContentType = ContentType.Json;
+
             await context.Response.SendResponseAsync
             (
                 await _client

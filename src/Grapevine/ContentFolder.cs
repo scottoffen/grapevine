@@ -170,6 +170,7 @@ namespace Grapevine
         public async override Task SendFileAsync(IHttpContext context, string filename)
         {
             PopulateDirectoryListing();
+
             if (DirectoryMapping.ContainsKey(context.Request.Endpoint))
             {
                 var filepath = DirectoryMapping[context.Request.Endpoint];
@@ -182,7 +183,8 @@ namespace Grapevine
                 {
                     if (context.Request.Headers["If-Modified-Since"].Equals(lastModified))
                     {
-                        context.Response.StatusCode = HttpStatusCode.NotModified;
+                        await context.Response.SendResponseAsync(HttpStatusCode.NotModified).ConfigureAwait(false);
+                        return;
                     }
                 }
 

@@ -1,6 +1,4 @@
 using System;
-using System.IO;
-using System.IO.Compression;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
@@ -98,33 +96,23 @@ namespace Grapevine
         public HttpResponseBase(HttpListenerResponse response)
         {
             Advanced = response;
+            response.ContentEncoding = Encoding.UTF8;
         }
     }
 
     public class HttpResponse : HttpResponseBase, IHttpResponse
     {
-        public bool IsCompressible { get; protected internal set; }
+        public CompressionProvider CompressionProvider { get; set; }
 
-        public int CompressIfBytesGreaterThan { get; set; } = 1024;
-
-        public HttpResponse(HttpListenerResponse response) : base(response)
-        {
-            response.ContentEncoding = Encoding.ASCII;
-        }
+        public HttpResponse(HttpListenerResponse response) : base(response) { }
 
         public virtual async Task<byte[]> CompressContentsAsync(byte[] contents)
         {
-            if (!IsCompressible || contents.Length < CompressIfBytesGreaterThan) return contents;
+            if (ContentType != null && ((ContentType)ContentType).IsBinary) return contents;
+            if (contents.Length <= CompressionProvider.CompressIfContentLengthGreaterThan) return contents;
 
-            Headers["Content-Encoding"] = "gzip";
-
-            using (var ms = new MemoryStream())
-            using (var gzip = new GZipStream(ms, CompressionLevel.Fastest))
-            {
-                await gzip.WriteAsync(contents, 0, contents.Length);
-                gzip.Close();
-                return ms.ToArray();
-            }
+            Headers["Content-Encoding"] = CompressionProvider.ContentEncoding;
+            return await CompressionProvider.CompressAsync(contents);
         }
 
         public async override Task SendResponseAsync(byte[] contents)
@@ -134,9 +122,12 @@ namespace Grapevine
                 contents = await CompressContentsAsync(contents);
                 ContentLength64 = contents.Length;
 
-                // if (((ContentType)ContentType).IsBinary) SendChunked = true;
                 await Advanced.OutputStream.WriteAsync(contents, 0, (int)ContentLength64);
                 Advanced.OutputStream.Close();
+            }
+            catch (StatusCodeException sce)
+            {
+                StatusCode = sce.StatusCode;
             }
             catch
             {

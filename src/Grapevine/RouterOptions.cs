@@ -33,11 +33,5 @@ namespace Grapevine
         /// </summary>
         /// <value>TimeSpan.FromDays(1)</value>
         public TimeSpan ContentExpiresDuration { get; set; } = TimeSpan.FromDays(1);
-
-        /// <summary>
-        /// Gets or sets an integer to indicate the minimum number of bytes after which content will potentially be compressed before being returned to the client
-        /// </summary>
-        /// <value>1024</value>
-        public int CompressIfBytesGreaterThan { get; set; } = 1024;
     }
 }
