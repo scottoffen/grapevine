@@ -29,7 +29,7 @@ namespace Grapevine
 
         public static IDictionary<string, AsyncCompressionDelegate> CompressionDelegates { get; } = new Dictionary<string, AsyncCompressionDelegate>()
         {
-            {"gzip", CompressionProvider.GzipAsyncCompressionDelegate}
+            {"gzip", CompressionProvider.GzipAsyncCompressionDelegateFastest}
         };
 
         public static AsyncCompressionDelegate GetCompressionDelegate(IList<string> encodings, bool identityForbidden, out string contentEncoding)
@@ -49,10 +49,21 @@ namespace Grapevine
             return DefaultAsyncCompressionDelegate;
         }
 
-        public static async Task<byte[]> GzipAsyncCompressionDelegate(byte[] contents)
+        public static async Task<byte[]> GzipAsyncCompressionDelegateFastest(byte[] contents)
         {
             using (var ms = new MemoryStream())
             using (var gzip = new GZipStream(ms, CompressionLevel.Fastest))
+            {
+                await gzip.WriteAsync(contents, 0, contents.Length);
+                gzip.Close();
+                return ms.ToArray();
+            }
+        }
+
+        public static async Task<byte[]> GzipAsyncCompressionDelegateOptimal(byte[] contents)
+        {
+            using (var ms = new MemoryStream())
+            using (var gzip = new GZipStream(ms, CompressionLevel.Optimal))
             {
                 await gzip.WriteAsync(contents, 0, contents.Length);
                 gzip.Close();
