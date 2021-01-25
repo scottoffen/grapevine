@@ -37,7 +37,7 @@ namespace Grapevine.Client
             _client = client;
         }
 
-        public async Task<HttpResponseMessage> SendAsync(HttpMethod method, CancellationToken token)
+        public async Task<HttpResponseMessage> SendAsync(HttpMethod method, CancellationToken? token = null)
         {
             Request.Method = method;
 
@@ -53,7 +53,8 @@ namespace Grapevine.Client
                 ? new Uri($"{_client.BaseAddress.ToString().TrimEnd('/')}/{Route.TrimStart('/')}{QueryParams.ToString()}")
                 : new Uri($"{Route}{QueryParams.ToString()}");
 
-            return await _client.SendAsync(Request, HttpCompletionOption.ResponseContentRead, token).ConfigureAwait(false);
+            token = token ?? CancellationToken.None;
+            return await _client.SendAsync(Request, HttpCompletionOption.ResponseContentRead, token.Value).ConfigureAwait(false);
         }
     }
 }
