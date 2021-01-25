@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 
@@ -44,6 +45,16 @@ namespace Grapevine
             {
                 return defaultValue;
             }
+        }
+
+        public static IList<string> SortQualityValues(this NameValueCollection collection, string key)
+        {
+            var unparsed = collection.GetValue<string>(key, string.Empty);
+
+            if (string.IsNullOrWhiteSpace(unparsed)) return new List<string>();
+            if (!unparsed.Contains(",")) return new List<string>(){ unparsed };
+
+            return QualityValues.Parse(unparsed);
         }
     }
 }
