@@ -49,9 +49,9 @@ namespace Grapevine.Client
 
             if (Request.Content is MultipartContent) Request.Headers.ExpectContinue = false;
 
-            Request.RequestUri = (!string.IsNullOrWhiteSpace(_client.BaseAddress.ToString()))
-                ? new Uri($"{_client.BaseAddress.ToString().TrimEnd('/')}/{Route.TrimStart('/')}{QueryParams.ToString()}")
-                : new Uri($"{Route}{QueryParams.ToString()}");
+            Request.RequestUri = (!string.IsNullOrWhiteSpace(_client.BaseAddress?.ToString()))
+                ? new Uri($"{_client.BaseAddress.ToString().TrimEnd('/')}/{Route.TrimStart('/')}{QueryParams}")
+                : new Uri($"{Route}{QueryParams}");
 
             token = token ?? CancellationToken.None;
             return await _client.SendAsync(Request, HttpCompletionOption.ResponseContentRead, token.Value).ConfigureAwait(false);
