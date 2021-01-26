@@ -23,6 +23,8 @@ namespace Grapevine
 
         public NameValueCollection Headers => Advanced.Headers;
 
+        public string HostPrefix { get; }
+
         public HttpMethod HttpMethod => Advanced.HttpMethod;
 
         public Stream InputStream => Advanced.InputStream;
@@ -53,7 +55,8 @@ namespace Grapevine
         public HttpRequest(HttpListenerRequest request)
         {
             Advanced = request;
-            Endpoint = request.RawUrl.Split(new[] { '?' }, 2)[0].TrimEnd('/');
+            Endpoint = request.Url.AbsolutePath.TrimEnd('/');
+            HostPrefix = request.Url.GetComponents(UriComponents.SchemeAndServer, UriFormat.Unescaped);
         }
     }
 }

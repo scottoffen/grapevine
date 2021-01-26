@@ -40,6 +40,12 @@ namespace Grapevine
         NameValueCollection Headers { get; }
 
         /// <summary>
+        /// Gets the protocol, host and port the request was made to
+        /// </summary>
+        /// <value></value>
+        string HostPrefix { get; }
+
+        /// <summary>
         /// Gets the HTTPMethod specified by the client
         /// </summary>
         HttpMethod HttpMethod { get; }
