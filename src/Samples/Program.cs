@@ -12,8 +12,6 @@ namespace Samples
     {
         public static void Main(string[] args)
         {
-            Console.WriteLine(" Starting Sample Server ");
-            // using (var server = RestServerBuilder.UseDefaults().Build())
             using (var server = RestServerBuilder.From<Startup>().Build())
             {
                 server.AfterStarting += (s) =>
@@ -33,6 +31,8 @@ namespace Samples
                     sb.Append($"* Stop server by going to {server.Prefixes.First()}/api/stop{Environment.NewLine}");
                     sb.Append($"********************************************************************************{Environment.NewLine}");
                     s.Logger.LogDebug(sb.ToString());
+
+                    // new InteractiveShell().Run(server);
 
                     OpenBrowser(s.Prefixes.First());
                 };
