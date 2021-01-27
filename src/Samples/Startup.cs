@@ -28,11 +28,6 @@ namespace Samples
                 loggingBuilder.AddNLog(_configuration);
             });
 
-            services.AddHttpClient<LocalClient>(c =>
-            {
-                c.BaseAddress = new Uri($"http://localhost:{_serverPort}/");
-            });
-
             services.AddHttpClient<GitHubClient>(c =>
             {
                 c.BaseAddress = new Uri("https://api.github.com/");

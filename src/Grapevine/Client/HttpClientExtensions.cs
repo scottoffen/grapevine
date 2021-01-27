@@ -5,18 +5,6 @@ namespace Grapevine.Client
 {
     public static class HttpClientExtensions
     {
-        public static HttpClient CallService(this HttpClient client, string baseAddress)
-        {
-            client.BaseAddress = new Uri(baseAddress);
-            return client;
-        }
-
-        public static HttpClient CallService(this HttpClient client, Uri baseAddress)
-        {
-            client.BaseAddress = baseAddress;
-            return client;
-        }
-
         /// <summary>
         /// Allows setting a route for the HTTP request and initiates the chaining of extensions
         /// </summary>

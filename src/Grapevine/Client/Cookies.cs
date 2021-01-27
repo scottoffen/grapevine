@@ -15,20 +15,32 @@ namespace Grapevine.Client
         public new string this[string key]
         {
             get { return base[key]; }
-            set
-            {
-                ValidateName(key);
-                ValidateValue(value);
-                base[key] = value;
-            }
+            set { base[ValidateName(key)] = ValidateValue(value); }
         }
 
         public new void Add(string key, string value)
         {
-                ValidateName(key);
-                ValidateValue(value);
-                base.Add(key, value);
+            base.Add(ValidateName(key), ValidateValue(value));
         }
+
+        public void Add(string key, object value)
+        {
+            base.Add(ValidateName(key), ValidateValue(value.ToString()));
+        }
+
+#if !NETSTANDARD2_0
+
+        public new bool TryAdd(string key, string value)
+        {
+            return base.TryAdd(ValidateName(key), ValidateValue(value));
+        }
+
+        public bool TryAdd(string key, object value)
+        {
+            return base.TryAdd(ValidateName(key), ValidateValue(value.ToString()));
+        }
+
+#endif
 
         public override string ToString()
         {
@@ -37,16 +49,20 @@ namespace Grapevine.Client
                 : string.Join("; ", (from key in Keys let value = base[key] select $"{key}={Uri.EscapeUriString(value)}").ToArray());
         }
 
-        private void ValidateName(string name)
+        private string ValidateName(string name)
         {
             if (name.HasWhiteSpace() || name.Contains(_invalidNameChars))
                 throw new ArgumentOutOfRangeException($"Invalid cookie name {name}");
+
+            return name;
         }
 
-        private void ValidateValue(string value)
+        private string ValidateValue(string value)
         {
             if (value.HasWhiteSpace() || value.Contains(_invalidValueChars))
                 throw new ArgumentOutOfRangeException($"Invalid cookie value {value}");
+
+            return value;
         }
     }
 }
