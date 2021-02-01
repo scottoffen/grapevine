@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -118,10 +119,13 @@ namespace Grapevine
         /// <summary>
         /// Starts the server and blocks the calling thread until the server stops listening
         /// </summary>
-        public static void Run(this IRestServer server)
+        /// <param name="server"></param>
+        /// <param name="pollingInterval">Number of seconds to wait between polling IRestServer.IsListening</param>
+        public static void Run(this IRestServer server, int pollingInterval = 1)
         {
             server.Start();
-            while (server.IsListening) { }
+            var sleep = pollingInterval * 1000;
+            while (server.IsListening) { Thread.Sleep(sleep); }
         }
     }
 }

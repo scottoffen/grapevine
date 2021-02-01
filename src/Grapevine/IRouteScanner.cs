@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -12,6 +13,12 @@ namespace Grapevine
         /// </summary>
         /// <value></value>
         string BasePath { get; set; }
+
+        /// <summary>
+        /// List of assemblies to be ignored when scanning for routes
+        /// </summary>
+        /// <value></value>
+        IList<string> IgnoredAssemblies { get; }
 
         /// <summary>
         /// Register implementations for types scanned that contained route methods
@@ -77,6 +84,48 @@ namespace Grapevine
         public static IList<IRoute> Scan<T>(this IRouteScanner scanner, string basePath = null)
         {
             return scanner.Scan(typeof(T), basePath);
+        }
+
+        /// <summary>
+        /// Add an assembly to be ignored when scanning all assemblies for routes
+        /// </summary>
+        /// <param name="assembly"></param>
+        public static void AddIgnoredAssembly(this IRouteScanner scanner, Assembly assembly)
+        {
+            scanner.IgnoredAssemblies.Add(assembly.GetName().Name);
+        }
+
+        /// <summary>
+        /// Add a list of assemblies to be ignored when scanning all assemblies for routes
+        /// </summary>
+        /// <param name="assemblies"></param>
+        public static void AddIgnoredAssemblies(this IRouteScanner scanner, Assembly[] assemblies)
+        {
+            foreach (var assembly in assemblies) scanner.IgnoredAssemblies.Add(assembly.GetName().Name);
+        }
+
+        /// <summary>
+        /// Add an assembly to be ignored when scanning all assemblies for routes
+        /// </summary>
+        /// <param name="assemblyName"></param>
+        public static void AddIgnoredAssembly(this IRouteScanner scanner, string assemblyName)
+        {
+            scanner.IgnoredAssemblies.Add(assemblyName);
+        }
+
+        /// <summary>
+        /// Add a list of assemblies to be ignored when scanning all assemblies for routes
+        /// </summary>
+        /// <param name="assemblyNames"></param>
+        public static void AddIgnoredAssemblies(this IRouteScanner scanner, string[] assemblyNames)
+        {
+            foreach (var assemblyName in assemblyNames) scanner.IgnoredAssemblies.Add(assemblyName);
+        }
+
+        public static void IgnoreAssemblyContainingType<T>(this IRouteScanner scanner)
+        {
+            Assembly assembly = Assembly.GetAssembly(typeof(T));
+            scanner.IgnoredAssemblies.Add(assembly.GetName().Name);
         }
     }
 }

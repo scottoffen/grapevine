@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -38,7 +38,8 @@ namespace Samples
                 };
 
                 // server.Router.GetServiceProvider().GetRequiredService<LocalClient>().RunInteractiveShell(server);
-                server.Run();
+                server.Start();
+                Console.ReadLine();
             }
         }
 

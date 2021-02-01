@@ -11,13 +11,13 @@ namespace Samples
 {
     public class Startup
     {
-        private IConfiguration _configuration;
+        public IConfiguration Configuration { get; private set; }
 
         private string _serverPort = PortFinder.FindNextLocalOpenPort(1234);
 
         public Startup(IConfiguration configuration)
         {
-            _configuration = configuration;
+            Configuration = configuration;
         }
 
         public void ConfigureServices(IServiceCollection services)
@@ -25,7 +25,7 @@ namespace Samples
             services.AddLogging(loggingBuilder =>
             {
                 loggingBuilder.ClearProviders();
-                loggingBuilder.AddNLog(_configuration);
+                loggingBuilder.AddNLog(Configuration);
             });
 
             services.AddHttpClient<GitHubClient>(c =>

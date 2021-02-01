@@ -18,7 +18,7 @@ namespace Grapevine
         /// Returns an enumeration of assemblies not on the IgnoredAssemblies list
         /// </summary>
         /// <value></value>
-        public static IEnumerable<Assembly> Assemblies
+        public IEnumerable<Assembly> Assemblies
         {
             get
             {
@@ -35,7 +35,7 @@ namespace Grapevine
         /// List of assembly names to be ignored when scanning all assemblies
         /// </summary>
         /// <value></value>
-        public static readonly List<string> IgnoredAssemblies = new List<string>
+        public IList<string> IgnoredAssemblies { get; } = new List<string>
         {
             "vshost",
             "xunit",
@@ -45,42 +45,6 @@ namespace Grapevine
             "netstandard",
             "TestPlatform",
         };
-
-        /// <summary>
-        /// Add an assembly to be ignored when scanning all assemblies for routes
-        /// </summary>
-        /// <param name="assembly"></param>
-        public static void AddIgnoredAssembly(Assembly assembly)
-        {
-            AddIgnoredAssembly(assembly.GetName().Name);
-        }
-
-        /// <summary>
-        /// Add a list of assemblies to be ignored when scanning all assemblies for routes
-        /// </summary>
-        /// <param name="assemblies"></param>
-        public static void AddIgnoredAssemblies(Assembly[] assemblies)
-        {
-            IgnoredAssemblies.AddRange(assemblies.Select(a => a.GetName().Name));
-        }
-
-        /// <summary>
-        /// Add an assembly to be ignored when scanning all assemblies for routes
-        /// </summary>
-        /// <param name="assemblyName"></param>
-        public static void AddIgnoredAssembly(string assemblyName)
-        {
-            IgnoredAssemblies.Add(assemblyName);
-        }
-
-        /// <summary>
-        /// Add a list of assemblies to be ignored when scanning all assemblies for routes
-        /// </summary>
-        /// <param name="assemblyNames"></param>
-        public static void AddIgnoredAssemblies(string[] assemblyNames)
-        {
-            IgnoredAssemblies.AddRange(assemblyNames);
-        }
 
         public abstract IList<IRoute> Scan(string basePath = null);
         public abstract IList<IRoute> Scan(Assembly assembly, string basePath = null);
