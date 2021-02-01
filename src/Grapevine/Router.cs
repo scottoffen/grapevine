@@ -186,14 +186,18 @@ namespace Grapevine
             context.Services = ServiceProvider.CreateScope().ServiceProvider;
 
             // 2. Invoke before routing handlers
-            Logger.LogTrace($"{context.Id} : Invoking before routing handlers for {context.Request.Name}");
-            if (BeforeRoutingAsync != null) await BeforeRoutingAsync.Invoke(context);
-            Logger.LogTrace($"{context.Id} : Before routing handlers invoked for {context.Request.Name}");
+            if (!context.CancellationToken.IsCancellationRequested)
+            {
+                Logger.LogTrace($"{context.Id} : Invoking before routing handlers for {context.Request.Name}");
+                if (BeforeRoutingAsync != null) await BeforeRoutingAsync.Invoke(context);
+                Logger.LogTrace($"{context.Id} : Before routing handlers invoked for {context.Request.Name}");
+            }
 
             // 3. Iterate over the routes until a response is sent
             var count = 0;
             foreach (var route in routing)
             {
+                if (context.CancellationToken.IsCancellationRequested) break;
                 if (context.Response.StatusCode != HttpStatusCode.Ok) break;
                 if (context.WasRespondedTo && !Options.ContinueRoutingAfterResponseSent) break;
                 Logger.LogDebug($"{context.Id} : Executing {route.Name} for {context.Request.Name}");
@@ -203,9 +207,12 @@ namespace Grapevine
             Logger.LogDebug($"{context.Id} : {count} of {routing.Count()} routes invoked");
 
             // 4. Invoke after routing handlers
-            Logger.LogTrace($"{context.Id} : Invoking after routing handlers for {context.Request.Name}");
-            if (AfterRoutingAsync != null) await AfterRoutingAsync.Invoke(context);
-            Logger.LogTrace($"{context.Id} : After routing handlers invoked for {context.Request.Name}");
+            if (!context.CancellationToken.IsCancellationRequested)
+            {
+                Logger.LogTrace($"{context.Id} : Invoking after routing handlers for {context.Request.Name}");
+                if (AfterRoutingAsync != null) await AfterRoutingAsync.Invoke(context);
+                Logger.LogTrace($"{context.Id} : After routing handlers invoked for {context.Request.Name}");
+            }
 
             return count;
         }
