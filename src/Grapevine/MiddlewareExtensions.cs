@@ -1,12 +1,30 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Grapevine.Middleware;
 
 namespace Grapevine
 {
     public static class MiddlewareExtensions
     {
+        public static void Run(this IRestServer server)
+        {
+            ManualResetEvent manualResetEvent = new ManualResetEvent(true);
+
+            ServerEventHandler onStart = (s) => manualResetEvent.Reset();
+            ServerEventHandler onStop = (s) => manualResetEvent.Set();
+
+            server.AfterStarting += onStart;
+            server.AfterStopping += onStop;
+
+            server.Start();
+            manualResetEvent.WaitOne();
+
+            server.AfterStarting -= onStart;
+            server.AfterStopping -= onStop;
+        }
+
         public static IRestServer UseContentFolders(this IRestServer server)
         {
             server.OnRequestAsync += ContentFolders.SendFileIfExistsAsnyc;

@@ -37,9 +37,7 @@ namespace Samples
                     OpenBrowser(s.Prefixes.First());
                 };
 
-                // server.Router.GetServiceProvider().GetRequiredService<LocalClient>().RunInteractiveShell(server);
-                server.Start();
-                Console.ReadLine();
+                server.Run();
             }
         }
 
