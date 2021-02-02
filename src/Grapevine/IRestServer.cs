@@ -115,17 +115,5 @@ namespace Grapevine
         {
             foreach (var header in server.GlobalResponseHeaders.Where(g => !g.Suppress)) headers.Add(header.Name, header.Value);
         }
-
-        /// <summary>
-        /// Starts the server and blocks the calling thread until the server stops listening
-        /// </summary>
-        /// <param name="server"></param>
-        /// <param name="pollingInterval">Number of seconds to wait between polling IRestServer.IsListening</param>
-        public static void Run(this IRestServer server, int pollingInterval = 1)
-        {
-            server.Start();
-            var sleep = pollingInterval * 1000;
-            while (server.IsListening) { Thread.Sleep(sleep); }
-        }
     }
 }
