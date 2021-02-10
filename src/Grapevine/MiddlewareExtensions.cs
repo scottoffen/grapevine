@@ -29,16 +29,18 @@ namespace Grapevine
         {
             ManualResetEventSlim manualResetEvent = new ManualResetEventSlim(true);
 
-            ServerEventHandler onStart = (s) => manualResetEvent.Reset();
-            ServerEventHandler onStop = (s) => manualResetEvent.Set();
+            ServerEventHandler onStop = (s) =>
+            {
+                if (!token.IsCancellationRequested)
+                    CancellationTokenSource.CreateLinkedTokenSource(token).Cancel();
+            };
 
-            server.AfterStarting += onStart;
             server.AfterStopping += onStop;
 
             server.Start();
             manualResetEvent.Wait(token);
+            server.Stop();
 
-            server.AfterStarting -= onStart;
             server.AfterStopping -= onStop;
         }
 
