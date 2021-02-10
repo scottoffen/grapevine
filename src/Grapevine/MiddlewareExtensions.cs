@@ -25,6 +25,23 @@ namespace Grapevine
             server.AfterStopping -= onStop;
         }
 
+        public static void Run(this IRestServer server, CancellationToken token)
+        {
+            ManualResetEventSlim manualResetEvent = new ManualResetEventSlim(true);
+
+            ServerEventHandler onStart = (s) => manualResetEvent.Reset();
+            ServerEventHandler onStop = (s) => manualResetEvent.Set();
+
+            server.AfterStarting += onStart;
+            server.AfterStopping += onStop;
+
+            server.Start();
+            manualResetEvent.Wait(token);
+
+            server.AfterStarting -= onStart;
+            server.AfterStopping -= onStop;
+        }
+
         public static IRestServer UseContentFolders(this IRestServer server)
         {
             server.OnRequestAsync += ContentFolders.SendFileIfExistsAsnyc;
