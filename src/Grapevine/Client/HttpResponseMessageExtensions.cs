@@ -9,7 +9,7 @@ namespace Grapevine.Client
     {
         public static async Task<string> GetResponseStringAsync(this HttpResponseMessage responseMessage)
         {
-            return (responseMessage.IsSuccessStatusCode)
+            return (responseMessage.Content != null)
                 ? await responseMessage.Content.ReadAsStringAsync().ConfigureAwait(false)
                 : responseMessage.StatusCode.ToString();
         }
@@ -22,7 +22,7 @@ namespace Grapevine.Client
 
         public static async Task<Stream> GetResponseStreamAsync(this HttpResponseMessage responseMessage)
         {
-            return (responseMessage.IsSuccessStatusCode)
+            return (responseMessage.Content != null)
                 ? await responseMessage.Content.ReadAsStreamAsync().ConfigureAwait(false)
                 : new MemoryStream(Encoding.UTF8.GetBytes(responseMessage.StatusCode.ToString()));
         }
@@ -35,7 +35,7 @@ namespace Grapevine.Client
 
         public static async Task<byte[]> GetResponseBytesAsync(this HttpResponseMessage responseMessage)
         {
-            return (responseMessage.IsSuccessStatusCode)
+            return (responseMessage.Content != null)
                 ? await responseMessage.Content.ReadAsByteArrayAsync().ConfigureAwait(false)
                 : Encoding.UTF8.GetBytes(responseMessage.StatusCode.ToString());
         }
