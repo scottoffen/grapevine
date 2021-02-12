@@ -11,9 +11,12 @@ namespace Samples.Resources
 
         private readonly ILogger<HelloResource> _logger;
 
-        public HelloResource(ILogger<HelloResource> logger)
+        private readonly IRestServer _server;
+
+        public HelloResource(ILogger<HelloResource> logger, IRestServer server)
         {
             _logger = logger;
+            _server = server;
             Count++;
         }
 
@@ -29,7 +32,7 @@ namespace Samples.Resources
         {
             _logger.LogTrace($"{context.Request.Name} : Stopping Server");
             await context.Response.SendResponseAsync("Stopping Server");
-            context.Server.Stop();
+            _server.Stop();
         }
 
         [RestRoute(Name = "Default Route", Description = "The default route is diabled by default", Enabled = false)]

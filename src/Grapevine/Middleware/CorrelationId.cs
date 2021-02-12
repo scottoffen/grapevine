@@ -19,7 +19,7 @@ namespace Grapevine.Middleware
             CorrelationIdFactory = factory ?? DefaultCorrelationIdFactory;
         }
 
-        public async Task EnsureCorrelationIdAsync(IHttpContext context)
+        public async Task EnsureCorrelationIdAsync(IHttpContext context, IRestServer server)
         {
             string value = context.Request.Headers[CorrelationIdFieldName] ?? CorrelationIdFactory();
             context.Response.AddHeader(CorrelationIdFieldName, value);

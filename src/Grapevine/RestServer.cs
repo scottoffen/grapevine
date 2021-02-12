@@ -16,9 +16,12 @@ namespace Grapevine
 
         public ILogger<IRestServer> Logger { get; protected set; }
 
-        public ServerOptions Options { get; } = new ServerOptions();
+        public ServerOptions Options { get; } = new ServerOptions
+        {
+            HttpContextFactory = (state, token) => new HttpContext(state as HttpListenerContext, token)
+        };
 
-        public virtual HttpListenerPrefixCollection Prefixes { get; }
+        public virtual IListenerPrefixCollection Prefixes { get; }
 
         public IRouter Router { get; set; }
 
@@ -76,7 +79,7 @@ namespace Grapevine
         /// <value></value>
         public HttpListener Listener { get; protected internal set; }
 
-        public override HttpListenerPrefixCollection Prefixes => Listener?.Prefixes;
+        public override IListenerPrefixCollection Prefixes { get; }
 
         public override event ServerEventHandler AfterStarting;
         public override event ServerEventHandler AfterStopping;
@@ -93,9 +96,13 @@ namespace Grapevine
             RouteScanner = scanner ?? new RouteScanner(DefaultLogger.GetInstance<IRouteScanner>());
             Logger = logger ?? DefaultLogger.GetInstance<IRestServer>();
 
+            if (Router is RouterBase)
+                (Router as RouterBase).HandleHttpListenerExceptions();
+
             RouteScanner.Services = Router.Services;
 
             Listener = new HttpListener();
+            Prefixes = new ListenerPrefixCollection(Listener.Prefixes);
             RequestHandler = new Thread(RequestListenerAsync);
         }
 
@@ -242,14 +249,17 @@ namespace Grapevine
         protected async void RequestHandlerAsync(object state)
         {
             // 1. Create context
-            var context = Options.HttpContextFactory(state, this, TokenSource.Token);
+            var context = Options.HttpContextFactory(state, TokenSource.Token);
             Logger.LogTrace($"{context.Id} : Request Received {context.Request.Name}");
 
-            // 2. Execute OnRequest event handlers
+            // 2. Apply global response headers
+            this.ApplyGlobalResponseHeaders(context.Response.Headers);
+
+            // 3. Execute OnRequest event handlers
             try
             {
                 Logger.LogTrace($"{context.Id} : Invoking OnRequest Handlers for {context.Request.Name}");
-                if (OnRequestAsync != null) await OnRequestAsync.Invoke(context);
+                if (OnRequestAsync != null) await OnRequestAsync.Invoke(context, this);
                 Logger.LogTrace($"{context.Id} : OnRequest Handlers Invoked for {context.Request.Name}");
             }
             catch (System.Net.HttpListenerException hl) when (hl.ErrorCode == 1229)
@@ -261,7 +271,7 @@ namespace Grapevine
                 Logger.LogError(e, $"{context.Id} An exception occured while routing request {context.Request.Name}");
             }
 
-            // 3. Optionally route request
+            // 4. Optionally route request
             if (!context.WasRespondedTo)
             {
                 Logger.LogTrace($"{context.Id} : Routing request {context.Request.Name}");

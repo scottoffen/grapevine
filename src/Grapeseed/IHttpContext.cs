@@ -25,11 +25,6 @@ namespace Grapevine
         IHttpResponse Response { get; }
 
         /// <summary>
-        /// Gets the IRestServer object the client request was sent to
-        /// </summary>
-        IRestServer Server { get; }
-
-        /// <summary>
         /// Gets or sets the IServiceProvider object for dependency injection
         /// </summary>
         IServiceProvider Services { get; set; }

@@ -336,7 +336,7 @@ namespace Grapevine
 
         #endregion
 
-        private static Dictionary<int, HttpStatusCode> _statusCodes = new Dictionary<int, HttpStatusCode>();
+        private static readonly Dictionary<int, HttpStatusCode> _statusCodes = new Dictionary<int, HttpStatusCode>();
 
         static HttpStatusCode()
         {
@@ -350,9 +350,9 @@ namespace Grapevine
             foreach (var code in codes) _statusCodes.Add(code, code);
         }
 
-        private int _value;
+        private readonly int _value;
 
-        private string _message;
+        private readonly string _message;
 
         public HttpStatusCode(int value) : this(value, string.Empty) { }
 
