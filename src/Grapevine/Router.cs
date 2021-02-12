@@ -60,13 +60,15 @@ namespace Grapevine
         public Dictionary<HttpStatusCode, HandleErrorAsync> LocalErrorHandlers =
             new Dictionary<HttpStatusCode, HandleErrorAsync>();
 
-        public string Id { get; } = Guid.NewGuid().ToString();
+        public virtual string Id { get; } = Guid.NewGuid().ToString();
 
         public RouterOptions Options { get; } = new RouterOptions();
 
         public abstract IList<IRoute> RoutingTable { get; }
 
         public IServiceCollection Services { get; set; }
+
+        public IServiceProvider ServiceProvider { get; set; }
 
         public abstract event RoutingAsyncEventHandler AfterRoutingAsync;
         public abstract event RoutingAsyncEventHandler BeforeRoutingAsync;
@@ -121,12 +123,6 @@ namespace Grapevine
         protected internal readonly IList<IRoute> RegisteredRoutes = new List<IRoute>();
 
         public override IList<IRoute> RoutingTable => RegisteredRoutes.ToList().AsReadOnly();
-
-        /// <summary>
-        /// The mechanism for retrieving a service object; that is, an object that provides custom support to other objects
-        /// </summary>
-        /// <value></value>
-        protected internal IServiceProvider ServiceProvider { get; set; } = null;
 
         public override event RoutingAsyncEventHandler AfterRoutingAsync;
         public override event RoutingAsyncEventHandler BeforeRoutingAsync;

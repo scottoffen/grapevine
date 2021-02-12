@@ -40,6 +40,12 @@ namespace Grapevine
         IServiceCollection Services { get; set; }
 
         /// <summary>
+        /// The mechanism for retrieving a service object; that is, an object that provides custom support to other objects
+        /// </summary>
+        /// <value></value>
+        IServiceProvider ServiceProvider { get; set; }
+
+        /// <summary>
         /// Raised after a request has completed invoking matching routes
         /// </summary>
         event RoutingAsyncEventHandler AfterRoutingAsync;
