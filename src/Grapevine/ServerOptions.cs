@@ -1,4 +1,3 @@
-using System.Net;
 using System.Threading;
 
 namespace Grapevine
@@ -10,7 +9,7 @@ namespace Grapevine
     /// <param name="server"></param>
     /// <param name="token"></param>
     /// <returns></returns>
-    public delegate IHttpContext HttpContextFactory(object state, IRestServer server, CancellationToken token);
+    public delegate IHttpContext HttpContextFactory(object state, CancellationToken token);
 
     public class ServerOptions
     {
@@ -24,6 +23,6 @@ namespace Grapevine
         /// Gets or sets the delegate that creates IHttpContext objects.
         /// </summary>
         /// <value></value>
-        public HttpContextFactory HttpContextFactory { get; set; } = (state, server, token) => new HttpContext(state as HttpListenerContext, server, token);
+        public HttpContextFactory HttpContextFactory { get; set; }
     }
 }

@@ -1,17 +1,17 @@
 using System;
 using System.Linq;
 
-namespace Grapevine
+namespace Grapevine.Internals
 {
     public static class InternalExtensions
     {
-        internal static string SanitizePath(this string path)
+        public static string SanitizePath(this string path)
         {
             var basepath = path?.Trim().TrimEnd('/').TrimStart('/').Trim() ?? string.Empty;
             return string.IsNullOrWhiteSpace(basepath) ? basepath : $"/{basepath}";
         }
 
-        internal static bool StartsWith(this string value, string[] values)
+        public static bool StartsWith(this string value, string[] values)
         {
             foreach (var x in values)
             {
@@ -21,12 +21,12 @@ namespace Grapevine
             return false;
         }
 
-        internal static bool IsEven(this int value)
+        public static bool IsEven(this int value)
         {
             return ((value % 2) == 0);
         }
 
-        internal static bool HasWhiteSpace(this string s)
+        public static bool HasWhiteSpace(this string s)
         {
             if (s == null) throw new ArgumentNullException("s");
 
@@ -38,7 +38,7 @@ namespace Grapevine
             return false;
         }
 
-        internal static bool Contains(this string s, char[] chars)
+        public static bool Contains(this string s, char[] chars)
         {
             foreach (var c in chars)
             {

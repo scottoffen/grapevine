@@ -46,9 +46,9 @@ namespace Grapevine
 
         #region Static Initialization
 
-        private static Dictionary<string, ContentType> _contentTypes = new Dictionary<string, ContentType>();
+        private static readonly Dictionary<string, ContentType> _contentTypes = new Dictionary<string, ContentType>();
 
-        private static Dictionary<string, ContentType> _extensions = new Dictionary<string, ContentType>();
+        private static readonly Dictionary<string, ContentType> _extensions = new Dictionary<string, ContentType>();
 
         static ContentType()
         {
@@ -184,9 +184,9 @@ namespace Grapevine
         public const int MAX_BOUNDARY_LENGTH = 70;
         public const int MIN_BOUNDARY_LENGTH = 30;
 
-        private static char[] _multipartChars = "-_1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".ToCharArray();
+        private static readonly char[] _multipartChars = "-_1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".ToCharArray();
 
-        private static Random _random = new Random();
+        private static readonly Random _random = new Random();
 
         public static string Generate(string firstPart = "----=NextPart_")
         {

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -145,6 +144,8 @@ namespace Grapevine
 
             try
             {
+                context.Response.ContentExpiresDuration = Options.ContentExpiresDuration;
+
                 Logger.LogDebug($"{context.Id} : Routing {context.Request.Name}");
 
                 var routesExecuted = await RouteAsync(context);
@@ -154,10 +155,6 @@ namespace Grapevine
                         context.Response.StatusCode = HttpStatusCode.NotImplemented;
                     await HandleErrorAsync(context);
                 }
-            }
-            catch (HttpListenerException hl) when (hl.ErrorCode == 1229)
-            {
-                Logger.LogDebug("The remote connection was closed before a response could be sent.");
             }
             catch (Exception e)
             {

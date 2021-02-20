@@ -18,14 +18,11 @@ namespace Grapevine
 
         public IHttpResponse Response { get; }
 
-        public IRestServer Server { get; }
-
         public IServiceProvider Services { get; set; }
 
-        internal HttpContext(HttpListenerContext context, IRestServer server, CancellationToken token)
+        internal HttpContext(HttpListenerContext context, CancellationToken token)
         {
             Advanced = context;
-            Server = server;
             CancellationToken = token;
 
             // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Encoding
@@ -36,10 +33,7 @@ namespace Grapevine
             Response = new HttpResponse(context.Response)
             {
                 CompressionProvider = new CompressionProvider(QualityValues.Parse(acceptEncoding), identityForbidden),
-                ContentExpiresDuration = server.Router.Options.ContentExpiresDuration
             };
-
-            server.ApplyGlobalResponseHeaders(Response.Headers);
         }
     }
 }

@@ -5,12 +5,12 @@ namespace Grapevine.Middleware
 {
     public static class ContentFolders
     {
-        public async static Task SendFileIfExistsAsnyc(IHttpContext context)
+        public async static Task SendFileIfExistsAsnyc(IHttpContext context, IRestServer server)
         {
             // If a matching file is found, the request will be responded to.
             if (context.Request.HttpMethod == HttpMethod.Get)
             {
-                foreach (var folder in context.Server.ContentFolders)
+                foreach (var folder in server.ContentFolders)
                 {
                     await folder.SendFileAsync(context);
 

@@ -102,7 +102,7 @@ namespace Grapevine
 
         public override string FolderPath
         {
-            get { return _path; }
+            get => _path;
             set
             {
                 if (string.IsNullOrWhiteSpace(value)) return;

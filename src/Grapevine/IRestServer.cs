@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -18,7 +17,7 @@ namespace Grapevine
     /// Delegate for the <see cref="IRestServer.OnRequestAsync"/> and <see cref="IRestServer.OnResponse"/> events
     /// </summary>
     /// <param name="context"></param>
-    public delegate Task RequestReceivedAsyncEventHandler(IHttpContext context);
+    public delegate Task RequestReceivedAsyncEventHandler(IHttpContext context, IRestServer server);
 
     public interface IRestServer : ILocals, IDisposable
     {
@@ -55,7 +54,7 @@ namespace Grapevine
         /// Gets the Uniform Resource Identifier (URI) prefixes handled by this IRestServer object.
         /// </summary>
         /// <value></value>
-        HttpListenerPrefixCollection Prefixes { get; }
+        IListenerPrefixCollection Prefixes { get; }
 
         /// <summary>
         /// Gets or sets the IRouter object to be used by this IRestServer to route incoming HTTP requests.
@@ -114,6 +113,12 @@ namespace Grapevine
         public static void ApplyGlobalResponseHeaders(this IRestServer server, WebHeaderCollection headers)
         {
             foreach (var header in server.GlobalResponseHeaders.Where(g => !g.Suppress)) headers.Add(header.Name, header.Value);
+        }
+
+        public static IRestServer SetDefaultLogger(this IRestServer server, ILoggerFactory factory)
+        {
+            DefaultLogger.LoggerFactory = factory;
+            return server;
         }
     }
 }

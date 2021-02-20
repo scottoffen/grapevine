@@ -8,7 +8,7 @@ namespace Grapevine
     {
         public static HttpMethod Any = new HttpMethod("Any");
 
-        private static Dictionary<string, HttpMethod> _httpMethods = new Dictionary<string, HttpMethod>();
+        private static readonly Dictionary<string, HttpMethod> _httpMethods = new Dictionary<string, HttpMethod>();
 
         static HttpMethod()
         {

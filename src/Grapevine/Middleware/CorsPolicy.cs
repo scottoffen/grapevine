@@ -7,12 +7,12 @@ namespace Grapevine.Middleware
 {
     public interface ICorsPolicy
     {
-        Task ApplyAsync(IHttpContext context);
+        Task ApplyAsync(IHttpContext context, IRestServer server);
     }
 
     public class CorsPolicy : ICorsPolicy
     {
-        public static async Task CorsWildcardAsync(IHttpContext context)
+        public static async Task CorsWildcardAsync(IHttpContext context, IRestServer server)
         {
             context.Response.AddHeader("Access-Control-Allow-Origin", "*");
             context.Response.AddHeader("Access-Control-Allow-Headers", "X-Requested-With");
@@ -31,7 +31,7 @@ namespace Grapevine.Middleware
             _allowedOrigins = allowOrigins.Cast<string>();
         }
 
-        public async Task ApplyAsync(IHttpContext context)
+        public async Task ApplyAsync(IHttpContext context, IRestServer server)
         {
             if (_allowedOrigins.Count<string>() == 1)
             {
