@@ -23,8 +23,8 @@ namespace Grapevine.Middleware
         {
             string value = context.Request.Headers[CorrelationIdFieldName] ?? CorrelationIdFactory();
             context.Response.AddHeader(CorrelationIdFieldName, value);
-            context.Set("CorrelationIdFieldName", CorrelationIdFieldName);
-            context.Set(CorrelationIdFieldName, value);
+            context.Locals.TryAdd("CorrelationIdFieldName", CorrelationIdFieldName);
+            context.Locals.TryAdd(CorrelationIdFieldName, value);
             await Task.CompletedTask;
         }
     }

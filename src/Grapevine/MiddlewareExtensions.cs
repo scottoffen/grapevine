@@ -101,9 +101,9 @@ namespace Grapevine
 
         public static string GetCorrelationId(this IHttpContext context)
         {
-            var fieldName = context.Get("CorrelationIdFieldName").ToString();
+            var fieldName = context.Locals.Get("CorrelationIdFieldName").ToString();
             return (fieldName != null)
-                ? context.Get(fieldName).ToString()
+                ? context.Locals.Get(fieldName).ToString()
                 : null;
         }
     }

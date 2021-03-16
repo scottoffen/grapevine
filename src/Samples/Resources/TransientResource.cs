@@ -20,8 +20,8 @@ namespace Samples.Resources
         [RestRoute("Get", "{key:maxlength(20)}/{value}")]
         public async Task TransientCallA(IHttpContext context)
         {
-            if (!context.Contains("PathParameters")) context.Set("PathParameters", new StringBuilder());
-            var sb = context.GetAs<StringBuilder>("PathParameters");
+            if (!context.Locals.ContainsKey("PathParameters")) context.Locals.TryAdd("PathParameters", new StringBuilder());
+            var sb = context.Locals.GetAs<StringBuilder>("PathParameters");
 
             sb.Append($"A{Counter}: Count: {context.Request.PathParameters.Count}{Environment.NewLine}");
             sb.Append($"\tkey: {context.Request.PathParameters["key"]}{Environment.NewLine}");
@@ -33,8 +33,8 @@ namespace Samples.Resources
         [RestRoute("Get", @"^/([a-zA-Z]+)/(\d{1,})")]
         public async Task TransientCallB(IHttpContext context)
         {
-            if (!context.Contains("PathParameters")) context.Set("PathParameters", new StringBuilder());
-            var sb = context.GetAs<StringBuilder>("PathParameters");
+            if (!context.Locals.ContainsKey("PathParameters")) context.Locals.TryAdd("PathParameters", new StringBuilder());
+            var sb = context.Locals.GetAs<StringBuilder>("PathParameters");
 
             sb.Append($"B{Counter}: Count: {context.Request.PathParameters.Count}{Environment.NewLine}");
             sb.Append($"\tp0: {context.Request.PathParameters["p0"]}{Environment.NewLine}");
@@ -46,8 +46,8 @@ namespace Samples.Resources
         [RestRoute("Get", "{thing1}/{thing2:num}")]
         public async Task TransientCallC(IHttpContext context)
         {
-            if (!context.Contains("PathParameters")) context.Set("PathParameters", new StringBuilder());
-            var sb = context.GetAs<StringBuilder>("PathParameters");
+            if (!context.Locals.ContainsKey("PathParameters")) context.Locals.TryAdd("PathParameters", new StringBuilder());
+            var sb = context.Locals.GetAs<StringBuilder>("PathParameters");
 
             sb.Append($"C{Counter}: Count: {context.Request.PathParameters.Count}{Environment.NewLine}");
             sb.Append($"\tthing1: {context.Request.PathParameters["thing1"]}{Environment.NewLine}");

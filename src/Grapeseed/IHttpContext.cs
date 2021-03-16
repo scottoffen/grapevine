@@ -3,11 +3,17 @@ using System.Threading;
 
 namespace Grapevine
 {
-    public interface IHttpContext : ILocals
+    public interface IHttpContext
     {
         CancellationToken CancellationToken { get; }
 
         string Id { get; }
+
+        /// <summary>
+        /// Gets or sets a key/value collection that can be used to share data within the scope of this request
+        /// </summary>
+        /// <value></value>
+        Locals Locals { get; set; }
 
         /// <summary>
         /// Returns a value that indicate whether or not the client request has been responded to

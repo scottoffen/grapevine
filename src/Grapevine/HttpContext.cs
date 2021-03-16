@@ -4,13 +4,15 @@ using System.Threading;
 
 namespace Grapevine
 {
-    public class HttpContext : Locals, IHttpContext
+    public class HttpContext : IHttpContext
     {
         public HttpListenerContext Advanced { get; }
 
         public CancellationToken CancellationToken { get; }
 
         public string Id { get; } = Guid.NewGuid().ToString();
+
+        public Locals Locals { get; set; } = new Locals();
 
         public bool WasRespondedTo => Response.ResponseSent;
 
