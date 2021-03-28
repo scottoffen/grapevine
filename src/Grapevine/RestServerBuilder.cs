@@ -63,6 +63,11 @@ namespace Grapevine
             var assembly = GetType().Assembly.GetName();
             server.GlobalResponseHeaders.Add("Server", $"{assembly.Name}/{assembly.Version} ({RuntimeInformation.OSDescription})");
 
+            // Override with instances
+            Services.AddSingleton<IRestServer>(server);
+            Services.AddSingleton<IRouter>(server.Router);
+            Services.AddSingleton<IRouteScanner>(server.RouteScanner);
+
             ConfigureServer?.Invoke(server);
 
             return server;

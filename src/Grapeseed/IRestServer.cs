@@ -19,7 +19,7 @@ namespace Grapevine
     /// <param name="context"></param>
     public delegate Task RequestReceivedAsyncEventHandler(IHttpContext context, IRestServer server);
 
-    public interface IRestServer : ILocals, IDisposable
+    public interface IRestServer : IDisposable
     {
         /// <summary>
         /// Gets the list of all ContentFolder objects used for serving static content.
@@ -37,6 +37,12 @@ namespace Grapevine
         /// Gets a value that indicates whether the server is currently listening.
         /// </summary>
         bool IsListening { get; }
+
+        /// <summary>
+        /// Gets or sets a key/value collection that can be used to share data within the scope of this server
+        /// </summary>
+        /// <value></value>
+        Locals Locals { get; set; }
 
         /// <summary>
         /// Gets the logger for this IRestServer object.

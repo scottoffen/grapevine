@@ -6,13 +6,15 @@ using Microsoft.Extensions.Logging;
 
 namespace Grapevine
 {
-    public abstract class RestServerBase : Locals, IRestServer
+    public abstract class RestServerBase : IRestServer
     {
         public IList<IContentFolder> ContentFolders { get; } = new List<IContentFolder>();
 
         public IList<GlobalResponseHeader> GlobalResponseHeaders { get; set; } = new List<GlobalResponseHeader>();
 
         public virtual bool IsListening { get; }
+
+        public Locals Locals { get; set; } = new Locals();
 
         public ILogger<IRestServer> Logger { get; protected set; }
 
