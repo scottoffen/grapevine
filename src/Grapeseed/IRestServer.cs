@@ -31,7 +31,7 @@ namespace Grapevine
         /// Gets or sets a list of header keys and values that should be applied to all outbound responses.
         /// </summary>
         /// <value></value>
-        IList<GlobalResponseHeader> GlobalResponseHeaders { get; set; }
+        IList<GlobalResponseHeaders> GlobalResponseHeaders { get; set; }
 
         /// <summary>
         /// Gets a value that indicates whether the server is currently listening.

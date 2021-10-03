@@ -10,7 +10,7 @@ namespace Grapevine
     {
         public IList<IContentFolder> ContentFolders { get; } = new List<IContentFolder>();
 
-        public IList<GlobalResponseHeader> GlobalResponseHeaders { get; set; } = new List<GlobalResponseHeader>();
+        public IList<GlobalResponseHeaders> GlobalResponseHeaders { get; set; } = new List<GlobalResponseHeaders>();
 
         public virtual bool IsListening { get; }
 

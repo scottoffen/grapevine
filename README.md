@@ -10,12 +10,12 @@ Grapevine is available on [NuGet.org](https://www.nuget.org/packages/Grapevine/)
 
 Powershell:
 ```powershell
-Install-Package Grapevine -Version 5.0.0-rc.5
+Install-Package Grapevine -Version 5.0.0-rc.8
 ```
 
 .NET CLI
 ```cmd
-> dotnet add package Grapevine --version 5.0.0-rc.5
+> dotnet add package Grapevine --version 5.0.0-rc.8
 ```
 
 ## Usage
