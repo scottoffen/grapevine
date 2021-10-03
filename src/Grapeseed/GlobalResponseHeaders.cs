@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Grapevine
 {
-    public class GlobalResponseHeader
+    public class GlobalResponseHeaders
     {
         public string Name { get; set; }
 
@@ -10,7 +10,7 @@ namespace Grapevine
 
         public bool Suppress { get; set; }
 
-        public GlobalResponseHeader(string name, string defaultValue, bool suppress = false)
+        public GlobalResponseHeaders(string name, string defaultValue, bool suppress = false)
         {
             Name = name;
             Value = defaultValue;
@@ -20,9 +20,9 @@ namespace Grapevine
 
     public static class GlobalResponseHeaderExtensions
     {
-        public static void Add(this IList<GlobalResponseHeader> headers, string key, string value)
+        public static void Add(this IList<GlobalResponseHeaders> headers, string key, string value)
         {
-            headers.Add(new GlobalResponseHeader(key, value));
+            headers.Add(new GlobalResponseHeaders(key, value));
         }
     }
 }
