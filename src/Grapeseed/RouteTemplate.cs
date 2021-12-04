@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using Grapevine.Internals;
 
 namespace Grapevine
 {
@@ -77,7 +76,7 @@ namespace Grapevine
 
             for (var i = 0; i < sections.Length; i++)
             {
-                if (i.IsEven())
+                if ((i % 2) == 0) // is even
                 {
                     // Even sections don't contain constraints
                     builder.Append(sections[i]);
