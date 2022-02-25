@@ -29,6 +29,8 @@ namespace Grapevine
 
         public Stream InputStream => Advanced.InputStream;
 
+        public string MultipartBoundary { get; }
+
         public string Name => $"{HttpMethod} {Endpoint}";
 
         public string Endpoint { get; protected set; }
@@ -58,6 +60,7 @@ namespace Grapevine
             Advanced = request;
             Endpoint = request.Url.AbsolutePath.TrimEnd('/');
             HostPrefix = request.Url.GetComponents(UriComponents.SchemeAndServer, UriFormat.Unescaped);
+            MultipartBoundary = this.GetMultipartBoundary();
         }
     }
 }

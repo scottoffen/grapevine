@@ -48,6 +48,9 @@ namespace Samples
 
             server.Prefixes.Add($"http://localhost:{_serverPort}/");
 
+            /* Configure server to auto parse application/x-www-for-urlencoded data*/
+            server.AutoParseFormUrlEncodedData();
+
             /* Configure Router Options (if supported by your router implementation) */
             server.Router.Options.SendExceptionMessages = true;
         }
