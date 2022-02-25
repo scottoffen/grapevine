@@ -117,6 +117,8 @@ namespace Grapevine
 
         public async override Task SendResponseAsync(byte[] contents)
         {
+            if (!Advanced.OutputStream.CanWrite) throw new NotSupportedException("The response output stream can not be written to. It may have previously been written to, or the connection may no longer be available.");
+
             try
             {
                 contents = await CompressContentsAsync(contents);
@@ -131,7 +133,7 @@ namespace Grapevine
             }
             catch
             {
-                Advanced.OutputStream.Close();
+                if (Advanced.OutputStream.CanWrite) Advanced.OutputStream.Close();
                 throw;
             }
             finally
