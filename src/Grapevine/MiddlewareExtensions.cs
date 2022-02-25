@@ -46,7 +46,8 @@ namespace Grapevine
 
         public static IRestServer UseContentFolders(this IRestServer server)
         {
-            server.OnRequestAsync += ContentFolders.SendFileIfExistsAsnyc;
+            server.OnRequestAsync -= ContentFolders.SendFileIfExistsAsync;
+            server.OnRequestAsync += ContentFolders.SendFileIfExistsAsync;
             return server;
         }
 
