@@ -158,7 +158,7 @@ namespace Grapevine
             }
             catch (Exception e)
             {
-                Logger.LogError(e, $"{context.Id}: An exception occured while routing request {context.Request.Name}");
+                Logger.LogError(e, $"{context.Id}: An exception occurred while routing request {context.Request.Name}");
                 await HandleErrorAsync(context, e);
             }
         }

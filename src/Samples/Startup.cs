@@ -25,7 +25,7 @@ namespace Samples
             services.AddLogging(loggingBuilder =>
             {
                 loggingBuilder.ClearProviders();
-                loggingBuilder.AddNLog(Configuration);
+                loggingBuilder.AddNLog(new NLogLoggingConfiguration(Configuration.GetSection("NLog")));
             });
 
             services.AddHttpClient<GitHubClient>(c =>

@@ -52,6 +52,7 @@ namespace Grapevine
         public string UserHostname => Advanced.UserHostName;
 
         public string[] UserLanguages => Advanced.UserLanguages;
+
         public HttpRequest(HttpListenerRequest request)
         {
             Advanced = request;

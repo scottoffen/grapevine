@@ -5,7 +5,7 @@ namespace Grapevine.Middleware
 {
     public static class ContentFolders
     {
-        public async static Task SendFileIfExistsAsnyc(IHttpContext context, IRestServer server)
+        public async static Task SendFileIfExistsAsync(IHttpContext context, IRestServer server)
         {
             // If a matching file is found, the request will be responded to.
             if (context.Request.HttpMethod == HttpMethod.Get)

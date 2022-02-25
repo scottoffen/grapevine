@@ -173,7 +173,7 @@ namespace Grapevine
             {
                 exceptionWasThrown = true;
 
-                Logger.LogCritical(e, "An unexpected error occured when attempting to start the server");
+                Logger.LogCritical(e, "An unexpected error occurred when attempting to start the server");
                 throw;
             }
             finally
@@ -185,6 +185,12 @@ namespace Grapevine
                 }
 
                 IsStarting = false;
+
+                if (this.ContentFolders.Count > 0)
+                {
+                    Logger.LogInformation("Grapevine has detected that content folders have been added");
+                    Logger.LogInformation("Enable serving content from content folders with: server.UseContentFolders()");
+                }
             }
         }
 
@@ -243,7 +249,7 @@ namespace Grapevine
                 }
                 catch (Exception e)
                 {
-                    Logger.LogDebug(e, "An unexpected error occured while listening for incoming requests.");
+                    Logger.LogDebug(e, "An unexpected error occurred while listening for incoming requests.");
                 }
             }
         }
@@ -270,7 +276,7 @@ namespace Grapevine
             }
             catch (Exception e)
             {
-                Logger.LogError(e, $"{context.Id} An exception occured while routing request {context.Request.Name}");
+                Logger.LogError(e, $"{context.Id} An exception occurred while routing request {context.Request.Name}");
             }
 
             // 4. Optionally route request

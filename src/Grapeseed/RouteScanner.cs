@@ -23,7 +23,7 @@ namespace Grapevine
             get
             {
                 foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies()
-                    .Where(a => a.GetName().Name != "Grapevine" && !a.GetName().Name.StartsWith(IgnoredAssemblies.ToArray()))
+                    .Where(a => a.GetName().Name != "Grapevine" && a.GetName().Name != "Grapeseed" && !a.GetName().Name.StartsWith(IgnoredAssemblies.ToArray()))
 #if NETSTANDARD
                     .Where(a => !a.GlobalAssemblyCache)
 #endif
@@ -80,7 +80,7 @@ namespace Grapevine
                 }
                 catch (ReflectionTypeLoadException ex)
                 {
-                    var message = $"Exception occured when scanning for routes";
+                    var message = $"Exception occurred when scanning for routes";
                     foreach (var loaderEx in ex.LoaderExceptions)
                     {
                         Logger.LogDebug(loaderEx, message);
@@ -108,7 +108,7 @@ namespace Grapevine
             }
             catch (ReflectionTypeLoadException ex)
             {
-                var message = $"Exception occured when scanning assembly {name} for routes";
+                var message = $"Exception occurred when scanning assembly {name} for routes";
                 foreach (var loaderEx in ex.LoaderExceptions)
                     Logger.LogDebug(loaderEx, message);
             }
@@ -201,7 +201,7 @@ namespace Grapevine
         }
 
         /// <summary>
-        /// Returns an enumeration of MethodInfo in the specified type that have the RestRoute attribute, order by appearence in the type
+        /// Returns an enumeration of MethodInfo in the specified type that have the RestRoute attribute, order by appearance in the type
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
