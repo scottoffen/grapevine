@@ -44,6 +44,13 @@ namespace Grapevine
             server.AfterStopping -= onStop;
         }
 
+        public static IRestServer AutoParseFormUrlEncodedData(this IRestServer server)
+        {
+            server.OnRequestAsync -= FormUrlEncodedData.Parse;
+            server.OnRequestAsync += FormUrlEncodedData.Parse;
+            return server;
+        }
+
         public static IRestServer UseContentFolders(this IRestServer server)
         {
             server.OnRequestAsync -= ContentFolders.SendFileIfExistsAsync;

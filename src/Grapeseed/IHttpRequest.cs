@@ -53,6 +53,11 @@ namespace Grapevine
         Stream InputStream { get; }
 
         /// <summary>
+        /// Gets the multipart boundary, returns empty string if not available
+        /// </summary>
+        string MultipartBoundary { get; }
+
+        /// <summary>
         /// Gets a representation of the HttpMethod and Endpoint of the request
         /// </summary>
         string Name { get; }
