@@ -21,6 +21,8 @@ namespace Grapevine
 
         public CookieCollection Cookies => Advanced.Cookies;
 
+        public bool HasEntityBody => Advanced.HasEntityBody;
+
         public NameValueCollection Headers => Advanced.Headers;
 
         public string HostPrefix { get; }

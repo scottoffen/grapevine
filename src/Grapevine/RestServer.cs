@@ -39,7 +39,7 @@ namespace Grapevine
         public abstract event ServerEventHandler AfterStopping;
         public abstract event ServerEventHandler BeforeStarting;
         public abstract event ServerEventHandler BeforeStopping;
-        public abstract event RequestReceivedAsyncEventHandler OnRequestAsync;
+        public virtual RequestReceivedEvent OnRequestAsync { get; set; } = new RequestReceivedEvent();
 
         public abstract void Dispose();
 
@@ -87,7 +87,6 @@ namespace Grapevine
         public override event ServerEventHandler AfterStopping;
         public override event ServerEventHandler BeforeStarting;
         public override event ServerEventHandler BeforeStopping;
-        public override event RequestReceivedAsyncEventHandler OnRequestAsync;
 
         public RestServer(IRouter router, IRouteScanner scanner, ILogger<IRestServer> logger)
         {
@@ -267,8 +266,8 @@ namespace Grapevine
             try
             {
                 Logger.LogTrace($"{context.Id} : Invoking OnRequest Handlers for {context.Request.Name}");
-                if (OnRequestAsync != null) await OnRequestAsync.Invoke(context, this);
-                Logger.LogTrace($"{context.Id} : OnRequest Handlers Invoked for {context.Request.Name}");
+                var count = (OnRequestAsync != null) ? await OnRequestAsync.Invoke(context, this) : 0;
+                Logger.LogTrace($"{context.Id} : {count} OnRequest Handlers Invoked for {context.Request.Name}");
             }
             catch (System.Net.HttpListenerException hl) when (hl.ErrorCode == 1229)
             {
