@@ -40,8 +40,8 @@ namespace Grapevine
 
             DirectoryMapping[CreateDirectoryListingKey(fullPath)] = fullPath;
 
-            if (fullPath.EndsWith($"\\{IndexFileName}", StringComparison.CurrentCultureIgnoreCase))
-                DirectoryMapping[CreateDirectoryListingKey(fullPath.Replace($"\\{IndexFileName}", ""))] = fullPath;
+            if (fullPath.EndsWith($"{Path.DirectorySeparatorChar}{IndexFileName}", StringComparison.CurrentCultureIgnoreCase))
+                DirectoryMapping[CreateDirectoryListingKey(fullPath.Replace($"{Path.DirectorySeparatorChar}{IndexFileName}", ""))] = fullPath;
         }
 
         public virtual string CreateDirectoryListingKey(string item)
