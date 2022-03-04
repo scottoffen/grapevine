@@ -35,6 +35,11 @@ namespace Grapevine
         CookieCollection Cookies { get; }
 
         /// <summary>
+        /// Gets a boolean value that indicates whether the request has associated body data.
+        /// </summary>
+        bool HasEntityBody { get; }
+
+        /// <summary>
         /// Gets the collection of header name/value pairs sent in the request
         /// </summary>
         NameValueCollection Headers { get; }
