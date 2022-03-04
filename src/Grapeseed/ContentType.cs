@@ -14,6 +14,8 @@ namespace Grapevine
 
         public static ContentType Css = new ContentType("text/css", false);
 
+        public static ContentType FormUrlEncoded = new ContentType("application/x-www-form-urlencoded");
+
         public static ContentType Gif = new ContentType("image/gif");
 
         public static ContentType Html = new ContentType("text/html", false);
@@ -29,6 +31,8 @@ namespace Grapevine
         public static ContentType Mp3 = new ContentType("audio/mpeg");
 
         public static ContentType Mp4 = new ContentType("video/mp4");
+
+        public static ContentType MultipartFormData = new ContentType("multipart/form-data");
 
         public static ContentType Pdf = new ContentType("application/pdf");
 

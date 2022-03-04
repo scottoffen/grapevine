@@ -7,12 +7,11 @@ namespace Grapevine
 {
     public static class HttpRequestExtensions
     {
-        private static readonly string _multipartContentType = "multipart/form-data; boundary=";
-        private static readonly int _startIndex = _multipartContentType.Length;
+        private static readonly int _startIndex = ContentType.MultipartFormData.ToString().Length;
 
-        internal static string GetMultipartBoundary(this IHttpRequest request)
+        public static string GetMultipartBoundary(this IHttpRequest request)
         {
-            return (string.IsNullOrWhiteSpace(request.ContentType) || !request.ContentType.StartsWith(_multipartContentType))
+            return (string.IsNullOrWhiteSpace(request.ContentType) || !request.ContentType.StartsWith(ContentType.MultipartFormData))
                 ? string.Empty
                 : request.ContentType.Substring(_startIndex);
         }
