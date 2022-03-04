@@ -96,7 +96,7 @@ namespace Grapevine
         /// <summary>
         /// Raised after an incoming request is received, but before routing the request.
         /// </summary>
-        event RequestReceivedAsyncEventHandler OnRequestAsync;
+        RequestReceivedEvent OnRequestAsync { get; set; }
 
         /// <summary>
         /// Starts the server, raising BeforeStart and AfterStart events appropriately.

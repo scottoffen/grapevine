@@ -48,12 +48,12 @@ namespace Grapevine
         /// <summary>
         /// Raised after a request has completed invoking matching routes
         /// </summary>
-        event RoutingAsyncEventHandler AfterRoutingAsync;
+        RequestRoutingEvent AfterRoutingAsync { get; set; }
 
         /// <summary>
         /// Raised prior to sending any request though matching routes
         /// </summary>
-        event RoutingAsyncEventHandler BeforeRoutingAsync;
+        RequestRoutingEvent BeforeRoutingAsync { get; set; }
 
         /// <summary>
         /// Adds the route to the routing table
@@ -63,7 +63,7 @@ namespace Grapevine
         IRouter Register(IRoute route);
 
         /// <summary>
-        /// Routes the IHttpContext through all enabled registered routes that match the (IHttpConext)state provided
+        /// Routes the IHttpContext through all enabled registered routes that match the (IHttpContext)state provided
         /// </summary>
         /// <param name="state"></param>
         void RouteAsync(object state);
