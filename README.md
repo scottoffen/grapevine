@@ -10,19 +10,19 @@ Grapevine is available on [NuGet.org](https://www.nuget.org/packages/Grapevine/)
 
 Powershell:
 ```powershell
-Install-Package Grapevine -Version 5.0.0-rc.9
+Install-Package Grapevine -Version 5.0.0-rc.10
 ```
 
 .NET CLI
 ```cmd
-> dotnet add package Grapevine --version 5.0.0-rc.9
+> dotnet add package Grapevine --version 5.0.0-rc.10
 ```
 
 ## Usage
 
 Grapevine is easy to get started with.
 
-Create a simple route. This is the code that you want to run when a request comes in using the specificed HTTP verb and path. **Route methods must be [asynchronous](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/async/)!**
+Create a simple route. This is the code that you want to run when a request comes in using the specified HTTP verb and path. **Route methods must be [asynchronous](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/async/)!**
 
 ```csharp
 [RestResource]
@@ -48,7 +48,7 @@ using (var server = RestServerBuilder.UseDefaults().Build())
 }
 ```
 
-Open your prefered browser and go to `http://localhost:1234/api/test`. You should see the following output in your browser:
+Open your preferred browser and go to `http://localhost:1234/api/test`. You should see the following output in your browser:
 
 ```
 Successfully hit the test route!
