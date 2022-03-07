@@ -98,6 +98,14 @@ namespace Grapevine
             Advanced = response;
             response.ContentEncoding = Encoding.UTF8;
         }
+
+        /// <summary>
+        /// Use this method to manually set the ResponseSent property to true. Generally, the value of this property is set by the SendResponseAsync method. If, however, this method was bypassed and the Advanced property was used to directly access the output stream, then the ResponseSent property will need to be set here to avoid an exception being thrown later in the routing process.
+        /// </summary>
+        public virtual void MarkAsResponseSent()
+        {
+            ResponseSent = true;
+        }
     }
 
     public class HttpResponse : HttpResponseBase, IHttpResponse
