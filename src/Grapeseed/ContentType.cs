@@ -12,19 +12,19 @@ namespace Grapevine
 
         public static ContentType Binary = new ContentType("application/octet-stream");
 
-        public static ContentType Css = new ContentType("text/css", false);
+        public static ContentType Css = new ContentType("text/css", false, "UTF-8");
 
         public static ContentType FormUrlEncoded = new ContentType("application/x-www-form-urlencoded");
 
         public static ContentType Gif = new ContentType("image/gif");
 
-        public static ContentType Html = new ContentType("text/html", false);
+        public static ContentType Html = new ContentType("text/html", false, "UTF-8");
 
         public static ContentType Icon = new ContentType("image/x-icon");
 
-        public static ContentType JavaScript = new ContentType("application/javascript", false);
+        public static ContentType JavaScript = new ContentType("application/javascript", false, "UTF-8");
 
-        public static ContentType Json = new ContentType("application/json", false);
+        public static ContentType Json = new ContentType("application/json", false, "UTF-8");
 
         public static ContentType Jpg = new ContentType("image/jpeg");
 
@@ -38,11 +38,11 @@ namespace Grapevine
 
         public static ContentType Png = new ContentType("image/png");
 
-        public static ContentType Svg = new ContentType("image/svg+xml", false);
+        public static ContentType Svg = new ContentType("image/svg+xml", false, "UTF-8");
 
-        public static ContentType Text = new ContentType("text/plain", false);
+        public static ContentType Text = new ContentType("text/plain", false, "UTF-8");
 
-        public static ContentType Xml = new ContentType("application/xml", false);
+        public static ContentType Xml = new ContentType("application/xml", false, "UTF-8");
 
         public static ContentType Zip = new ContentType("application/zip");
 
