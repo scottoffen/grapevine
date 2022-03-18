@@ -143,5 +143,23 @@ namespace Grapevine
         {
             await response.SendResponseAsync(response.ContentEncoding.GetBytes(content));
         }
+
+        public static async Task SendResponseAsync(this IHttpResponse response, HttpStatusCode statusCode, string content)
+        {
+            response.StatusCode = statusCode;
+            await response.SendResponseAsync(response.ContentEncoding.GetBytes(content));
+        }
+
+        public static async Task SendResponseAsync(this IHttpResponse response, HttpStatusCode statusCode, Stream content)
+        {
+            response.StatusCode = statusCode;
+            await response.SendResponseAsync(content);
+        }
+
+        public static async Task SendResponseAsync(this IHttpResponse response, HttpStatusCode statusCode, byte[] content)
+        {
+            response.StatusCode = statusCode;
+            await response.SendResponseAsync(content);
+        }
     }
 }
