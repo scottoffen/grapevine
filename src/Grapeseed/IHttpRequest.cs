@@ -135,32 +135,44 @@ namespace Grapevine
                 : request.ContentType.Substring(_startIndex);
         }
 
-        public static async Task<IDictionary<string, string>> ParseFormUrlEncodedData(this IHttpRequest request)
+        public static async Task<IDictionary<string, string>> ParseFormUrlEncodedData(this IHttpRequest request, bool useQueryString = false)
         {
             var data = new Dictionary<string, string>();
 
             using (var reader = new StreamReader(request.InputStream, request.ContentEncoding))
             {
-                var payload = await reader.ReadToEndAsync();
-
-                foreach (var kvp in payload.Split('&'))
+                string payload = null;
+                if (useQueryString || request.InputStream == Stream.Null)
                 {
-                    var pair = kvp.Split('=');
-                    var key = pair[0];
-                    var value = pair[1];
-
-                    var decoded = string.Empty;
-                    while((decoded = Uri.UnescapeDataString(value)) != value)
-                    {
-                        value = decoded;
-                    }
-
-                    data.Add(key, value);
+                    payload = request.Url.Query.TrimStart('?');
                 }
+                else
+                {
+                    payload = await reader.ReadToEndAsync();
+                }
+
+                ProcessPayload(payload, data);
             }
 
             return data;
         }
-    }
 
+        private static void ProcessPayload(string payload, Dictionary<string, string> data)
+        {
+            foreach (var kvp in payload.Split('&'))
+            {
+                var pair = kvp.Split('=');
+                var key = pair[0];
+                var value = pair[1];
+
+                var decoded = string.Empty;
+                while ((decoded = Uri.UnescapeDataString(value)) != value)
+                {
+                    value = decoded;
+                }
+
+                data.Add(key, value);
+            }
+        }
+    }
 }
