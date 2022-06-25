@@ -135,14 +135,14 @@ namespace Grapevine
                 : request.ContentType.Substring(_startIndex);
         }
 
-        public static async Task<IDictionary<string, string>> ParseFormUrlEncodedData(this IHttpRequest request, bool useQueryString = false)
+        public static async Task<IDictionary<string, string>> ParseFormUrlEncodedData(this IHttpRequest request, bool useQueryArguments = false)
         {
             var data = new Dictionary<string, string>();
 
             using (var reader = new StreamReader(request.InputStream, request.ContentEncoding))
             {
                 string payload = null;
-                if (useQueryString || request.InputStream == Stream.Null)
+                if (useQueryArguments || request.InputStream == Stream.Null)
                 {
                     payload = request.Url.Query.TrimStart('?');
                 }
