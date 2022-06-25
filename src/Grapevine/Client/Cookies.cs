@@ -46,7 +46,7 @@ namespace Grapevine.Client
         {
             return Count <= 0
                 ? string.Empty
-                : string.Join("; ", (from key in Keys let value = base[key] select $"{key}={Uri.EscapeUriString(value)}").ToArray());
+                : string.Join("; ", (from key in Keys let value = base[key] select $"{key}={Uri.EscapeDataString(value)}").ToArray());
         }
 
         private string ValidateName(string name)
