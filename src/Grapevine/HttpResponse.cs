@@ -93,7 +93,7 @@ namespace Grapevine
 
         public void SetCookie(Cookie cookie) => Advanced.SetCookie(cookie);
 
-        public HttpResponseBase(HttpListenerResponse response)
+        protected HttpResponseBase(HttpListenerResponse response)
         {
             Advanced = response;
             response.ContentEncoding = Encoding.UTF8;

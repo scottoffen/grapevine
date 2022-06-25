@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,6 +24,11 @@ namespace Grapevine
         /// <returns></returns>
         public static HandleErrorAsync DefaultErrorHandler { get; set; } = async (context, exception) =>
         {
+            if (context == null)
+            {
+                return;
+            }
+
             string content = context?.Response?.StatusCode.ToString() ?? HttpStatusCode.InternalServerError.ToString();
 
             if (exception != null)
@@ -47,7 +53,7 @@ namespace Grapevine
         /// <typeparam name="HttpStatusCode"></typeparam>
         /// <typeparam name="HandleErrorAsync"></typeparam>
         /// <returns></returns>
-        public static Dictionary<HttpStatusCode, HandleErrorAsync> GlobalErrorHandlers =
+        public static Dictionary<HttpStatusCode, HandleErrorAsync> GlobalErrorHandlers { get; } =
             new Dictionary<HttpStatusCode, HandleErrorAsync>();
 
         /// <summary>
@@ -56,7 +62,7 @@ namespace Grapevine
         /// <typeparam name="HttpStatusCode"></typeparam>
         /// <typeparam name="HandleErrorAsync"></typeparam>
         /// <returns></returns>
-        public Dictionary<HttpStatusCode, HandleErrorAsync> LocalErrorHandlers =
+        public Dictionary<HttpStatusCode, HandleErrorAsync> LocalErrorHandlers { get; } =
             new Dictionary<HttpStatusCode, HandleErrorAsync>();
 
         public virtual string Id { get; } = Guid.NewGuid().ToString();
@@ -102,7 +108,10 @@ namespace Grapevine
             {
                 await action(context, (Options.SendExceptionMessages) ? e : null).ConfigureAwait(false);
             }
-            catch { }
+            catch(Exception ex)
+            {
+                Debug.Print(ex.Message);
+            }
         }
     }
 

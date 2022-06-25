@@ -6,7 +6,7 @@ namespace Grapevine
 {
     public class HttpMethod : System.Net.Http.HttpMethod
     {
-        public static HttpMethod Any = new HttpMethod("Any");
+        public static HttpMethod Any { get; } = new HttpMethod("Any");
 
         private static readonly Dictionary<string, HttpMethod> _httpMethods = new Dictionary<string, HttpMethod>();
 

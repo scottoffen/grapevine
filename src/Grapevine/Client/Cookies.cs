@@ -23,7 +23,7 @@ namespace Grapevine.Client
             base.Add(ValidateName(key), ValidateValue(value));
         }
 
-        public void Add(string key, object value)
+        public void AddObject(string key, object value)
         {
             base.Add(ValidateName(key), ValidateValue(value.ToString()));
         }
@@ -35,7 +35,7 @@ namespace Grapevine.Client
             return base.TryAdd(ValidateName(key), ValidateValue(value));
         }
 
-        public bool TryAdd(string key, object value)
+        public bool TryAddObject(string key, object value)
         {
             return base.TryAdd(ValidateName(key), ValidateValue(value.ToString()));
         }

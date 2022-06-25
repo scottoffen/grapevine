@@ -117,7 +117,7 @@ namespace Grapevine
 
         public static async Task SendResponseAsync(this IHttpResponse response, Stream content)
         {
-            if (!response.Headers.AllKeys.ToArray().Contains("Expires"))
+            if (!response.Headers.AllKeys.Contains("Expires"))
                 response.AddHeader("Expires",
                     DateTime.Now.Add(response.ContentExpiresDuration).ToString("R"));
 

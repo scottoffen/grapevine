@@ -95,15 +95,6 @@ namespace Grapevine
         }
 
         /// <summary>
-        /// Add a list of assemblies to be ignored when scanning all assemblies for routes
-        /// </summary>
-        /// <param name="assemblies"></param>
-        public static void AddIgnoredAssemblies(this IRouteScanner scanner, Assembly[] assemblies)
-        {
-            foreach (var assembly in assemblies) scanner.IgnoredAssemblies.Add(assembly.GetName().Name);
-        }
-
-        /// <summary>
         /// Add an assembly to be ignored when scanning all assemblies for routes
         /// </summary>
         /// <param name="assemblyName"></param>
@@ -119,6 +110,15 @@ namespace Grapevine
         public static void AddIgnoredAssemblies(this IRouteScanner scanner, string[] assemblyNames)
         {
             foreach (var assemblyName in assemblyNames) scanner.IgnoredAssemblies.Add(assemblyName);
+        }
+
+        /// <summary>
+        /// Add a list of assemblies to be ignored when scanning all assemblies for routes
+        /// </summary>
+        /// <param name="assemblies"></param>
+        public static void AddIgnoredAssemblies(this IRouteScanner scanner, Assembly[] assemblies)
+        {
+            foreach (var assembly in assemblies) scanner.IgnoredAssemblies.Add(assembly.GetName().Name);
         }
 
         public static void IgnoreAssemblyContainingType<T>(this IRouteScanner scanner)

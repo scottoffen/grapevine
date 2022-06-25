@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Grapevine;
+using Grapevine.Client;
 using Xunit;
 using Moq;
 using System.IO;
@@ -53,6 +53,40 @@ namespace Grapevine.Tests
                 Assert.Equal("moqTest", r["username"]);
                 Assert.Equal("insecure", r["password"]);
             }
+        }
+
+        [Fact]
+        public void StringExtensionsCharsTest()
+        {
+            string s = "someTestString here";
+            char[] searchChars = new char[] { 's', 't' };
+
+            Assert.True(s.Contains(searchChars));
+
+            searchChars = new char[] { 'p', 'x' };
+
+            Assert.False(s.Contains(searchChars));
+
+            searchChars = new char[] { 'p', ' ' };
+
+            Assert.True(s.Contains(searchChars));
+
+            searchChars = new char[] { 'p', '\0' };
+
+            Assert.False(s.Contains(searchChars));
+        }
+
+        [Fact]
+        public void StringExtensionsStartsWithTest()
+        {
+            string s = "someTestString here";
+            string[] searchStrings = new string[] { "hello", "som" };
+
+            Assert.True(s.StartsWith(searchStrings));
+
+            searchStrings = new string[] { "hello", "there", "from", "seattle", "here" };
+
+            Assert.False(s.StartsWith(searchStrings));
         }
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Grapevine.Client
@@ -19,12 +20,8 @@ namespace Grapevine.Client
 
         public static bool Contains(this string s, char[] chars)
         {
-            foreach (var c in chars)
-            {
-                if (s.Contains<char>(c)) return true;
-            }
-
-            return false;
+            HashSet<char> searchChars = new HashSet<char>(chars);
+            return s.Any(x => searchChars.Contains(x));
         }
     }
 }

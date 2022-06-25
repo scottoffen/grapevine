@@ -61,7 +61,7 @@ namespace Grapevine
         /// <value></value>
         public bool IsDisposed { get; private set; }
 
-        public override bool IsListening => (bool)(Listener?.IsListening);
+        public override bool IsListening => Convert.ToBoolean(Listener?.IsListening);
 
         /// <summary>
         /// Gets a value that indicates whether the server is in the process of stopping.
@@ -213,8 +213,9 @@ namespace Grapevine
                 // 4. Execute AfterStopping event handlers
                 AfterStopping?.Invoke(this);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Logger.LogError(ex, "Stopping error");
                 throw;
             }
             finally

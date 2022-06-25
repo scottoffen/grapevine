@@ -21,31 +21,13 @@ namespace Grapevine
 
         private static string OutOfRangeMsg { get; } = $"must be an integer between {FirstPort} and {LastPort}.";
 
-        private static string FindLocalOpenPort(int idx0, int idx1)
-        {
-            return (idx0 > idx1)
-                 ? FindPreviousLocalOpenPort(idx0, idx1)
-                 : FindNextLocalOpenPort(idx0, idx1);
-        }
-
         public static string FindNextLocalOpenPort()
         {
             return FindNextLocalOpenPort(FirstPort, LastPort);
         }
-
-        public static string FindPreviousLocalOpenPort()
-        {
-            return FindNextLocalOpenPort(LastPort, FirstPort);
-        }
-
         public static string FindNextLocalOpenPort(int startIndex)
         {
             return FindNextLocalOpenPort(startIndex, LastPort);
-        }
-
-        public static string FindPreviousLocalOpenPort(int endIndex)
-        {
-            return FindPreviousLocalOpenPort(FirstPort, endIndex);
         }
 
         public static string FindNextLocalOpenPort(int startIndex, int endIndex)
@@ -66,7 +48,17 @@ namespace Grapevine
                 if (!inUse.Contains(i)) return i.ToString();
             }
 
-            throw new IndexOutOfRangeException($"No local open ports found in range {Math.Min(startIndex, endIndex)} - {Math.Max(startIndex, endIndex)}!");
+            throw new Grapeseed.Exceptions.NoOpenPortException($"No local open ports found in range {Math.Min(startIndex, endIndex)} - {Math.Max(startIndex, endIndex)}!");
+        }
+
+        public static string FindPreviousLocalOpenPort(int endIndex)
+        {
+            return FindPreviousLocalOpenPort(FirstPort, endIndex);
+        }
+
+        public static string FindPreviousLocalOpenPort()
+        {
+            return FindNextLocalOpenPort(LastPort, FirstPort);
         }
 
         public static string FindPreviousLocalOpenPort(int startIndex, int endIndex)
@@ -87,7 +79,7 @@ namespace Grapevine
                 if (!inUse.Contains(i)) return i.ToString();
             }
 
-            throw new IndexOutOfRangeException($"No local open ports found in range {Math.Min(startIndex, endIndex)} - {Math.Max(startIndex, endIndex)}!");
+            throw new Grapeseed.Exceptions.NoOpenPortException($"No local open ports found in range {Math.Min(startIndex, endIndex)} - {Math.Max(startIndex, endIndex)}!");
         }
 
         private static bool IsInRange(this int value) => (value >= FirstPort && value <= LastPort);

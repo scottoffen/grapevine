@@ -19,7 +19,7 @@ namespace Grapevine.Middleware
             await Task.CompletedTask;
         }
 
-        private IEnumerable<string> _allowedOrigins;
+        private readonly IEnumerable<string> _allowedOrigins;
 
         public CorsPolicy(Uri allowOrigin)
         {

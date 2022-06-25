@@ -96,11 +96,11 @@ namespace Grapevine
             var type = typeof(T);
 
             // Get the constructor
-            var constructor = type.GetConstructors().Where(c =>
+            var constructor = type.GetConstructors().FirstOrDefault(c =>
             {
                 var args = c.GetParameters();
                 return args.Count() == 1 && args.First().ParameterType == typeof(IConfiguration);
-            }).FirstOrDefault();
+            });
 
             // Get the configuration
             var config = GetDefaultConfiguration();
@@ -113,7 +113,7 @@ namespace Grapevine
             var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Instance);
 
             // Initialize Configuration: ReturnType(IConfiguration), Args(null)
-            var mci = methods.Where(m => m.ReturnParameter.ParameterType == typeof(IConfiguration) && m.GetParameters().Length == 0).FirstOrDefault();
+            var mci = methods.FirstOrDefault(m => m.ReturnParameter.ParameterType == typeof(IConfiguration) && m.GetParameters().Length == 0);
             Func<IConfiguration> configInitializer = () =>
             {
                 if (mci == null) return config;
@@ -121,7 +121,7 @@ namespace Grapevine
             };
 
             // Initialize Services: ReturnType(IServiceCollection), Args(null)
-            var msi = methods.Where(m => m.ReturnParameter.ParameterType == typeof(IServiceCollection) && m.GetParameters().Length == 0).FirstOrDefault();
+            var msi = methods.FirstOrDefault(m => m.ReturnParameter.ParameterType == typeof(IServiceCollection) && m.GetParameters().Length == 0);
             Func<IServiceCollection> serviceInitializer = () =>
             {
                 if (msi == null) return new ServiceCollection();

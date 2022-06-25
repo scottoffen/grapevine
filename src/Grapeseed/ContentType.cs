@@ -10,41 +10,41 @@ namespace Grapevine
     {
         #region Static Implementations
 
-        public static ContentType Binary = new ContentType("application/octet-stream");
+        public static ContentType Binary { get; } = new ContentType("application/octet-stream");
 
-        public static ContentType Css = new ContentType("text/css", false, "UTF-8");
+        public static ContentType Css { get; } = new ContentType("text/css", false, "UTF-8");
 
-        public static ContentType FormUrlEncoded = new ContentType("application/x-www-form-urlencoded");
+        public static ContentType FormUrlEncoded { get; } = new ContentType("application/x-www-form-urlencoded");
 
-        public static ContentType Gif = new ContentType("image/gif");
+        public static ContentType Gif { get; } = new ContentType("image/gif");
 
-        public static ContentType Html = new ContentType("text/html", false, "UTF-8");
+        public static ContentType Html { get; } = new ContentType("text/html", false, "UTF-8");
 
-        public static ContentType Icon = new ContentType("image/x-icon");
+        public static ContentType Icon { get; } = new ContentType("image/x-icon");
 
-        public static ContentType JavaScript = new ContentType("application/javascript", false, "UTF-8");
+        public static ContentType JavaScript { get; } = new ContentType("application/javascript", false, "UTF-8");
 
-        public static ContentType Json = new ContentType("application/json", false, "UTF-8");
+        public static ContentType Json { get; } = new ContentType("application/json", false, "UTF-8");
 
-        public static ContentType Jpg = new ContentType("image/jpeg");
+        public static ContentType Jpg { get; } = new ContentType("image/jpeg");
 
-        public static ContentType Mp3 = new ContentType("audio/mpeg");
+        public static ContentType Mp3 { get; } = new ContentType("audio/mpeg");
 
-        public static ContentType Mp4 = new ContentType("video/mp4");
+        public static ContentType Mp4 { get; } = new ContentType("video/mp4");
 
-        public static ContentType MultipartFormData = new ContentType("multipart/form-data");
+        public static ContentType MultipartFormData { get; } = new ContentType("multipart/form-data");
 
-        public static ContentType Pdf = new ContentType("application/pdf");
+        public static ContentType Pdf { get; } = new ContentType("application/pdf");
 
-        public static ContentType Png = new ContentType("image/png");
+        public static ContentType Png { get; } = new ContentType("image/png");
 
-        public static ContentType Svg = new ContentType("image/svg+xml", false, "UTF-8");
+        public static ContentType Svg { get; } = new ContentType("image/svg+xml", false, "UTF-8");
 
-        public static ContentType Text = new ContentType("text/plain", false, "UTF-8");
+        public static ContentType Text { get; } = new ContentType("text/plain", false, "UTF-8");
 
-        public static ContentType Xml = new ContentType("application/xml", false, "UTF-8");
+        public static ContentType Xml { get; } = new ContentType("application/xml", false, "UTF-8");
 
-        public static ContentType Zip = new ContentType("application/zip");
+        public static ContentType Zip { get; } = new ContentType("application/zip");
 
         #endregion
 
@@ -194,6 +194,11 @@ namespace Grapevine
 
         public static string Generate(string firstPart = "----=NextPart_")
         {
+            if (firstPart == null)
+            {
+                return firstPart;
+            }
+
             if (firstPart?.Length >= MIN_BOUNDARY_LENGTH) return firstPart;
 
             var sb = new StringBuilder(firstPart);

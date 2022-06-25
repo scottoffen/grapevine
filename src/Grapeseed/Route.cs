@@ -13,7 +13,7 @@ namespace Grapevine
 
         public bool Enabled { get; set; }
 
-        public readonly Dictionary<string, Regex> HeaderConditions = new Dictionary<string, Regex>();
+        public Dictionary<string, Regex> HeaderConditions { get; } = new Dictionary<string, Regex>();
 
         public HttpMethod HttpMethod { get; set; }
 

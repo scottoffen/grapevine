@@ -18,7 +18,7 @@ namespace Grapevine
 
         public bool Enabled { get; set; } = true;
 
-        public HttpMethod HttpMethod { get; set; } = HttpMethod.Any;
+        public HttpMethod HttpMethod { get; set; }
 
         public string Name { get; set; } = string.Empty;
 

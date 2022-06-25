@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 
 namespace Grapevine
 {
@@ -12,12 +13,7 @@ namespace Grapevine
 
         public static bool StartsWith(this string value, string[] values)
         {
-            foreach (var x in values)
-            {
-                if (value.StartsWith(x, StringComparison.CurrentCultureIgnoreCase)) return true;
-            }
-
-            return false;
+            return values.Any(x => value.StartsWith(x, StringComparison.CurrentCultureIgnoreCase));
         }
     }
 }
