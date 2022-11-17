@@ -7,7 +7,7 @@ namespace Samples
     public class InteractiveShell
     {
         private IRestServer _server;
-        private bool _detached;
+        private readonly bool _detached;
 
         public InteractiveShell(bool detached = true)
         {

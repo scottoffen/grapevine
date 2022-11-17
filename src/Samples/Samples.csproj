@@ -11,12 +11,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FluentHttpClient" Version="1.4.0" />
-    <PackageReference Include="HttpMultipartParser" Version="5.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="5.0.0" />
-    <PackageReference Include="NLog" Version="4.7.6" />
-    <PackageReference Include="NLog.Extensions.Logging" Version="1.7.0" />
+    <PackageReference Include="FluentHttpClient" Version="2.0.0" />
+    <PackageReference Include="HttpMultipartParser" Version="7.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="6.0.0" />
+    <PackageReference Include="NLog" Version="5.0.5" />
+    <PackageReference Include="NLog.Extensions.Logging" Version="5.1.0" />
   </ItemGroup>
 
   <!-- Use these lines to publish the website along with your application -->

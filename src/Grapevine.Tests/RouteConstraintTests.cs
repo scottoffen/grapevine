@@ -127,9 +127,9 @@ namespace Grapevine.Tests
 
         public class CustomResolver
         {
-            private static string expectedResult = "RESOLVED";
+            private static readonly string expectedResult = "RESOLVED";
 
-            private static RouteConstraintResolver customResolver = (value) => { return expectedResult; };
+            private static readonly RouteConstraintResolver customResolver = (value) => { return expectedResult; };
 
             [Fact]
             public void throws_exception_when_attempting_to_override_protected_resolver()

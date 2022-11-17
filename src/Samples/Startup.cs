@@ -13,7 +13,7 @@ namespace Samples
     {
         public IConfiguration Configuration { get; private set; }
 
-        private string _serverPort = PortFinder.FindNextLocalOpenPort(1234);
+        private readonly string _serverPort = PortFinder.FindNextLocalOpenPort(1234);
 
         public Startup(IConfiguration configuration)
         {

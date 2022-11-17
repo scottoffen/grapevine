@@ -90,7 +90,7 @@ namespace Grapevine
 
     public static partial class IRouterExtensions
     {
-        private static IDictionary<string, IServiceProvider> _providers = new Dictionary<string, IServiceProvider>();
+        private static readonly IDictionary<string, IServiceProvider> _providers = new Dictionary<string, IServiceProvider>();
 
         public static IServiceProvider GetServiceProvider(this IRouter router)
         {

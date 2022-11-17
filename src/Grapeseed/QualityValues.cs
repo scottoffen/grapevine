@@ -6,7 +6,7 @@ namespace Grapevine
 {
     public static class QualityValues
     {
-        private static Regex[] specificities = new Regex[2]
+        private static readonly Regex[] specificities = new Regex[2]
         {
             new Regex("[^*]+"),       // totally specific
             new Regex(@"^[^*/]/\*$"), // partially specific
