@@ -1,8 +1,8 @@
 using System.Collections.Specialized;
 using System.Net.Http;
 using System.Threading.Tasks;
+using FluentHttpClient;
 using Grapevine;
-using Grapevine.Client;
 
 namespace Samples.Clients
 {
