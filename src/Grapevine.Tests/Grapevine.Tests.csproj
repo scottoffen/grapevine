@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
-
+    <TargetFramework>net6.0</TargetFramework>
+    <NoWarn>NETSDK1138</NoWarn>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
