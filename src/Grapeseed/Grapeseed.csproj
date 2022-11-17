@@ -1,17 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard2.1;net5.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;net5.0;net6.0;net7.0</TargetFrameworks>
+    <NoWarn>NETSDK1138</NoWarn>
     <PackageId>Grapeseed</PackageId>
     <PackageVersion>$(Version)</PackageVersion>
     <Authors>Scott Offen</Authors>
-    <Copyright>© 2014-2019 Scott Offen</Copyright>
+    <Copyright>© 2014 - $([System.DateTime]::Now.ToString('yyyy')) Scott Offen</Copyright>
     <Owners>Scott Offen</Owners>
     <Description>Grapevine abstractions</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <FileVersion>$(Version)</FileVersion>
-    <Version>5.0.0-rc.11</Version>
+    <Version>6.0.0-beta</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <RepositoryUrl>https://github.com/scottoffen/grapevine</RepositoryUrl>
