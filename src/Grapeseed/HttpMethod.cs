@@ -1,39 +1,48 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
 namespace Grapevine
 {
-    public class HttpMethod : System.Net.Http.HttpMethod
+    public partial class HttpMethod
     {
-        public static HttpMethod Any = new HttpMethod("Any");
+        public static HttpMethod Any { get; } = new HttpMethod("ANY");
+        public static HttpMethod Get { get; } = new HttpMethod("GET");
+        public static HttpMethod Put { get; } = new HttpMethod("PUT");
+        public static HttpMethod Post { get; } = new HttpMethod("POST");
+        public static HttpMethod Delete { get; } = new HttpMethod("DELETE");
+        public static HttpMethod Head { get; } = new HttpMethod("HEAD");
+        public static HttpMethod Options { get; } = new HttpMethod("OPTIONS");
+        public static HttpMethod Trace { get; } = new HttpMethod("TRACE");
+        public static HttpMethod Patch { get; } = new HttpMethod("PATCH");
+        public static HttpMethod Connect { get; } = new HttpMethod("CONNECT");
 
-        private static readonly Dictionary<string, HttpMethod> _httpMethods = new Dictionary<string, HttpMethod>();
+        // for implicit conversions
+        private static readonly Dictionary<string, HttpMethod> _methods = new Dictionary<string, HttpMethod>();
 
         static HttpMethod()
         {
-            var ct = typeof(HttpMethod);
-            var methods = typeof(HttpMethod).GetFields(BindingFlags.Public | BindingFlags.Static)
+            var mtype = typeof(HttpMethod);
+            var staticMethods = typeof(HttpMethod).GetFields(BindingFlags.Public | BindingFlags.Static)
                 .Select(f => f.GetValue(null))
-                .Where(f => f.GetType() == ct)
+                .Where(f => f.GetType() == mtype)
                 .Cast<HttpMethod>()
                 .ToList();
 
-            foreach (var method in methods) _httpMethods.Add(method.ToString().ToLower(), method);
+            foreach (var method in staticMethods) _methods.Add(method.ToString(), method);
         }
 
-        public HttpMethod(string method) : base(method) { }
-
-        public bool Equivalent(HttpMethod other)
+        public static bool operator ==(HttpMethod left, HttpMethod right)
         {
-            if (this.Equals(Any)) return true;
-            if (other.Equals(Any)) return true;
-            return this.Equals(other);
+            return left is null || right is null
+                ? ReferenceEquals(left, right)
+                : left.Equals(right);
         }
 
-        public static implicit operator HttpMethod(string value)
+        public static bool operator !=(HttpMethod left, HttpMethod right)
         {
-            return Find(value);
+            return !(left == right);
         }
 
         public static implicit operator string(HttpMethod value)
@@ -41,17 +50,55 @@ namespace Grapevine
             return value.ToString();
         }
 
-        public static HttpMethod Find(string value)
+        public static implicit operator HttpMethod(string value)
         {
-            var key = Add(value);
-            return _httpMethods[key];
+            var key = value.ToUpper();
+            if (_methods.ContainsKey(key)) return _methods[key];
+
+            var method = new HttpMethod(value);
+            _methods.Add(method.ToString(), method);
+            return method;
+        }
+    }
+
+    public partial class HttpMethod : IEquatable<HttpMethod>
+    {
+        private int _hashcode;
+
+        public HttpMethod(string method)
+        {
+            Method = method.Trim().ToUpper();
         }
 
-        public static string Add(string value)
+        public string Method { get; }
+
+        public bool Equivalent(HttpMethod other)
         {
-            var key = value.ToLower();
-            if (!_httpMethods.ContainsKey(key)) _httpMethods.Add(key, new HttpMethod(value));
-            return key;
+            if (this.Equals(Any) || other.Equals(Any)) return true;
+            return this.Equals(other);
+        }
+
+        public bool Equals(HttpMethod other)
+        {
+            if (other is null) return false;
+            if (object.ReferenceEquals(Method, other.Method)) return true;
+            return string.Equals(Method, other.Method, StringComparison.OrdinalIgnoreCase);
+        }
+
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as HttpMethod);
+        }
+
+        public override int GetHashCode()
+        {
+            if (_hashcode == 0) StringComparer.OrdinalIgnoreCase.GetHashCode(Method);
+            return _hashcode;
+        }
+
+        public override string ToString()
+        {
+            return Method;
         }
     }
 }
