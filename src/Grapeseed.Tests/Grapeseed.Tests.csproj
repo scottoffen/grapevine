@@ -23,7 +23,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Grapevine\Grapevine.csproj" />
     <ProjectReference Include="..\Grapeseed\Grapeseed.csproj" />
   </ItemGroup>
 
