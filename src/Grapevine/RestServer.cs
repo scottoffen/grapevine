@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading;
@@ -105,6 +105,7 @@ namespace Grapevine
             Listener = new HttpListener();
             Prefixes = new ListenerPrefixCollection(Listener.Prefixes);
             RequestHandler = new Thread(RequestListenerAsync);
+            RequestHandler.Name = nameof(RequestListenerAsync);
         }
 
         public override void Dispose()
@@ -162,7 +163,7 @@ namespace Grapevine
 
                 exceptionWasThrown = true;
 
-                var message = $"One or more ports are already in use by another application.";
+                var message = $"One or more ports are already in use by another application - this is bad.";
                 var exception = new ArgumentException(message, hl);
 
                 Logger.LogCritical(exception, message);
@@ -223,13 +224,13 @@ namespace Grapevine
             }
         }
 
-        protected async void RequestListenerAsync()
+        protected void RequestListenerAsync()
         {
             while (Listener.IsListening)
             {
                 try
                 {
-                    var context = await Listener.GetContextAsync();
+                    var context = Listener.GetContext();
                     ThreadPool.QueueUserWorkItem(RequestHandlerAsync, context);
                 }
                 catch (HttpListenerException hl) when (hl.ErrorCode == 995 && (IsStopping || !IsListening))
