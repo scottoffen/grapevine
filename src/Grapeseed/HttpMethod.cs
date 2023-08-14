@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -19,18 +19,21 @@ namespace Grapevine
         public static HttpMethod Connect { get; } = new HttpMethod("CONNECT");
 
         // for implicit conversions
-        private static readonly Dictionary<string, HttpMethod> _methods = new Dictionary<string, HttpMethod>();
+        private static readonly Dictionary<string, HttpMethod> _methods;
 
         static HttpMethod()
         {
-            var mtype = typeof(HttpMethod);
-            var staticMethods = typeof(HttpMethod).GetFields(BindingFlags.Public | BindingFlags.Static)
-                .Select(f => f.GetValue(null))
-                .Where(f => f.GetType() == mtype)
-                .Cast<HttpMethod>()
-                .ToList();
-
-            foreach (var method in staticMethods) _methods.Add(method.ToString(), method);
+            _methods = new Dictionary<string, HttpMethod>();
+            _methods.Add("POST", Post);
+            _methods.Add("PUT", Put);
+            _methods.Add("DELETE", Delete);
+            _methods.Add("HEAD", Head);
+            _methods.Add("GET", Get);
+            _methods.Add("ANY", Any);
+            _methods.Add("OPTIONS", Options);
+            _methods.Add("TRACE", Trace);
+            _methods.Add("PATCH", Patch);
+            _methods.Add("CONNECT", Connect);
         }
 
         public static bool operator ==(HttpMethod left, HttpMethod right)
@@ -63,11 +66,12 @@ namespace Grapevine
 
     public partial class HttpMethod : IEquatable<HttpMethod>
     {
-        private int _hashcode;
+        private readonly int _hashcode;
 
         public HttpMethod(string method)
         {
             Method = method.Trim().ToUpper();
+            _hashcode = StringComparer.OrdinalIgnoreCase.GetHashCode(Method);
         }
 
         public string Method { get; }
@@ -92,7 +96,6 @@ namespace Grapevine
 
         public override int GetHashCode()
         {
-            if (_hashcode == 0) StringComparer.OrdinalIgnoreCase.GetHashCode(Method);
             return _hashcode;
         }
 

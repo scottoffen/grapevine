@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -10,64 +10,96 @@ namespace Grapevine
     {
         #region Static Implementations
 
-        public static ContentType Binary { get; } = new ContentType("application/octet-stream");
+        /// <summary>
+        /// This is also the fallback
+        /// </summary>
+        public static ContentType Binary { get; } = new ContentType("application/octet-stream", "exe");
 
-        public static ContentType Css { get; } = new ContentType("text/css", false, "UTF-8");
+        public static ContentType Css { get; } = new ContentType("text/css", "css", false, "UTF-8");
 
-        public static ContentType FormUrlEncoded { get; } = new ContentType("application/x-www-form-urlencoded");
+        public static ContentType FormUrlEncoded { get; } = new ContentType("application/x-www-form-urlencoded", "");
 
-        public static ContentType Gif { get; } = new ContentType("image/gif");
+        public static ContentType Gif { get; } = new ContentType("image/gif", "gif");
 
-        public static ContentType Html { get; } = new ContentType("text/html", false, "UTF-8");
+        public static ContentType Html { get; } = new ContentType("text/html", "html", false, "UTF-8");
 
-        public static ContentType Icon { get; } = new ContentType("image/x-icon");
+        public static ContentType Htm { get; } = new ContentType("text/html", "htm", false, "UTF-8");
 
-        public static ContentType JavaScript { get; } = new ContentType("application/javascript", false, "UTF-8");
+        public static ContentType Icon { get; } = new ContentType("image/x-icon", "ico");
 
-        public static ContentType Json { get; } = new ContentType("application/json", false, "UTF-8");
+        public static ContentType JavaScript { get; } = new ContentType("application/javascript", "js", false, "UTF-8");
 
-        public static ContentType Jpg { get; } = new ContentType("image/jpeg");
+        public static ContentType Json { get; } = new ContentType("application/json", "json", false, "UTF-8");
 
-        public static ContentType Mp3 { get; } = new ContentType("audio/mpeg");
+        public static ContentType Jpg { get; } = new ContentType("image/jpeg", "jpg");
 
-        public static ContentType Mp4 { get; } = new ContentType("video/mp4");
+        public static ContentType Mp3 { get; } = new ContentType("audio/mpeg", "mp3");
 
-        public static ContentType MultipartFormData { get; } = new ContentType("multipart/form-data");
+        public static ContentType Mp4 { get; } = new ContentType("video/mp4", "mp4");
 
-        public static ContentType Pdf { get; } = new ContentType("application/pdf");
+        public static ContentType MultipartFormData { get; } = new ContentType("multipart/form-data", "");
 
-        public static ContentType Png { get; } = new ContentType("image/png");
+        public static ContentType Pdf { get; } = new ContentType("application/pdf", "pdf");
+
+        public static ContentType Png { get; } = new ContentType("image/png", "png");
 
         public static IProblemDetailsContentTypes ProblemDetails { get; } = new ProblemDetailsContentTypes();
 
-        public static ContentType Svg { get; } = new ContentType("image/svg+xml", false, "UTF-8");
+        public static ContentType Svg { get; } = new ContentType("image/svg+xml", "svg", false, "UTF-8");
 
-        public static ContentType Text { get; } = new ContentType("text/plain", false, "UTF-8");
+        public static ContentType Text { get; } = new ContentType("text/plain", "txt", false, "UTF-8");
 
-        public static ContentType Xml { get; } = new ContentType("application/xml", false, "UTF-8");
+        public static ContentType Xml { get; } = new ContentType("application/xml", "xml", false, "UTF-8");
 
-        public static ContentType Zip { get; } = new ContentType("application/zip");
+        public static ContentType Zip { get; } = new ContentType("application/zip", "zip");
 
         #endregion
 
         #region Static Initialization
 
-        private static readonly Dictionary<string, ContentType> _contentTypes = new Dictionary<string, ContentType>();
+        private static readonly Dictionary<string, ContentType> _contentTypes;
 
-        private static readonly Dictionary<string, ContentType> _extensions = new Dictionary<string, ContentType>();
+        private static readonly Dictionary<string, ContentType> _extensions;
 
         static ContentType()
         {
-            var ct = typeof(ContentType);
-            var fields = typeof(ContentType).GetFields(BindingFlags.Public | BindingFlags.Static).ToList();
-
-            foreach (var field in fields)
+            _contentTypes = new Dictionary<string, ContentType>();
+            _extensions = new Dictionary<string, ContentType>();
+            var contentTypes = new List<ContentType>()
             {
-                var contentType = field.GetValue(null) as ContentType;
-                if (contentType == null) return;
+                Binary,
+                Css,
+                FormUrlEncoded,
+                Gif,
+                Html,
+                Htm,
+                Icon,
+                JavaScript,
+                Jpg,
+                Json,
+                Mp3,
+                Mp4,
+                Xml,
+                Zip,
+                Png,
+                Pdf,
+                Svg,
+                Text,
+                MultipartFormData,
+            };
 
-                _contentTypes.Add(contentType, contentType);
-                _extensions.Add(field.Name.ToLower(), contentType);
+            foreach (var c in contentTypes)
+            {
+                if (!_contentTypes.ContainsKey(c.Value))
+                {
+                    _contentTypes.Add(c.Value, c); // Ignore if it's already there
+                }
+
+                if (!string.IsNullOrEmpty(c.Extension))
+                {
+                    // Some types cannot be derived from their extension
+                    _extensions.Add(c.Extension, c);
+                }
             }
         }
 
@@ -83,9 +115,19 @@ namespace Grapevine
 
         public string Boundary { get; protected set; }
 
-        public ContentType(string value, bool isBinary = true, string charSet = "")
+        public string Extension { get; }
+
+        /// <summary>
+        /// Declares a mime type
+        /// </summary>
+        /// <param name="value">The mime type</param>
+        /// <param name="extension">The extension to associate. Can be empty if this type has no defined extension</param>
+        /// <param name="isBinary">True if this is a binary file</param>
+        /// <param name="charSet">Character set of the data</param>
+        public ContentType(string value, string extension, bool isBinary = true, string charSet = "")
         {
             Value = value;
+            Extension = extension;
             IsBinary = isBinary;
             CharSet = charSet;
         }
@@ -132,21 +174,23 @@ namespace Grapevine
 
         public static ContentType Find(string value)
         {
-            Add(value);
-            return _contentTypes[value];
+            return Add(value);
         }
 
         public static ContentType FindKey(string key)
         {
             var k = key.ToLower();
-            return (_extensions.ContainsKey(k))
-                ? _extensions[k]
+            return _extensions.TryGetValue(k, out var extension)
+                ? extension
                 : ContentType.Binary;
         }
 
-        public static void Add(string value, bool isBinary = true, string charSet = "")
+        public static ContentType Add(string value, bool isBinary = true, string charSet = "")
         {
-            if (_contentTypes.ContainsKey(value)) return;
+            if (_contentTypes.TryGetValue(value, out ContentType result))
+            {
+                return result;
+            }
 
             var key = (value.Contains(';') && string.IsNullOrWhiteSpace(charSet))
                 ? value
@@ -154,7 +198,10 @@ namespace Grapevine
                     ? value
                     : $"{value}; charset={charSet}";
 
-            if (_contentTypes.ContainsKey(key)) return;
+            if (_contentTypes.TryGetValue(key, out result))
+            {
+                return result;
+            }
 
             if (value.Contains(';') && string.IsNullOrWhiteSpace(charSet))
             {
@@ -163,14 +210,23 @@ namespace Grapevine
                 charSet = parts[1]?.Replace("charset=", "").Trim();
             }
 
-            var contentType = new ContentType(value, isBinary, charSet);
-            _contentTypes.Add(contentType, contentType);
+            if (_contentTypes.TryGetValue(value, out result))
+            {
+                return result;
+            }
+
+            var contentType = new ContentType(value, "", isBinary, charSet);
+            _contentTypes.Add(contentType.Value, contentType);
+            return contentType;
         }
 
-        public static void Add(string key, ContentType contentType)
+        public static void Add(ContentType contentType)
         {
-            _contentTypes.Add(contentType, contentType);
-            _extensions.Add(key, contentType);
+            _contentTypes.Add(contentType.Value, contentType);
+            if (!string.IsNullOrWhiteSpace(contentType.Extension))
+            {
+                _extensions.Add(contentType.Extension, contentType);
+            }
         }
 
         public static ContentType MultipartContent(Multipart multipart = default, string boundary = null)
@@ -178,7 +234,7 @@ namespace Grapevine
             if (string.IsNullOrWhiteSpace(boundary))
                 boundary = MultiPartBoundary.Generate();
 
-            return new ContentType($"multipart/{multipart.ToString().ToLower()}", false, "")
+            return new ContentType($"multipart/{multipart.ToString().ToLower()}", "", false, "")
             {
                 Boundary = boundary.Substring(0, 70).TrimEnd()
             };

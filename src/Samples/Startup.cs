@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using Grapevine;
 using Microsoft.Extensions.Configuration;
@@ -26,6 +26,7 @@ namespace Samples
             {
                 loggingBuilder.ClearProviders();
                 loggingBuilder.AddNLog(new NLogLoggingConfiguration(Configuration.GetSection("NLog")));
+                loggingBuilder.AddConsole();
             });
 
             services.AddHttpClient<GitHubClient>(c =>

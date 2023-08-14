@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -162,18 +162,17 @@ namespace Grapevine
             Watcher?.Dispose();
         }
 
-        public async override Task SendFileAsync(IHttpContext context)
+        public override async Task SendFileAsync(IHttpContext context)
         {
             await SendFileAsync(context, null);
         }
 
-        public async override Task SendFileAsync(IHttpContext context, string filename)
+        public override async Task SendFileAsync(IHttpContext context, string filename)
         {
             PopulateDirectoryListing();
 
-            if (DirectoryMapping.ContainsKey(context.Request.Endpoint))
+            if (DirectoryMapping.TryGetValue(context.Request.Endpoint, out var filepath))
             {
-                var filepath = DirectoryMapping[context.Request.Endpoint];
                 context.Response.StatusCode = HttpStatusCode.Ok;
 
                 var lastModified = File.GetLastWriteTimeUtc(filepath).ToString("R");

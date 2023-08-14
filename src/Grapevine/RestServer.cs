@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 namespace Grapevine
@@ -20,7 +20,16 @@ namespace Grapevine
 
         public ServerOptions Options { get; } = new ServerOptions
         {
-            HttpContextFactory = (state, token) => new HttpContext(state as HttpListenerContext, token)
+            HttpContextFactory = (state, token) =>
+            {
+                HttpListenerContext context = state as HttpListenerContext;
+                if (context == null)
+                {
+                    // Could be Task<HttpListenerContext>, but using that result causes some infinite recursion.
+                    throw new InvalidOperationException($"Result is not of expected type {nameof(HttpListenerContext)}, but {state.GetType().Name}");
+                }
+                return new HttpContext(context, token);
+            }
         };
 
         public virtual IListenerPrefixCollection Prefixes { get; }
