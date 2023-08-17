@@ -1,5 +1,4 @@
-using System;
-using System.Net;
+﻿using System;
 using System.Threading;
 
 namespace Grapevine

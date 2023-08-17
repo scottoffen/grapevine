@@ -1,7 +1,6 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -32,12 +31,12 @@ namespace Grapevine
         /// <summary>
         /// Gets or sets the collection of cookies returned with the response
         /// </summary>
-        CookieCollection Cookies { get; set; }
+        System.Net.CookieCollection Cookies { get; set; }
 
         /// <summary>
         /// Gets or sets the collection of header name/value pairs returned by the server
         /// </summary>
-        WebHeaderCollection Headers { get; set; }
+        System.Net.WebHeaderCollection Headers { get; set; }
 
         string RedirectLocation { get; set; }
 
@@ -77,7 +76,7 @@ namespace Grapevine
         /// Adds the specified Cookie to the collection of cookies for this response
         /// </summary>
         /// <param name="cookie"></param>
-        void AppendCookie(Cookie cookie);
+        void AppendCookie(System.Net.Cookie cookie);
 
         /// <summary>
         /// Appends a value to the specified HTTP header to be sent with this response
@@ -102,7 +101,7 @@ namespace Grapevine
         /// Adds or updates a Cookie in the collection of cookies sent with this response
         /// </summary>
         /// <param name="cookie"></param>
-        void SetCookie(Cookie cookie);
+        void SetCookie(System.Net.Cookie cookie);
     }
 
     public static class IHttpResponseExtensions

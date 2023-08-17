@@ -1,8 +1,7 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
-using System.Net;
 using System.Text;
 
 namespace Grapevine
@@ -19,7 +18,7 @@ namespace Grapevine
 
         public string ContentType => Advanced.ContentType;
 
-        public CookieCollection Cookies => Advanced.Cookies;
+        public System.Net.CookieCollection Cookies => Advanced.Cookies;
 
         public bool HasEntityBody => Advanced.HasEntityBody;
 
@@ -43,7 +42,7 @@ namespace Grapevine
 
         public string RawUrl => Advanced.RawUrl;
 
-        public IPEndPoint RemoteEndPoint => Advanced.RemoteEndPoint;
+        public System.Net.IPEndPoint RemoteEndPoint => Advanced.RemoteEndPoint;
 
         public Uri Url => Advanced.Url;
 

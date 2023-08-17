@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -30,9 +30,7 @@ namespace Samples
                     sb.Append($"* Server listening on {string.Join(", ", server.Prefixes)}{Environment.NewLine}");
                     sb.Append($"* Stop server by going to {server.Prefixes.First()}api/stop{Environment.NewLine}");
                     sb.Append($"********************************************************************************{Environment.NewLine}");
-                    s.Logger.LogDebug(sb.ToString());
-
-                    // new InteractiveShell().Run(server);
+                    s.Logger.LogInformation(sb.ToString());
 
                     OpenBrowser(s.Prefixes.First());
                 };

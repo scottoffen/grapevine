@@ -1,5 +1,4 @@
-using System;
-using System.Net;
+﻿using System;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -29,13 +28,13 @@ namespace Grapevine
             set { Advanced.ContentType = value; }
         }
 
-        public CookieCollection Cookies
+        public System.Net.CookieCollection Cookies
         {
             get { return Advanced.Cookies; }
             set { Advanced.Cookies = value; }
         }
 
-        public WebHeaderCollection Headers
+        public System.Net.WebHeaderCollection Headers
         {
             get { return Advanced.Headers; }
             set { Advanced.Headers = value; }
@@ -79,7 +78,7 @@ namespace Grapevine
 
         public void AddHeader(string name, string value) => Advanced.AddHeader(name, value);
 
-        public void AppendCookie(Cookie cookie) => Advanced.AppendCookie(cookie);
+        public void AppendCookie(System.Net.Cookie cookie) => Advanced.AppendCookie(cookie);
 
         public void AppendHeader(string name, string value) => Advanced.AppendHeader(name, value);
 
@@ -91,7 +90,7 @@ namespace Grapevine
 
         public abstract Task SendResponseAsync(byte[] contents);
 
-        public void SetCookie(Cookie cookie) => Advanced.SetCookie(cookie);
+        public void SetCookie(System.Net.Cookie cookie) => Advanced.SetCookie(cookie);
 
         public HttpResponseBase(HttpListenerResponse response)
         {
