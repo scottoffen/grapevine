@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard2.1;net5.0;net6.0;net7.0;net8.0</TargetFrameworks>
+    <TargetFrameworks>net5.0;net6.0;net7.0;net8.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <NoWarn>$(NoWarn);NETSDK1138;CS1591;CS1573;CS1711;CS1574;CS1572</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -37,7 +37,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' OR '$(TargetFramework)' == 'netstandard2.1' OR '$(TargetFramework)' == 'net5.0'">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net5.0'">
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[5.0.0, 6.0.0)" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[5.0.0, 6.0.0)" />
   </ItemGroup>

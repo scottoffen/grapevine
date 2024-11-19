@@ -26,14 +26,19 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
 
-    # The steps below will run in order for each of strageies defined in the matrix
+    # The steps below will run in order for each of strategies defined in the matrix
     steps:
 
     # Installs the most recent versions of the .NET SDKs
     - name: Setup .NET SDK
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 8.0.x
+        dotnet-version: |
+          3.1.x
+          5.0.x
+          6.0.x
+          7.0.x
+          8.0.x
 
     # Displays the available .NET SDKs for verification
     - name: Display Available .NET SDKs
