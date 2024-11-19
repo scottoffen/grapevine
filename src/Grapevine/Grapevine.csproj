@@ -1,63 +1,81 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard2.1;net5.0;net6.0;net7.0</TargetFrameworks>
-    <NoWarn>NETSDK1138</NoWarn>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;net5.0;net6.0;net7.0;net8.0</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <NoWarn>$(NoWarn);NETSDK1138;CS1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageId>Grapevine</PackageId>
-    <PackageVersion>$(Version)</PackageVersion>
     <Authors>Scott Offen</Authors>
-    <Copyright>© 2014 - $([System.DateTime]::Now.ToString('yyyy')) Scott Offen</Copyright>
-    <Owners>Scott Offen</Owners>
+    <Copyright>© 2014 - $([System.DateTime]::Now.ToString('yyyy')) $(Authors)</Copyright>
     <Description>Fast, unopinionated, embeddable, minimalist REST framework for .NET</Description>
-    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageTags>rest http api web router client server express json xml embedded</PackageTags>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <FileVersion>$(Version)</FileVersion>
-    <Version>6.0.0-beta</Version>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <RepositoryUrl>https://github.com/scottoffen/grapevine</RepositoryUrl>
+    <PackageVersion>$(Version)</PackageVersion>
+    <Version>0.0.1</Version>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <RepositoryType>git</RepositoryType>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <RepositoryUrl>https://github.com/scottoffen/grapevine</RepositoryUrl>
     <PackageProjectUrl>https://scottoffen.github.io/grapevine/</PackageProjectUrl>
     <PackageIcon>grapevine.png</PackageIcon>
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
+    <!-- TODO: Is this still required? -->
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="5.0.0" />
-  </ItemGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <LangVersion>latestmajor</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <LangVersion>latestmajor</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
 
   <ItemGroup>
-    <Compile Update="Resources\Messages.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Messages.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Update="Resources\Messages.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Messages.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="..\..\LICENSE" Pack="true" Visible="false" PackagePath="" />
+    <None Include="README.md" Pack="true" PackagePath="" />
     <None Include="..\..\grapevine.png" Pack="true" PackagePath="\" />
   </ItemGroup>
 
-  <ItemGroup>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
-      <_Parameter1>Grapevine.Tests</_Parameter1>
-    </AssemblyAttribute>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' OR '$(TargetFramework)' == 'netstandard2.1' OR '$(TargetFramework)' == 'net5.0'">
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="[5.0.0, 6.0.0)" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[5.0.0, 6.0.0)" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[5.0.0, 6.0.0)" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[5.0.0, 6.0.0)" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="[5.0.0, 6.0.0)" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="[6.0.0, 7.0.0)" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[6.0.0, 7.0.0)" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[6.0.0, 7.0.0)" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[6.0.0, 7.0.0)" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="[6.0.0, 7.0.0)" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net7.0' ">
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="[7.0.0, 8.0.0)" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[7.0.0, 8.0.0)" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[7.0.0, 8.0.0)" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[7.0.0, 8.0.0)" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="[7.0.0, 8.0.0)" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="[8.0.0, 9.0.0)" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[8.0.0, 9.0.0)" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[8.0.0, 9.0.0)" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[8.0.0, 9.0.0)" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="[8.0.0, 9.0.0)" />
   </ItemGroup>
 
   <ItemGroup>
