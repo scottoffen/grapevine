@@ -2,9 +2,8 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;netstandard2.1;net5.0;net6.0;net7.0;net8.0</TargetFrameworks>
-    <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <NoWarn>$(NoWarn);NETSDK1138;CS1591</NoWarn>
+    <NoWarn>$(NoWarn);NETSDK1138;CS1591;CS1572</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageId>Grapevine</PackageId>
     <Authors>Scott Offen</Authors>

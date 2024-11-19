@@ -43,9 +43,8 @@ namespace Grapevine
         Task SendFileAsync(IHttpContext context, string filename);
 
         /// <summary>
-        /// The action to take if the file is not found but should be. This occures when prefix is found at the begining of the path info, but the file name specified isn't found in the content folder.
+        /// The action to take if the file is not found but should be. This occurs when prefix is found at the beginning of the path info, but the file name specified isn't found in the content folder.
         /// </summary>
-        /// <value>Action<IHttpContext></value>
         Func<IHttpContext, Task> FileNotFoundHandler { get; set; }
     }
 

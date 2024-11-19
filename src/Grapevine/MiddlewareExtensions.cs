@@ -63,14 +63,14 @@ namespace Grapevine
             return server.UseCorrelationId(correlationIdFieldName, null);
         }
 
-        public static IRestServer UseCorrelationId(this IRestServer server, Func<string> correlactionIdGenerator)
+        public static IRestServer UseCorrelationId(this IRestServer server, Func<string> correlationIdGenerator)
         {
-            return server.UseCorrelationId(null, correlactionIdGenerator);
+            return server.UseCorrelationId(null, correlationIdGenerator);
         }
 
-        public static IRestServer UseCorrelationId(this IRestServer server, string correlationIdFieldName, Func<string> correlactionIdGenerator)
+        public static IRestServer UseCorrelationId(this IRestServer server, string correlationIdFieldName, Func<string> correlationIdGenerator)
         {
-            var mw = new CorrelationId(correlationIdFieldName, correlactionIdGenerator);
+            var mw = new CorrelationId(correlationIdFieldName, correlationIdGenerator);
             server.OnRequestAsync += mw.EnsureCorrelationIdAsync;
             return server;
         }
@@ -93,7 +93,7 @@ namespace Grapevine
 
         public static IRestServer UseCorsPolicy(this IRestServer server, IEnumerable<string> allowOrigins)
         {
-            return server.UseCorsPolicy(allowOrigins.Cast<Uri>().ToList());
+            return server.UseCorsPolicy(allowOrigins.Select(x => new Uri(x)).ToList());
         }
 
         public static IRestServer UseCorsPolicy(this IRestServer server, IEnumerable<Uri> allowOrigins)

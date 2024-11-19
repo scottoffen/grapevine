@@ -16,4 +16,4 @@ using System.Runtime.InteropServices;
 
 // CLSCompliant attribute is used to indicate whether the assembly is compliant with
 // the Common Language Specification (CLS). See https://aka.ms/assembly-cls
-[assembly: CLSCompliant(true)]
+[assembly: CLSCompliant(false)]
