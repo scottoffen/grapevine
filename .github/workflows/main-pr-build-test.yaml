@@ -1,0 +1,158 @@
+# GitHub Workflow to build and test the code on a pull request
+name: PR Build and Test
+
+# The workflow_dispatch event allows you to run the workflow manually
+# The pull_request event triggers the workflow on pull requests to the main branch
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+    - main
+
+jobs:
+  # This job will build and run the tests for the project
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+
+    # These permissions are required to restore from GitHub Packages
+    permissions:
+      contents: read
+      packages: read
+
+    # The matrix strategy allows you to run the same steps on multiple operating systems
+    # The library should be compatible with all the operating systems in the matrix
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    # The steps below will run in order for each of strageies defined in the matrix
+    steps:
+
+    # Installs the most recent versions of the .NET SDKs
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    # Displays the available .NET SDKs for verification
+    - name: Display Available .NET SDKs
+      run: dotnet --list-sdks
+
+    # Checks out the code from the repository using a deep clone
+    # The deep close in necessary to access the full history of the repository
+    # so that the NerdBank.GitVersioning tool can determine the version number
+    - name: Checkout code (Deep Clone)
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    # Configure NuGet to use GitHub Packages as a source
+    - name: Configure NuGet for GitHub Packages
+      run: |
+        dotnet nuget add source https://nuget.pkg.github.com/scottoffen/index.json \
+        --name GitHub \
+        --username ${{ github.actor }} \
+        --password ${{ secrets.GITHUB_TOKEN }} \
+        --store-password-in-clear-text
+
+    # Restores the dependencies for the project
+    - name: Restore dependencies
+      run: dotnet restore ./src/Grapevine
+
+    # Builds the project without restoring the dependencies
+    - name: Build
+      run: dotnet build ./src/Grapevine --no-restore
+  
+    # Runs all the tests in the project except the integration tests
+    # without rebuilding the project
+    - name: Test
+      run: dotnet test ./src/Grapevine --no-build --verbosity normal --filter "Category!=Integration"
+
+  # This job will determine if a pre-release package should be published
+  check:
+    name: Check for Source Code Changes
+    needs: build
+    runs-on: ubuntu-latest
+
+    outputs:
+      has_changes: ${{ steps.changed_files.outputs.any_changed }}
+
+    # The steps below will only run once
+    steps:
+
+      # Checks out the code from the repository using a deep clone
+      # The deep close in necessary to access the full history of the repository
+      # so that the NerdBank.GitVersioning tool can determine the version number
+      - name: Checkout code (Deep Clone)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Checks for changes in the ./src directory that are not markdown files
+      # this step outpus a boolean value named any_changed that can be used in
+      # conditional steps.
+      - name: Check for source code changes
+        id: changed_files
+        uses: tj-actions/changed-files@v45
+        with:
+          files: 'src/**'
+          files_ignore: '**/*.md'
+
+  # This job will publish the package to GitHub Packages
+  # While this job is dependent on the build job, do not combine the jobs as
+  # the build job will run multiple times
+  publish:
+    name: Publish PreRelease Package
+    runs-on: ubuntu-latest
+    needs: check
+    if: ${{ needs.check.outputs.has_changes == 'true' }}
+
+    # These permissions are required to publish the package to GitHub Packages
+    permissions:
+      contents: write
+      packages: write
+
+    # The steps below will only run once
+    steps:
+
+    # Installs the most recent versions of the .NET SDKs
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    # Displays the available .NET SDKs for verification
+    - name: Display Available .NET SDKs
+      run: dotnet --list-sdks
+
+    # Checks out the code from the repository using a deep clone
+    # The deep close in necessary to access the full history of the repository
+    # so that the NerdBank.GitVersioning tool can determine the version number
+    - name: Checkout code (Deep Clone)
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    # Configure NuGet to use GitHub Packages as a source
+    - name: Configure NuGet for GitHub Packages
+      run: |
+        dotnet nuget add source https://nuget.pkg.github.com/scottoffen/index.json \
+        --name GitHub \
+        --username ${{ github.actor }} \
+        --password ${{ secrets.GITHUB_TOKEN }} \
+        --store-password-in-clear-text
+
+    # Restores the dependencies for the project
+    - name: Restore dependencies
+      run: dotnet restore ./src/Grapevine
+
+    # Builds the project using the Release configuration without restoring dependencies
+    - name: Build
+      run: dotnet build ./src/Grapevine --no-restore --configuration Release --output ./publish
+
+    # Publishes the package to GitHub Packages
+    - name: Publish to GitHub Packages
+      run: |
+        dotnet nuget push ./publish/*.nupkg --source https://nuget.pkg.github.com/scottoffen/index.json --api-key ${{ secrets.GITHUB_TOKEN }}
+        dotnet nuget push ./publish/*.snupkg --source https://nuget.pkg.github.com/scottoffen/index.json --api-key ${{ secrets.GITHUB_TOKEN }}
