@@ -2,15 +2,12 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <NoWarn>NETSDK1138</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Grapevine\Grapevine.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <PackageReference Include="Grapevine" Version="5.0.2" />
     <PackageReference Include="FluentHttpClient" Version="1.4.0" />
     <PackageReference Include="HttpMultipartParser" Version="5.0.1" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="5.0.0" />
