@@ -8,16 +8,6 @@ Grapevine is a fast, unopinionated, embeddable, minimalist web framework for .NE
 
 Grapevine is available on [NuGet.org](https://www.nuget.org/packages/Grapevine/) and can be installed using a NuGet package manager or the .NET CLI.
 
-Powershell:
-```powershell
-Install-Package Grapevine -Version 5.0.0-rc.10
-```
-
-.NET CLI
-```cmd
-> dotnet add package Grapevine --version 5.0.0-rc.10
-```
-
 ## Usage
 
 Grapevine is easy to get started with.
