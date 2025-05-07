@@ -1,6 +1,9 @@
 using System;
 using System.IO;
 using Grapevine;
+// Uncomment the following line to enable MCP extensions via Grapevine.Extensions.Mcp
+//     using Grapevine.Extensions.Mcp;
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -34,6 +37,12 @@ namespace Samples
                 c.DefaultRequestHeaders.Add("Accept", "application/vnd.github.v3+json");
                 c.DefaultRequestHeaders.Add("User-Agent", "Grapevine-Client");
             });
+
+            // Uncomment the following lines to register and configure the MCP server
+            //     services.AddMcpServer()
+            //         .WithHttpTransport()
+            //         .WithPromptsFromAssembly()
+            //         .WithToolsFromAssembly();
         }
 
         public void ConfigureServer(IRestServer server)
@@ -53,6 +62,9 @@ namespace Samples
 
             /* Configure Router Options (if supported by your router implementation) */
             server.Router.Options.SendExceptionMessages = true;
+
+            // Uncomment the following line to map MCP endpoints on the server
+            //     server.MapMcp();
         }
     }
 }
