@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Grapevine;
@@ -12,6 +13,7 @@ namespace Grapevine;
 /// scanner will use the specified lifetime when registering the type with the service
 /// collection. When omitted, the scanner uses its default lifetime.
 /// </remarks>
+[ExcludeFromCodeCoverage]
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
 public class ServiceLifetimeAttribute : Attribute
 {
@@ -43,6 +45,7 @@ public class ServiceLifetimeAttribute : Attribute
 /// This attribute is obsolete. Use <see cref="ServiceLifetimeAttribute"/> instead.
 /// </remarks>
 [Obsolete("ResourceLifetimeAttribute is obsolete. Use ServiceLifetimeAttribute instead.")]
+[ExcludeFromCodeCoverage]
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
 public class ResourceLifetimeAttribute : ServiceLifetimeAttribute
 {
