@@ -1,192 +1,184 @@
 using System.Collections.Concurrent;
-using System.Reflection;
+using System.Diagnostics;
 
 namespace Grapevine;
 
 /// <summary>
-/// Represents an HTTP method for use in request routing, providing a shared registry
-/// for case-insensitive lookup by name and support for a wildcard <see cref="Any"/> value.
+/// Represents an HTTP method, providing a shared registry for case-insensitive lookup
+/// by name and support for a wildcard <see cref="Any"/> value.
 /// </summary>
 /// <remarks>
 /// <para>
-/// The well-known HTTP methods defined by <see cref="System.Net.Http.HttpMethod"/> (e.g.
-/// <c>GET</c>, <c>POST</c>, <c>PUT</c>, <c>DELETE</c>) are automatically registered at
-/// startup alongside <see cref="Any"/> and any other public static fields declared on
-/// this class.
+/// The well-known HTTP methods (e.g. <c>GET</c>, <c>POST</c>, <c>PUT</c>,
+/// <c>DELETE</c>) are provided as static readonly fields and automatically registered
+/// at startup. Custom HTTP methods can be registered via <see cref="Register"/> and
+/// looked up via <see cref="Parse"/>. Lookups are case-insensitive.
 /// </para>
 /// <para>
-/// Custom HTTP methods can be registered via <see cref="Register"/> and looked up via
-/// <see cref="FromMethod"/>. Lookups are case-insensitive.
-/// </para>
-/// <para>
-/// Equality is based solely on <see cref="Method"/> using a case-insensitive ordinal
-/// comparison. Use <see cref="Equivalent"/> rather than equality when wildcard matching
-/// against <see cref="Any"/> is desired.
+/// Use <see cref="Matches"/> rather than equality when wildcard matching against
+/// <see cref="Any"/> is desired.
 /// </para>
 /// </remarks>
-public class HttpMethod
+[DebuggerDisplay("{Name}")]
+public partial class HttpMethod : IEquatable<HttpMethod>
 {
     /// <summary>
-    /// A wildcard HTTP method that matches any other method when used with
-    /// <see cref="Equivalent"/>. Use when a handler should respond regardless
-    /// of the HTTP method used in the request.
+    /// Gets the uppercase name of the HTTP method, e.g. <c>"GET"</c> or <c>"POST"</c>.
     /// </summary>
-    public static readonly HttpMethod Any = new HttpMethod("Any");
+    public string Name { get; }
 
-    private static readonly ConcurrentDictionary<string, HttpMethod> _httpMethods
-        = new(StringComparer.OrdinalIgnoreCase);
-
-    /// <summary>
-    /// Initializes the static registry by reflecting over all public static fields of
-    /// type <see cref="HttpMethod"/> on this class, then reflecting over all public
-    /// static properties of <see cref="System.Net.Http.HttpMethod"/> to register the
-    /// well-known base class methods. Lookups are case-insensitive.
-    /// </summary>
-    static HttpMethod()
+    private HttpMethod(string name)
     {
-        var ct = typeof(HttpMethod);
-        var fields = ct.GetFields(BindingFlags.Public | BindingFlags.Static);
-        foreach (var field in fields)
-        {
-            if (field.GetValue(null) is HttpMethod method)
-                _httpMethods.TryAdd(method.Method, method);
-        }
-
-        var baseType = typeof(System.Net.Http.HttpMethod);
-        var baseProperties = baseType.GetProperties(BindingFlags.Public | BindingFlags.Static);
-        foreach (var prop in baseProperties)
-        {
-            if (prop.GetValue(null) is System.Net.Http.HttpMethod baseMethod)
-                _httpMethods.TryAdd(baseMethod.Method, new HttpMethod(baseMethod.Method));
-        }
+        Name = name.Trim().ToUpperInvariant();
     }
 
     /// <summary>
-    /// Gets the HTTP method name, e.g. <c>"GET"</c> or <c>"POST"</c>.
+    /// Determines whether this instance is equal to another <see cref="HttpMethod"/>.
+    /// Equality is based on <see cref="Name"/> using a case-insensitive ordinal comparison.
     /// </summary>
-    public string Method { get; }
-
-    /// <summary>
-    /// Initializes a new instance of <see cref="HttpMethod"/> with the specified method name.
-    /// </summary>
-    /// <param name="method">The HTTP method name, e.g. <c>"GET"</c> or <c>"PATCH"</c>.</param>
-    public HttpMethod(string method)
-    {
-        Method = method;
-    }
-
-    /// <summary>
-    /// Determines whether this method is equivalent to another, treating <see cref="Any"/>
-    /// as a wildcard that matches all methods. Two non-wildcard methods are equivalent only
-    /// if they are equal.
-    /// </summary>
-    /// <param name="other">The <see cref="HttpMethod"/> to compare against.</param>
+    /// <param name="other">The <see cref="HttpMethod"/> to compare with this instance.</param>
     /// <returns>
-    /// <see langword="true"/> if either method is <see cref="Any"/>, or if the two methods
-    /// are equal; otherwise <see langword="false"/>.
+    /// <see langword="true"/> if both instances have the same <see cref="Name"/>;
+    /// otherwise <see langword="false"/>.
     /// </returns>
-    public bool Equivalent(HttpMethod other)
-    {
-        if (this.Equals(Any)) return true;
-        if (other.Equals(Any)) return true;
-        return this.Equals(other);
-    }
+    public bool Equals(HttpMethod? other)
+        => other is not null && Name.Equals(other.Name, StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Determines whether this instance is equal to another object.
+    /// </summary>
+    /// <param name="obj">The object to compare with this instance.</param>
+    public override bool Equals(object? obj)
+        => obj is HttpMethod other && Equals(other);
+
+    /// <summary>
+    /// Returns a hash code based on <see cref="Name"/>, consistent with the equality
+    /// contract defined by <see cref="Equals(HttpMethod?)"/>.
+    /// </summary>
+    public override int GetHashCode()
+        => StringComparer.OrdinalIgnoreCase.GetHashCode(Name);
+
+    /// <summary>
+    /// Determines whether this instance matches the specified <see cref="HttpMethod"/>,
+    /// treating <see cref="Any"/> as a wildcard that matches all methods.
+    /// </summary>
+    /// <param name="method">The <see cref="HttpMethod"/> to compare against.</param>
+    /// <returns>
+    /// <see langword="true"/> if either instance is <see cref="Any"/>, or if both
+    /// instances are equal; otherwise <see langword="false"/>.
+    /// </returns>
+    public bool Matches(HttpMethod? method)
+        => Equals(method) || method == Any || this == Any;
 
     /// <summary>
     /// Returns the HTTP method name.
     /// </summary>
-    public override string ToString() => Method;
+    public override string ToString() => Name;
+}
 
-    /// <summary>
-    /// Determines whether this instance is equal to another object. Equality is based
-    /// solely on <see cref="Method"/> using a case-insensitive ordinal comparison.
-    /// </summary>
-    /// <param name="obj">The object to compare with this instance.</param>
-    /// <returns>
-    /// <see langword="true"/> if <paramref name="obj"/> is an <see cref="HttpMethod"/>
-    /// or <see cref="string"/> whose method name matches <see cref="Method"/>;
-    /// otherwise <see langword="false"/>.
-    /// </returns>
-    public override bool Equals(object? obj)
-    {
-        return obj switch
-        {
-            HttpMethod m => string.Equals(Method, m.Method, StringComparison.OrdinalIgnoreCase),
-            string s => string.Equals(Method, s, StringComparison.OrdinalIgnoreCase),
-            System.Net.Http.HttpMethod m => string.Equals(Method, m.Method, StringComparison.OrdinalIgnoreCase),
-            _ => false
-        };
-    }
-
-    /// <summary>
-    /// Returns a hash code based solely on <see cref="Method"/>, consistent with the
-    /// equality contract defined by <see cref="Equals"/>.
-    /// </summary>
-    public override int GetHashCode() => StringComparer.OrdinalIgnoreCase.GetHashCode(Method);
-
+/// <summary>
+/// Provides equality and conversion operators for <see cref="HttpMethod"/>.
+/// </summary>
+public partial class HttpMethod
+{
     /// <summary>Returns <see langword="true"/> if <paramref name="left"/> and <paramref name="right"/> have the same method name.</summary>
-    public static bool operator ==(HttpMethod left, HttpMethod right) => left.Equals(right);
+    public static bool operator ==(HttpMethod? left, HttpMethod? right)
+        => left?.Equals(right) ?? right is null;
 
     /// <summary>Returns <see langword="true"/> if <paramref name="left"/> and <paramref name="right"/> have different method names.</summary>
-    public static bool operator !=(HttpMethod left, HttpMethod right) => !left.Equals(right);
-
-    /// <summary>Returns <see langword="true"/> if <paramref name="left"/> has the same method name as <paramref name="right"/>.</summary>
-    public static bool operator ==(HttpMethod left, string right) => left.Equals(right);
-
-    /// <summary>Returns <see langword="true"/> if <paramref name="left"/> has a different method name than <paramref name="right"/>.</summary>
-    public static bool operator !=(HttpMethod left, string right) => !left.Equals(right);
-
-    /// <summary>Returns <see langword="true"/> if <paramref name="left"/> matches the method name of <paramref name="right"/>.</summary>
-    public static bool operator ==(string left, HttpMethod right) => right.Equals(left);
-
-    /// <summary>Returns <see langword="true"/> if <paramref name="left"/> does not match the method name of <paramref name="right"/>.</summary>
-    public static bool operator !=(string left, HttpMethod right) => !right.Equals(left);
+    public static bool operator !=(HttpMethod? left, HttpMethod? right)
+        => !(left == right);
 
     /// <summary>
     /// Implicitly converts a <see cref="string"/> to an <see cref="HttpMethod"/> by
     /// looking up or registering the value in the shared dictionary.
     /// </summary>
-    /// <param name="value">The HTTP method name to convert.</param>
-    public static implicit operator HttpMethod(string value) => FromMethod(value);
+    /// <param name="name">The HTTP method name to convert.</param>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="name"/> is null or whitespace.
+    /// </exception>
+    public static implicit operator HttpMethod(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentNullException(nameof(name), "HTTP method name cannot be null or empty.");
+
+        return Parse(name);
+    }
 
     /// <summary>
     /// Implicitly converts an <see cref="HttpMethod"/> to its <see cref="string"/>
     /// method name, e.g. <c>"GET"</c>.
     /// </summary>
-    /// <param name="value">The <see cref="HttpMethod"/> instance to convert.</param>
-    public static implicit operator string(HttpMethod value) => value.Method;
+    /// <param name="method">The <see cref="HttpMethod"/> instance to convert.</param>
+    public static implicit operator string(HttpMethod method) => method.Name;
+}
+
+/// <summary>
+/// Provides the static registry, parsing, and well-known method fields for
+/// <see cref="HttpMethod"/>.
+/// </summary>
+public partial class HttpMethod
+{
+    private static readonly ConcurrentDictionary<string, HttpMethod> _methods
+        = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
-    /// Implicitly converts a <see cref="System.Net.Http.HttpMethod"/> to a
-    /// <see cref="HttpMethod"/> by looking up or registering its method name
-    /// in the shared dictionary.
+    /// Gets a read-only collection of all known HTTP methods.
     /// </summary>
-    /// <param name="value">The <see cref="System.Net.Http.HttpMethod"/> instance to convert.</param>
-    public static implicit operator HttpMethod(System.Net.Http.HttpMethod value)
-        => FromMethod(value.Method);
+    public static IReadOnlyCollection<HttpMethod> Known => _methods.Values.ToArray();
 
     /// <summary>
-    /// Implicitly converts a <see cref="HttpMethod"/> to a
-    /// <see cref="System.Net.Http.HttpMethod"/> using its method name.
+    /// Parses a string representation of an HTTP method into an <see cref="HttpMethod"/>
+    /// instance, registering it in the shared dictionary if not already present.
+    /// Lookups are case-insensitive.
     /// </summary>
-    /// <param name="value">The <see cref="HttpMethod"/> instance to convert.</param>
-    public static implicit operator System.Net.Http.HttpMethod(HttpMethod value)
-        => new System.Net.Http.HttpMethod(value.Method);
-
-    /// <summary>
-    /// Retrieves the <see cref="HttpMethod"/> for the specified method name, registering
-    /// a new instance if one is not already present. Lookups are case-insensitive.
-    /// </summary>
-    /// <param name="value">The HTTP method name to look up, e.g. <c>"GET"</c>.</param>
+    /// <param name="name">The HTTP method name to parse, e.g. <c>"GET"</c>.</param>
     /// <returns>The corresponding <see cref="HttpMethod"/> instance.</returns>
-    public static HttpMethod FromMethod(string value)
-        => _httpMethods.GetOrAdd(value, v => new HttpMethod(v));
+    public static HttpMethod Parse(string name)
+    {
+        var method = new HttpMethod(name);
+        return _methods.GetOrAdd(method.Name, method);
+    }
 
     /// <summary>
     /// Registers a new <see cref="HttpMethod"/> in the shared dictionary if the specified
     /// method name is not already present. Has no effect if the method is already registered.
     /// </summary>
-    /// <param name="value">The HTTP method name to register, e.g. <c>"PROPFIND"</c>.</param>
-    public static void Register(string value)
-        => _httpMethods.TryAdd(value, new HttpMethod(value));
+    /// <param name="name">The HTTP method name to register, e.g. <c>"PROPFIND"</c>.</param>
+    public static void Register(string name)
+        => _methods.TryAdd(name.Trim().ToUpperInvariant(), new HttpMethod(name));
+
+    /// <summary>
+    /// A wildcard HTTP method that matches any other method when used with
+    /// <see cref="Matches"/>. Use when a handler should respond regardless of the
+    /// HTTP method used in the request.
+    /// </summary>
+    public static readonly HttpMethod Any = Parse("*");
+
+    /// <summary>Represents an HTTP CONNECT method.</summary>
+    public static readonly HttpMethod Connect = Parse("Connect");
+
+    /// <summary>Represents an HTTP DELETE method.</summary>
+    public static readonly HttpMethod Delete = Parse("Delete");
+
+    /// <summary>Represents an HTTP GET method.</summary>
+    public static readonly HttpMethod Get = Parse("Get");
+
+    /// <summary>Represents an HTTP HEAD method.</summary>
+    public static readonly HttpMethod Head = Parse("Head");
+
+    /// <summary>Represents an HTTP OPTIONS method.</summary>
+    public static readonly HttpMethod Options = Parse("Options");
+
+    /// <summary>Represents an HTTP PATCH method.</summary>
+    public static readonly HttpMethod Patch = Parse("Patch");
+
+    /// <summary>Represents an HTTP POST method.</summary>
+    public static readonly HttpMethod Post = Parse("Post");
+
+    /// <summary>Represents an HTTP PUT method.</summary>
+    public static readonly HttpMethod Put = Parse("Put");
+
+    /// <summary>Represents an HTTP TRACE method.</summary>
+    public static readonly HttpMethod Trace = Parse("Trace");
 }
