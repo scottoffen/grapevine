@@ -1,5 +1,3 @@
-using Grapevine;
-
 namespace Grapevine.Abstractions.Tests;
 
 public class LocalsTests
@@ -78,6 +76,14 @@ public class LocalsTests
             locals["list"] = list;
             locals.GetAs<List<string>>("list").ShouldBeSameAs(list);
         }
+
+        [Fact]
+        public void ReturnsDefault_WhenValueIsWrongType()
+        {
+            var locals = new Locals();
+            locals["key"] = "not-an-int";
+            locals.GetAs<int>("key").ShouldBe(default);
+        }
     }
 
     public class GetOrAddAs_ValueOverload
@@ -110,6 +116,22 @@ public class LocalsTests
         {
             var locals = new Locals();
             locals.GetOrAddAs<int>("key", 42).ShouldBe(42);
+        }
+
+        [Fact]
+        public void ReturnsDefault_WhenExistingValueIsNull()
+        {
+            var locals = new Locals();
+            locals["key"] = null;
+            locals.GetOrAddAs<string>("key", "new").ShouldBeNull();
+        }
+
+        [Fact]
+        public void Throws_WhenExistingValueIsWrongType()
+        {
+            var locals = new Locals();
+            locals["key"] = 42;
+            Should.Throw<InvalidCastException>(() => locals.GetOrAddAs<string>("key", "new"));
         }
     }
 
@@ -162,6 +184,59 @@ public class LocalsTests
         {
             var locals = new Locals();
             locals.GetOrAddAs<int>("key", _ => 42).ShouldBe(42);
+        }
+
+        [Fact]
+        public void ReturnsDefault_WhenExistingValueIsNull()
+        {
+            var locals = new Locals();
+            locals["key"] = null;
+            locals.GetOrAddAs<string>("key", _ => "new").ShouldBeNull();
+        }
+
+        [Fact]
+        public void Throws_WhenExistingValueIsWrongType()
+        {
+            var locals = new Locals();
+            locals["key"] = 42;
+            Should.Throw<InvalidCastException>(() => locals.GetOrAddAs<string>("key", _ => "new"));
+        }
+    }
+
+    public class SetMethod
+    {
+        [Fact]
+        public void SetsValue_WhenKeyDoesNotExist()
+        {
+            var locals = new Locals();
+            locals.Set("key", "value");
+            locals.Get("key").ShouldBe("value");
+        }
+
+        [Fact]
+        public void OverwritesValue_WhenKeyExists()
+        {
+            var locals = new Locals();
+            locals["key"] = "old";
+            locals.Set("key", "new");
+            locals.Get("key").ShouldBe("new");
+        }
+
+        [Fact]
+        public void RemovesKey_WhenValueIsNull()
+        {
+            var locals = new Locals();
+            locals["key"] = "value";
+            locals.Set("key", null);
+            locals.ContainsKey("key").ShouldBeFalse();
+        }
+
+        [Fact]
+        public void HasNoEffect_WhenKeyDoesNotExistAndValueIsNull()
+        {
+            var locals = new Locals();
+            locals.Set("key", null);
+            locals.ContainsKey("key").ShouldBeFalse();
         }
     }
 }

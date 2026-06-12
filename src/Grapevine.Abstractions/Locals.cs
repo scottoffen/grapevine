@@ -26,24 +26,25 @@ public class Locals : Dictionary<object, object?>
     }
 
     /// <summary>
-    /// Retrieves the value associated with the specified key and casts it to
+    /// Retrieves the value associated with the specified key and returns it as
     /// <typeparamref name="T"/>. Returns <see langword="default"/> if the key is
-    /// not present.
+    /// not present or the value is not of type <typeparamref name="T"/>.
     /// </summary>
-    /// <typeparam name="T">The type to cast the value to.</typeparam>
+    /// <typeparam name="T">The type to return the value as.</typeparam>
     /// <param name="key">The key to look up.</param>
     /// <returns>
-    /// The value associated with <paramref name="key"/> cast to <typeparamref name="T"/>,
-    /// or <see langword="default"/> if the key is not found.
+    /// The value associated with <paramref name="key"/> as <typeparamref name="T"/>,
+    /// or <see langword="default"/> if the key is not found or the value is not of
+    /// type <typeparamref name="T"/>.
     /// </returns>
     public T? GetAs<T>(object key)
     {
-        var value = Get(key);
-        return value is null ? default : (T)value;
+        if (!TryGetValue(key, out var value)) return default;
+        return value is T t ? t : default;
     }
 
     /// <summary>
-    /// Retrieves the value associated with the specified key and casts it to
+    /// Retrieves the value associated with the specified key and returns it as
     /// <typeparamref name="T"/>, or adds and returns <paramref name="value"/> if
     /// the key is not present.
     /// </summary>
@@ -51,19 +52,26 @@ public class Locals : Dictionary<object, object?>
     /// <param name="key">The key to look up or add.</param>
     /// <param name="value">The value to add if the key is not present.</param>
     /// <returns>
-    /// The existing value cast to <typeparamref name="T"/> if the key is present,
+    /// The existing value as <typeparamref name="T"/> if the key is present,
     /// or <paramref name="value"/> if it was just added.
     /// </returns>
-    public T GetOrAddAs<T>(object key, T value)
+    /// <exception cref="InvalidCastException">
+    /// Thrown when the existing value is not of type <typeparamref name="T"/>.
+    /// </exception>
+    public T? GetOrAddAs<T>(object key, T value)
     {
         if (TryGetValue(key, out var existing))
-            return (T)existing!;
+        {
+            if (existing is null) return default;
+            if (existing is T t) return t;
+            throw new InvalidCastException($"Value for key '{key}' is of type '{existing.GetType()}', expected type '{typeof(T)}'.");
+        }
         this[key] = value;
         return value;
     }
 
     /// <summary>
-    /// Retrieves the value associated with the specified key and casts it to
+    /// Retrieves the value associated with the specified key and returns it as
     /// <typeparamref name="T"/>, or adds and returns the value produced by
     /// <paramref name="factory"/> if the key is not present.
     /// </summary>
@@ -74,15 +82,39 @@ public class Locals : Dictionary<object, object?>
     /// The function receives the key as its argument.
     /// </param>
     /// <returns>
-    /// The existing value cast to <typeparamref name="T"/> if the key is present,
+    /// The existing value as <typeparamref name="T"/> if the key is present,
     /// or the value produced by <paramref name="factory"/> if it was just added.
     /// </returns>
-    public T GetOrAddAs<T>(object key, Func<object, T> factory)
+    /// <exception cref="InvalidCastException">
+    /// Thrown when the existing value is not of type <typeparamref name="T"/>.
+    /// </exception>
+    public T? GetOrAddAs<T>(object key, Func<object, T> factory)
     {
         if (TryGetValue(key, out var existing))
-            return (T)existing!;
+        {
+            if (existing is null) return default;
+            if (existing is T t) return t;
+            throw new InvalidCastException($"Value for key '{key}' is of type '{existing.GetType()}', expected type '{typeof(T)}'.");
+        }
         var value = factory(key);
         this[key] = value;
         return value;
+    }
+
+    /// <summary>
+    /// Sets the value for the specified key. If <paramref name="value"/> is
+    /// <see langword="null"/>, the key is removed from the collection.
+    /// </summary>
+    /// <param name="key">The key to set or remove.</param>
+    /// <param name="value">
+    /// The value to associate with <paramref name="key"/>, or <see langword="null"/>
+    /// to remove the key from the collection.
+    /// </param>
+    public void Set(object key, object? value)
+    {
+        if (value is null)
+            Remove(key);
+        else
+            this[key] = value;
     }
 }
