@@ -1,0 +1,63 @@
+# Publish for a .NET solution. Delegates to the shared reusable workflow.
+#
+# Two paths:
+#   1. Push to main: re-publishes to GitHub Packages so the branch package
+#      stays current. NuGet.org publishing is never automatic.
+#   2. Manual workflow_dispatch: operator picks GitHub Packages, NuGet.org,
+#      or both. Defaults match the automatic push (GitHub yes, NuGet no), so
+#      a manual run with no input changes mirrors a re-run of the automatic
+#      publish.
+#
+# Path filters here intentionally mirror the PR build's ignore list so doc
+# commits to main do not republish. The preflight is NOT used on this side
+# because there is no "required check" concern to satisfy.
+name: Publish
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "!**/*.md"
+      - "!src/**Tests/**"
+      - "!src/Sample/**"
+  workflow_dispatch:
+    inputs:
+      pushGitHub:
+        description: "Push to GitHub Packages"
+        required: false
+        default: true
+        type: boolean
+      pushNuget:
+        description: "Push to NuGet.org"
+        required: false
+        default: false
+        type: boolean
+
+# Do not cancel in-progress publishes; cancelling mid-push could leave the
+# registry in an inconsistent state.
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    uses: scottoffen/workflows/.github/workflows/dotnet-build-and-publish.yml@v0
+    permissions:
+      contents: write
+      packages: write
+    with:
+      solution-path: src/Grapevine.slnx
+      dotnet-version: 10.0.x
+      check-paths: false
+      # On push events, github.event.inputs.* is empty, so the != / ==
+      # comparisons produce the same defaults the manual form declares.
+      # The result is that a push to main behaves identically to a manual
+      # run with the default inputs. (Using string comparisons against
+      # github.event.inputs rather than the typed inputs context is
+      # deliberate: the `inputs.x || default` shortcut is unsafe when
+      # the user's value is false, because GitHub's || returns the first
+      # truthy operand, so false || true would clobber a deliberate false.)
+      push-github: ${{ github.event.inputs.pushGitHub != 'false' }}
+      push-nuget: ${{ github.event.inputs.pushNuget == 'true' }}
+    secrets: inherit

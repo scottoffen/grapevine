@@ -1,49 +1,16 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard2.1;net5.0;net6.0;net7.0</TargetFrameworks>
-    <NoWarn>NETSDK1138</NoWarn>
     <PackageId>Grapevine</PackageId>
-    <PackageVersion>$(Version)</PackageVersion>
-    <Authors>Scott Offen</Authors>
-    <Copyright>© 2014 - $([System.DateTime]::Now.ToString('yyyy')) Scott Offen</Copyright>
-    <Owners>Scott Offen</Owners>
-    <Description>Fast, unopinionated, embeddable, minimalist REST framework for .NET</Description>
-    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageTags>rest http api web router client server express json xml embedded</PackageTags>
-    <AssemblyVersion>$(Version)</AssemblyVersion>
-    <FileVersion>$(Version)</FileVersion>
-    <Version>5.0.2</Version>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <RepositoryUrl>https://github.com/scottoffen/grapevine</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageProjectUrl>https://scottoffen.github.io/grapevine/</PackageProjectUrl>
-    <PackageIcon>grapevine.png</PackageIcon>
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+    <Description>Fast, unopinionated, embeddable, minimalist REST framework for .NET built on HttpClient</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Grapeseed" Version="5.0.2" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="5.0.0" />
+    <InternalsVisibleTo Include="Grapevine.Tests, PublicKey=$(GrapevinePublicKey)" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\..\LICENSE" Pack="true" Visible="false" PackagePath="" />
-    <None Include="..\..\grapevine.png" Pack="true" PackagePath="\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
-      <_Parameter1>Grapevine.Tests</_Parameter1>
-    </AssemblyAttribute>
+    <None Include="README.md" Pack="true" PackagePath="/" />
   </ItemGroup>
 
 </Project>

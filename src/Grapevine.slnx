@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="Grapevine.Abstractions.Tests/Grapevine.Abstractions.Tests.csproj" />
+  <Project Path="Grapevine.Abstractions/Grapevine.Abstractions.csproj" />
+  <Project Path="Grapevine.Tests/Grapevine.Tests.csproj" />
+  <Project Path="Grapevine/Grapevine.csproj" />
+  <Project Path="Sample/Sample.csproj" />
+</Solution>

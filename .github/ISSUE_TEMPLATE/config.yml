@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📘 Grapevine Documentation
+    url: https://scottoffen.github.io/grapevine
+    about: Start here. Many questions are answered in the official docs.
+  - name: 💬 Community Discussions
+    url: https://github.com/scottoffen/grapevine/discussions
+    about: Propose ideas, ask how-to questions, and get community help.
+  - name: "🙋 StackOverflow #grapevine"
+    url: https://stackoverflow.com/questions/tagged/grapevine?sort=newest
+    about: Ask/answer usage questions with the grapevine tag.
+  - name: 🔒 Report a security vulnerability
+    url: https://github.com/scottoffen/grapevine/security/advisories/new
+    about: Please report vulnerabilities privately rather than as a public issue.

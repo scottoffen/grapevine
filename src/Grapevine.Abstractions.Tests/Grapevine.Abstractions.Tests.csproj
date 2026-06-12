@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <TargetFrameworks></TargetFrameworks>
-    <DefaultNamespace>Grapevine.Tests</DefaultNamespace>
+    <DefaultNamespace>Grapevine.Abstractions.Tests</DefaultNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
@@ -28,7 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Grapevine\Grapevine.csproj" />
+    <ProjectReference Include="..\Grapevine.Abstractions\Grapevine.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>

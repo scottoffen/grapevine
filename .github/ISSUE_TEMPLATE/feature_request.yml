@@ -1,0 +1,59 @@
+name: 💡 Feature request
+description: Propose a change that improves Grapevine.
+labels: ["enhancement", "needs-triage"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please **start in Discussions first** to validate the idea with the community.  
+        Create a feature request issue only after you've gathered positive feedback.
+
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: Before you submit
+      options:
+        - label: I have searched existing Issues and Discussions.
+          required: true
+        - label: I have read the [contribution guidelines](https://github.com/scottoffen/grapevine/blob/main/CONTRIBUTING.md).
+          required: true
+
+  - type: input
+    id: discussion-link
+    attributes:
+      label: Link to accepted Discussion
+      description: Paste the URL to the Discussion where consensus was reached.
+      placeholder: https://github.com/scottoffen/grapevine/discussions/123
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: Describe the **problem** this solves (not the solution).
+      placeholder: Users need to...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed Solution
+      description: Outline how the solution would work at a high level.
+      placeholder: APIs, options, defaults, examples
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered (optional)
+      placeholder: Why not X? What tradeoffs did you consider?
+
+  - type: textarea
+    id: breaking
+    attributes:
+      label: Breaking Changes / Migration (optional)
+      description: Describe any breaking changes and proposed migration path.

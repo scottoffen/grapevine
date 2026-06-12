@@ -1,0 +1,45 @@
+# Cleanup prereleases from GitHub Packages. Delegates to the shared
+# reusable workflow.
+#
+# Manual-only. Defaults to a dry run; the first run with any new mode or
+# day count should always be a dry run so I can verify the list of
+# versions about to be deleted before deletion actually happens.
+name: Cleanup Prerelease Packages
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Which versions to consider for deletion'
+        required: true
+        type: choice
+        default: prerelease-only
+        options:
+          - prerelease-only
+          - older-than-days
+      days:
+        description: 'For older-than-days mode: delete prereleases older than this many days'
+        required: false
+        type: number
+        default: 30
+      dry_run:
+        description: 'If true, lists what would be deleted without actually deleting'
+        required: false
+        type: boolean
+        default: true
+
+concurrency:
+  group: cleanup-packages
+  cancel-in-progress: false
+
+jobs:
+  cleanup:
+    uses: scottoffen/workflows/.github/workflows/dotnet-cleanup-packages.yml@v0
+    with:
+      mode: ${{ github.event.inputs.mode }}
+      days: ${{ fromJSON(github.event.inputs.days) }}
+      dry_run: ${{ github.event.inputs.dry_run == 'true' }}
+      package-names: |
+        Grapevine.Abstractions
+        Grapevine
+    secrets: inherit

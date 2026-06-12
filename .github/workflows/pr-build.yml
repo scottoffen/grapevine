@@ -1,0 +1,42 @@
+# PR build for a .NET solution. Delegates to the shared reusable workflow.
+#
+# The trigger has no path filter on purpose: branch protection treats a
+# missing required check as "pending" indefinitely, which would block doc-
+# only PRs forever. Instead, the reusable workflow's preflight gate decides
+# whether the build actually runs based on the files that changed. A
+# skipped job is reported as success to branch protection.
+name: PR Build
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# Cancel any in-progress run for the same PR when a new commit lands.
+# The latest commit's result is the one that matters.
+concurrency:
+  group: pr-build-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    # IMPORTANT: this job name ('build') is what branch protection sees as
+    # the required status check. Renaming it here means updating branch
+    # protection on the consuming repo to match.
+    uses: scottoffen/workflows/.github/workflows/dotnet-build-and-publish.yml@v0
+    permissions:
+      contents: write
+      packages: write
+    with:
+      solution-path: src/Grapevine.slnx
+      dotnet-version: 10.0.x
+      check-paths: true
+      include-paths: |
+        src/**
+      ignore-paths: |
+        **/*.md
+        src/**Tests/**
+        src/Sample/**
+      push-github: true
+      push-nuget: false
+    secrets: inherit

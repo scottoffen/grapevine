@@ -1,0 +1,104 @@
+name: 🐛 Bug report
+description: Something reproducible that is broken and should be fixed.
+labels: ["bug", "needs-triage"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping make Grapevine better!  
+        **Usage/how-to questions will be closed.** Please use Discussions or StackOverflow instead.
+
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: Before you submit
+      description: Please confirm the following.
+      options:
+        - label: I have searched existing Issues and Discussions.
+          required: true
+        - label: This is **not** a usage/how-to question.
+          required: true
+        - label: I have read the [contribution guidelines](https://github.com/scottoffen/grapevine/blob/main/CONTRIBUTING.md).
+          required: true
+
+  - type: input
+    id: grapevine-version
+    attributes:
+      label: Grapevine Version
+      placeholder: e.g., 6.0.0 or commit SHA
+    validations:
+      required: true
+
+  - type: input
+    id: dotnet-version
+    attributes:
+      label: .NET SDK/Runtime Version
+      placeholder: e.g., .NET 8.0 or SDK 8.0.400
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: OS and Version
+      placeholder: e.g., Windows 11 24H2 / Ubuntu 24.04 / macOS 14.6
+    validations:
+      required: true
+
+  - type: textarea
+    id: other-stack
+    attributes:
+      label: Related Tooling / Libraries (optional)
+      description: If relevant, include DI container, logging framework, IDE, reverse proxy, etc.
+      placeholder: e.g., Microsoft.Extensions.DependencyInjection 8.0.0, Serilog 3.1, Rider 2024.2
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal Reproducible Example
+      description: Provide the **smallest possible** code/config to reproduce. Link to a repo or include inline code.
+      render: csharp
+      placeholder: |
+        // minimal Program.cs or test demonstrating the issue
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      placeholder: What should happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      placeholder: What actually happens?
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant Logs/Stack Traces (optional)
+      description: Redact secrets. Use backticks for code fences.
+      render: text
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots / Recordings (optional)
