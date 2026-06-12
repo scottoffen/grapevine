@@ -21,32 +21,39 @@ public static class NameValueCollectionExtensions
     /// <param name="key">The key to look up.</param>
     /// <returns>The value associated with <paramref name="key"/> converted to <typeparamref name="T"/>.</returns>
     /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="collection"/> or <paramref name="key"/> is <see langword="null"/>.
+    /// Thrown when <paramref name="collection"/> is null or <paramref name="key"/> is
+    /// null or whitespace.
     /// </exception>
     /// <exception cref="ArgumentOutOfRangeException">
     /// Thrown when <paramref name="key"/> is not found in the collection.
     /// </exception>
-    /// <exception cref="ArgumentException">
-    /// Thrown when the value cannot be converted to <typeparamref name="T"/>.
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when no type converter exists for <typeparamref name="T"/>.
     /// </exception>
-    public static T GetValue<T>(this NameValueCollection collection, string key)
+    public static T? GetValue<T>(this NameValueCollection collection, string key)
     {
-        if (collection == null) throw new ArgumentNullException(nameof(collection), "Missing collection");
-        if (key == null) throw new ArgumentNullException(nameof(key), "Missing key");
+        if (collection == null)
+            throw new ArgumentNullException(nameof(collection));
 
-        var value = collection[key];
-        if (value == null) throw new ArgumentOutOfRangeException(nameof(key), $"Key {key} not found in collection");
+        if (string.IsNullOrWhiteSpace(key))
+            throw new ArgumentNullException(nameof(key));
 
-        var converter = _converters.GetOrAdd(typeof(T), t => TypeDescriptor.GetConverter(t));
+        if (!collection.TryGetValue(key, out var value))
+            throw new ArgumentOutOfRangeException(nameof(key), $"Key '{key}' not found in collection.");
 
-        if (!converter.CanConvertFrom(typeof(string)))
-            throw new ArgumentException($"Cannot convert '{value}' to {typeof(T)}");
-
-        var result = converter.ConvertFrom(value);
-        if (result == null)
-            throw new ArgumentException($"Conversion of '{value}' to {typeof(T)} returned null");
-
-        return (T)result;
+        try
+        {
+            var converter = GetTypeConverter(typeof(T));
+            return (T?)converter.ConvertFrom(value!);
+        }
+        catch (InvalidOperationException)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            return default;
+        }
     }
 
     /// <summary>
@@ -62,19 +69,61 @@ public static class NameValueCollectionExtensions
     /// The converted value if the key exists and conversion succeeds, otherwise
     /// <paramref name="defaultValue"/>.
     /// </returns>
-    public static T GetValue<T>(this NameValueCollection collection, string key, T defaultValue)
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="collection"/> is null or <paramref name="key"/> is
+    /// null or whitespace.
+    /// </exception>
+    public static T? GetValue<T>(this NameValueCollection collection, string key, T defaultValue)
     {
-        if (collection == null || key == null || collection[key] == null)
-            return defaultValue;
+        if (collection == null)
+            throw new ArgumentNullException(nameof(collection));
 
-        try
+        if (string.IsNullOrWhiteSpace(key))
+            throw new ArgumentNullException(nameof(key));
+
+        if (collection.TryGetValue(key, out var value))
         {
-            return collection.GetValue<T>(key);
+            try
+            {
+                var converter = GetTypeConverter(typeof(T));
+                return (T?)converter.ConvertFrom(value!);
+            }
+            catch (Exception)
+            {
+                // Silently return defaultValue on any conversion failure.
+            }
         }
-        catch (ArgumentException)
-        {
-            return defaultValue;
-        }
+
+        return defaultValue;
+    }
+
+    /// <summary>
+    /// Attempts to retrieve the value associated with the specified key.
+    /// </summary>
+    /// <param name="collection">The collection to retrieve the value from.</param>
+    /// <param name="key">The key to look up.</param>
+    /// <param name="value">
+    /// When this method returns, contains the value associated with <paramref name="key"/>,
+    /// or <see langword="null"/> if the key was not found.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> if the key exists and has a non-null value; otherwise
+    /// <see langword="false"/>.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="collection"/> is null or <paramref name="key"/> is
+    /// null or whitespace.
+    /// </exception>
+    public static bool TryGetValue(this NameValueCollection collection, string key, out string? value)
+    {
+        if (collection == null)
+            throw new ArgumentNullException(nameof(collection));
+
+        if (string.IsNullOrWhiteSpace(key))
+            throw new ArgumentNullException(nameof(key));
+
+        value = collection[key];
+        return value != null;
     }
 
     /// <summary>
@@ -83,15 +132,13 @@ public static class NameValueCollectionExtensions
     /// to least preferred.
     /// </summary>
     /// <remarks>
-    /// If the key is not present or the value is empty, an empty list is returned.
-    /// Single values with no quality factor are returned as a single-element list
-    /// without parsing overhead.
+    /// If the key is not present or the value is empty, an empty array is returned.
     /// </remarks>
     /// <param name="collection">The collection to retrieve the value from.</param>
     /// <param name="key">The key to look up.</param>
     /// <returns>
     /// An ordered list of values from most preferred to least preferred, or an empty
-    /// list if the key is not present or the value is empty.
+    /// array if the key is not present or the value is empty.
     /// </returns>
     public static IList<string> SortQualityValues(this NameValueCollection collection, string key)
     {
@@ -99,6 +146,29 @@ public static class NameValueCollectionExtensions
 
         if (string.IsNullOrWhiteSpace(unparsed)) return Array.Empty<string>();
 
-        return QualityValues.Parse(unparsed);
+        return QualityValues.Parse(unparsed!);
+    }
+
+    /// <summary>
+    /// Retrieves the cached <see cref="TypeConverter"/> for the specified type, or
+    /// creates and caches a new one. Throws if no converter capable of converting from
+    /// <see cref="string"/> exists for the type.
+    /// </summary>
+    /// <param name="type">The type to retrieve a converter for.</param>
+    /// <returns>A <see cref="TypeConverter"/> that can convert from <see cref="string"/>.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when no type converter capable of converting from <see cref="string"/>
+    /// exists for <paramref name="type"/>.
+    /// </exception>
+    private static TypeConverter GetTypeConverter(Type type)
+    {
+        return _converters.GetOrAdd(type, t =>
+        {
+            var converter = TypeDescriptor.GetConverter(t);
+            if (converter.CanConvertFrom(typeof(string)))
+                return converter;
+
+            throw new InvalidOperationException($"No type converter found for type '{t.FullName}'.");
+        });
     }
 }

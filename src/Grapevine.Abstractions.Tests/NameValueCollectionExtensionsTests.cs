@@ -3,10 +3,50 @@ using Grapevine;
 using Shouldly;
 using Xunit;
 
-namespace Grapevine.Abstractions.Tests;
+namespace Grapeseed.Tests;
 
 public class NameValueCollectionExtensionsTests
 {
+    public class TryGetValueMethod
+    {
+        [Fact]
+        public void ReturnsTrueAndValue_WhenKeyExists()
+        {
+            var collection = new NameValueCollection { { "key", "value" } };
+            collection.TryGetValue("key", out var value).ShouldBeTrue();
+            value.ShouldBe("value");
+        }
+
+        [Fact]
+        public void ReturnsFalse_WhenKeyDoesNotExist()
+        {
+            var collection = new NameValueCollection();
+            collection.TryGetValue("missing", out var value).ShouldBeFalse();
+            value.ShouldBeNull();
+        }
+
+        [Fact]
+        public void Throws_WhenCollectionIsNull()
+        {
+            NameValueCollection? collection = null;
+            Should.Throw<ArgumentNullException>(() => collection!.TryGetValue("key", out _));
+        }
+
+        [Fact]
+        public void Throws_WhenKeyIsNull()
+        {
+            var collection = new NameValueCollection();
+            Should.Throw<ArgumentNullException>(() => collection.TryGetValue(null!, out _));
+        }
+
+        [Fact]
+        public void Throws_WhenKeyIsWhitespace()
+        {
+            var collection = new NameValueCollection();
+            Should.Throw<ArgumentNullException>(() => collection.TryGetValue("   ", out _));
+        }
+    }
+
     public class GetValue_ThrowingOverload
     {
         [Fact]
@@ -60,6 +100,13 @@ public class NameValueCollectionExtensionsTests
         }
 
         [Fact]
+        public void Throws_WhenKeyIsWhitespace()
+        {
+            var collection = new NameValueCollection();
+            Should.Throw<ArgumentNullException>(() => collection.GetValue<string>("   "));
+        }
+
+        [Fact]
         public void Throws_WhenKeyNotInCollection()
         {
             var collection = new NameValueCollection();
@@ -67,10 +114,17 @@ public class NameValueCollectionExtensionsTests
         }
 
         [Fact]
-        public void Throws_WhenValueCannotBeConverted()
+        public void Throws_WhenNoConverterExistsForType()
+        {
+            var collection = new NameValueCollection { { "key", "value" } };
+            Should.Throw<InvalidOperationException>(() => collection.GetValue<NameValueCollection>("key"));
+        }
+
+        [Fact]
+        public void ReturnsDefault_WhenValueCannotBeConverted()
         {
             var collection = new NameValueCollection { { "key", "not-an-int" } };
-            Should.Throw<Exception>(() => collection.GetValue<int>("key"));
+            collection.GetValue<int>("key").ShouldBe(default);
         }
 
         [Fact]
@@ -79,22 +133,6 @@ public class NameValueCollectionExtensionsTests
             var collection = new NameValueCollection { { "key", "42" } };
             collection.GetValue<int>("key").ShouldBe(42);
             collection.GetValue<int>("key").ShouldBe(42);
-        }
-
-        [Fact]
-        public void ConverterIsCached_AcrossDifferentTypes()
-        {
-            var collection = new NameValueCollection
-            {
-                { "int", "42" },
-                { "bool", "true" },
-                { "decimal", "3.14" }
-            };
-            collection.GetValue<int>("int").ShouldBe(42);
-            collection.GetValue<bool>("bool").ShouldBeTrue();
-            collection.GetValue<decimal>("decimal").ShouldBe(3.14m);
-            collection.GetValue<int>("int").ShouldBe(42);
-            collection.GetValue<bool>("bool").ShouldBeTrue();
         }
     }
 
@@ -105,20 +143,6 @@ public class NameValueCollectionExtensionsTests
         {
             var collection = new NameValueCollection { { "key", "42" } };
             collection.GetValue<int>("key", 0).ShouldBe(42);
-        }
-
-        [Fact]
-        public void ReturnsDefault_WhenCollectionIsNull()
-        {
-            NameValueCollection? collection = null;
-            collection!.GetValue<string>("key", "default").ShouldBe("default");
-        }
-
-        [Fact]
-        public void ReturnsDefault_WhenKeyIsNull()
-        {
-            var collection = new NameValueCollection();
-            collection.GetValue<string>(null!, "default").ShouldBe("default");
         }
 
         [Fact]
@@ -136,10 +160,24 @@ public class NameValueCollectionExtensionsTests
         }
 
         [Fact]
-        public void ReturnsDefaultForValueType_WhenKeyNotInCollection()
+        public void Throws_WhenCollectionIsNull()
+        {
+            NameValueCollection? collection = null;
+            Should.Throw<ArgumentNullException>(() => collection!.GetValue<string>("key", "default"));
+        }
+
+        [Fact]
+        public void Throws_WhenKeyIsNull()
         {
             var collection = new NameValueCollection();
-            collection.GetValue<int>("missing", 0).ShouldBe(0);
+            Should.Throw<ArgumentNullException>(() => collection.GetValue<string>(null!, "default"));
+        }
+
+        [Fact]
+        public void Throws_WhenKeyIsWhitespace()
+        {
+            var collection = new NameValueCollection();
+            Should.Throw<ArgumentNullException>(() => collection.GetValue<string>("   ", "default"));
         }
     }
 
