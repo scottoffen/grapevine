@@ -1,136 +1,285 @@
 using Grapevine;
+using Shouldly;
+using Xunit;
 
-namespace Grapevine.Abstractions.Tests;
+namespace Grapevine.Tests;
 
 public class ContentTypeTests
 {
-    private static string UniqueMimeType() => $"application/x-{Guid.NewGuid():N}";
+    private static string UniqueType() => $"application/x-{Guid.NewGuid():N}";
     private static string UniqueExtension() => Guid.NewGuid().ToString("N");
 
     public class Constructor
     {
         [Fact]
-        public void SetsValue()
+        public void SetsType()
         {
-            var ct = new ContentType("text/html", ContentMode.Text, "UTF-8");
-            ct.Value.ShouldBe("text/html");
+            var ct = new ContentType("text", "html");
+            ct.Type.ShouldBe("text");
         }
 
         [Fact]
-        public void SetsMode()
+        public void SetsSubType()
         {
-            var ct = new ContentType("text/html", ContentMode.Text, "UTF-8");
+            var ct = new ContentType("text", "html");
+            ct.SubType.ShouldBe("html");
+        }
+
+        [Fact]
+        public void SetsCharset()
+        {
+            var ct = new ContentType("text", "html", charset: "UTF-8");
+            ct.Charset.ShouldBe("UTF-8");
+        }
+
+        [Fact]
+        public void DefaultCharsetIsNull()
+        {
+            var ct = new ContentType("image", "png");
+            ct.Charset.ShouldBeNull();
+        }
+
+        [Fact]
+        public void WhitespaceCharsetIsNull()
+        {
+            var ct = new ContentType("text", "html", charset: "   ");
+            ct.Charset.ShouldBeNull();
+        }
+
+        [Fact]
+        public void AutoDetectsTextMode_ForTextType()
+        {
+            var ct = new ContentType("text", "plain");
+            ct.Mode.ShouldBe(ContentMode.Text);
+            ct.IsBinary.ShouldBeFalse();
+        }
+
+        [Fact]
+        public void AutoDetectsTextMode_ForJsonSubType()
+        {
+            var ct = new ContentType("application", "json");
             ct.Mode.ShouldBe(ContentMode.Text);
         }
 
         [Fact]
-        public void SetsCharSet()
+        public void AutoDetectsTextMode_WhenCharsetPresent()
         {
-            var ct = new ContentType("text/html", ContentMode.Text, "UTF-8");
-            ct.CharSet.ShouldBe("UTF-8");
+            var ct = new ContentType("application", "octet-stream", charset: "UTF-8");
+            ct.Mode.ShouldBe(ContentMode.Text);
         }
 
         [Fact]
-        public void DefaultModeIsBinary()
+        public void AutoDetectsBinaryMode_ForUnrecognizedType()
         {
-            var ct = new ContentType("application/octet-stream");
+            var ct = new ContentType("image", "png");
             ct.Mode.ShouldBe(ContentMode.Binary);
-        }
-
-        [Fact]
-        public void DefaultCharSetIsEmpty()
-        {
-            var ct = new ContentType("application/octet-stream");
-            ct.CharSet.ShouldBe(string.Empty);
-        }
-
-        [Fact]
-        public void IsBinaryIsTrue_WhenModeIsBinary()
-        {
-            var ct = new ContentType("application/octet-stream", ContentMode.Binary);
             ct.IsBinary.ShouldBeTrue();
         }
 
         [Fact]
-        public void IsBinaryIsFalse_WhenModeIsText()
+        public void ExplicitModeOverridesAutoDetection()
         {
-            var ct = new ContentType("text/plain", ContentMode.Text);
-            ct.IsBinary.ShouldBeFalse();
+            var ct = new ContentType("text", "html", mode: ContentMode.Binary);
+            ct.Mode.ShouldBe(ContentMode.Binary);
+        }
+
+        [Fact]
+        public void SetsIsMultipart_WhenTypeIsMultipart()
+        {
+            var ct = new ContentType("multipart", "form-data");
+            ct.IsMultipart.ShouldBeTrue();
+        }
+
+        [Fact]
+        public void SetsIsMultipart_CaseInsensitive()
+        {
+            var ct = new ContentType("MULTIPART", "form-data");
+            ct.IsMultipart.ShouldBeTrue();
+        }
+
+        [Fact]
+        public void IsMultipartIsFalse_ForNonMultipartType()
+        {
+            var ct = new ContentType("text", "html");
+            ct.IsMultipart.ShouldBeFalse();
         }
 
         [Fact]
         public void SetsBoundary_WhenProvidedAndMultipart()
         {
-            var ct = new ContentType("multipart/form-data", ContentMode.Binary, "", "my-boundary");
+            var ct = new ContentType("multipart", "form-data", boundary: "my-boundary");
             ct.Boundary.ShouldBe("my-boundary");
         }
 
         [Fact]
         public void GeneratesBoundary_WhenNotProvidedAndMultipart()
         {
-            var ct = new ContentType("multipart/form-data", ContentMode.Binary);
+            var ct = new ContentType("multipart", "form-data");
             ct.Boundary.ShouldNotBeNullOrWhiteSpace();
         }
 
         [Fact]
         public void ThrowsOnBoundaryAccess_WhenNotMultipart()
         {
-            var ct = new ContentType("text/html", ContentMode.Text);
+            var ct = new ContentType("text", "html");
             Should.Throw<InvalidOperationException>(() => _ = ct.Boundary);
+        }
+
+        [Fact]
+        public void Throws_WhenTypeIsNull()
+        {
+            Should.Throw<ArgumentNullException>(() => new ContentType(null!, "html"));
+        }
+
+        [Fact]
+        public void DefaultsSubTypeToEmpty_WhenNull()
+        {
+            var ct = new ContentType("text", null!);
+            ct.SubType.ShouldBe(string.Empty);
         }
     }
 
     public class ToStringMethod
     {
         [Fact]
-        public void ReturnsValueOnly_WhenCharSetIsEmpty()
+        public void ReturnsTypeAndSubType()
         {
-            var ct = new ContentType("image/png", ContentMode.Binary);
+            var ct = new ContentType("image", "png");
             ct.ToString().ShouldBe("image/png");
         }
 
         [Fact]
-        public void ReturnsValueWithCharSet_WhenCharSetIsPresent()
+        public void ReturnsTypeOnly_WhenSubTypeIsEmpty()
         {
-            var ct = new ContentType("text/html", ContentMode.Text, "UTF-8");
+            var ct = new ContentType("text", string.Empty);
+            ct.ToString().ShouldBe("text");
+        }
+
+        [Fact]
+        public void IncludesCharset_WhenPresent()
+        {
+            var ct = new ContentType("text", "html", charset: "UTF-8");
             ct.ToString().ShouldBe("text/html; charset=UTF-8");
         }
 
         [Fact]
-        public void ReturnsValueWithBoundary_WhenMultipart()
+        public void IncludesBoundary_WhenMultipart()
         {
-            var ct = new ContentType("multipart/form-data", ContentMode.Binary, "", "test-boundary");
+            var ct = new ContentType("multipart", "form-data", boundary: "test-boundary");
             ct.ToString().ShouldBe("multipart/form-data; boundary=test-boundary");
         }
 
         [Fact]
         public void GeneratesAndIncludesBoundary_WhenMultipartAndNoBoundaryProvided()
         {
-            var ct = new ContentType("multipart/form-data", ContentMode.Binary);
+            var ct = new ContentType("multipart", "form-data");
             ct.ToString().ShouldStartWith("multipart/form-data; boundary=");
+        }
+
+        [Fact]
+        public void IncludesAdditionalParameters()
+        {
+            var ct = new ContentType("text", "html");
+            ct.Parameters["foo"] = "bar";
+            ct.ToString().ShouldContain("; foo=bar");
+        }
+
+        [Fact]
+        public void QuotesParameterValues_WhenContainingSpecialChars()
+        {
+            var ct = new ContentType("text", "html");
+            ct.Parameters["foo"] = "bar baz";
+            ct.ToString().ShouldContain("; foo=\"bar baz\"");
+        }
+    }
+
+    public class ParseMethod
+    {
+        [Fact]
+        public void ParsesTypeAndSubType()
+        {
+            var ct = ContentType.Parse("text/html");
+            ct.Type.ShouldBe("text");
+            ct.SubType.ShouldBe("html");
+        }
+
+        [Fact]
+        public void ParsesCharset()
+        {
+            var ct = ContentType.Parse("text/html; charset=UTF-8");
+            ct.Charset.ShouldBe("UTF-8");
+        }
+
+        [Fact]
+        public void ParsesBoundary()
+        {
+            var ct = ContentType.Parse("multipart/form-data; boundary=abc123");
+            ct.Boundary.ShouldBe("abc123");
+        }
+
+        [Fact]
+        public void ParsesAdditionalParameters()
+        {
+            var ct = ContentType.Parse("text/html; charset=UTF-8; foo=bar");
+            ct.Parameters["foo"].ShouldBe("bar");
+        }
+
+        [Fact]
+        public void ParsesParametersRegardlessOfOrder()
+        {
+            var ct = ContentType.Parse("multipart/mixed; boundary=abc123; charset=UTF-8");
+            ct.Boundary.ShouldBe("abc123");
+            ct.Charset.ShouldBe("UTF-8");
+        }
+
+        [Fact]
+        public void StripsQuotesFromParameterValues()
+        {
+            var ct = ContentType.Parse("text/html; charset=\"UTF-8\"");
+            ct.Charset.ShouldBe("UTF-8");
+        }
+
+        [Fact]
+        public void Throws_WhenValueIsNull()
+        {
+            Should.Throw<ArgumentException>(() => ContentType.Parse(null!));
+        }
+
+        [Fact]
+        public void Throws_WhenValueIsWhitespace()
+        {
+            Should.Throw<ArgumentException>(() => ContentType.Parse("   "));
+        }
+
+        [Fact]
+        public void AlwaysCreatesNewInstance()
+        {
+            var a = ContentType.Parse("text/html");
+            var b = ContentType.Parse("text/html");
+            a.ShouldNotBeSameAs(b);
         }
     }
 
     public class ImplicitStringConversion
     {
         [Fact]
-        public void ReturnsValueOnly_WhenCharSetIsEmpty()
+        public void ReturnsFormattedString()
         {
             string result = ContentType.Png;
             result.ShouldBe("image/png");
         }
 
         [Fact]
-        public void ReturnsValueWithCharSet_WhenCharSetIsPresent()
+        public void IncludesCharset_WhenPresent()
         {
             string result = ContentType.Html;
             result.ShouldBe("text/html; charset=UTF-8");
         }
 
         [Fact]
-        public void ReturnsValueWithBoundary_WhenMultipart()
+        public void IncludesBoundary_WhenMultipart()
         {
-            var ct = new ContentType("multipart/form-data", ContentMode.Binary, "", "test-boundary");
+            var ct = new ContentType("multipart", "form-data", boundary: "test-boundary");
             string result = ct;
             result.ShouldBe("multipart/form-data; boundary=test-boundary");
         }
@@ -141,29 +290,14 @@ public class ContentTypeTests
             string implicitResult = ContentType.Json;
             implicitResult.ShouldBe(ContentType.Json.ToString());
         }
-    }
-
-    public class IsMultipartProperty
-    {
-        [Fact]
-        public void ReturnsTrue_ForMultipartType()
-        {
-            var ct = new ContentType("multipart/form-data", ContentMode.Binary);
-            ct.IsMultipart.ShouldBeTrue();
-        }
 
         [Fact]
-        public void ReturnsFalse_ForNonMultipartType()
+        public void ParsesStringToContentType()
         {
-            var ct = new ContentType("text/html", ContentMode.Text);
-            ct.IsMultipart.ShouldBeFalse();
-        }
-
-        [Fact]
-        public void IsCaseInsensitive()
-        {
-            var ct = new ContentType("MULTIPART/FORM-DATA", ContentMode.Binary);
-            ct.IsMultipart.ShouldBeTrue();
+            ContentType ct = "text/html; charset=UTF-8";
+            ct.Type.ShouldBe("text");
+            ct.SubType.ShouldBe("html");
+            ct.Charset.ShouldBe("UTF-8");
         }
     }
 
@@ -172,35 +306,50 @@ public class ContentTypeTests
         public class ContentTypeVsContentType
         {
             [Fact]
-            public void ReturnsTrue_WhenValuesAreEqual()
+            public void ReturnsTrue_WhenTypeAndSubTypeAreEqual()
             {
-                var a = new ContentType("text/html", ContentMode.Text, "UTF-8");
-                var b = new ContentType("text/html", ContentMode.Binary);
+                var a = new ContentType("text", "html", charset: "UTF-8");
+                var b = new ContentType("text", "html");
                 (a == b).ShouldBeTrue();
             }
 
             [Fact]
-            public void ReturnsTrue_WhenValuesAreEqualWithDifferentCase()
+            public void ReturnsTrue_WhenEqualWithDifferentCase()
             {
-                var a = new ContentType("text/html", ContentMode.Text);
-                var b = new ContentType("TEXT/HTML", ContentMode.Text);
+                var a = new ContentType("text", "html");
+                var b = new ContentType("TEXT", "HTML");
                 (a == b).ShouldBeTrue();
             }
 
             [Fact]
-            public void ReturnsFalse_WhenValuesAreDifferent()
+            public void ReturnsFalse_WhenTypesDiffer()
             {
-                var a = new ContentType("text/html", ContentMode.Text);
-                var b = new ContentType("text/plain", ContentMode.Text);
+                var a = new ContentType("text", "html");
+                var b = new ContentType("text", "plain");
                 (a == b).ShouldBeFalse();
             }
 
             [Fact]
-            public void InequalityReturnsTrue_WhenValuesAreDifferent()
+            public void InequalityReturnsTrue_WhenTypesDiffer()
             {
-                var a = new ContentType("text/html", ContentMode.Text);
-                var b = new ContentType("text/plain", ContentMode.Text);
+                var a = new ContentType("text", "html");
+                var b = new ContentType("text", "plain");
                 (a != b).ShouldBeTrue();
+            }
+
+            [Fact]
+            public void ReturnsTrue_WhenBothAreNull()
+            {
+                ContentType? a = null;
+                ContentType? b = null;
+                (a == b).ShouldBeTrue();
+            }
+
+            [Fact]
+            public void ReturnsFalse_WhenOneIsNull()
+            {
+                ContentType? a = null;
+                (a == ContentType.Html).ShouldBeFalse();
             }
         }
 
@@ -273,9 +422,9 @@ public class ContentTypeTests
         public class EqualsMethod
         {
             [Fact]
-            public void ReturnsFalse_WhenObjectIsNull()
+            public void ReturnsFalse_WhenOtherIsNull()
             {
-                ContentType.Html.Equals(null).ShouldBeFalse();
+                ContentType.Html.Equals((ContentType?)null).ShouldBeFalse();
             }
 
             [Fact]
@@ -289,194 +438,88 @@ public class ContentTypeTests
     public class GetHashCodeMethod
     {
         [Fact]
-        public void IsConsistentWithEquality_ForTwoEqualInstances()
+        public void IsConsistentWithEquality_ForEqualInstances()
         {
-            var a = new ContentType("text/html", ContentMode.Text, "UTF-8");
-            var b = new ContentType("text/html", ContentMode.Binary);
+            var a = new ContentType("text", "html", charset: "UTF-8");
+            var b = new ContentType("text", "html");
             a.GetHashCode().ShouldBe(b.GetHashCode());
         }
 
         [Fact]
         public void IsConsistentWithEquality_ForDifferentCase()
         {
-            var a = new ContentType("text/html", ContentMode.Text);
-            var b = new ContentType("TEXT/HTML", ContentMode.Text);
+            var a = new ContentType("text", "html");
+            var b = new ContentType("TEXT", "HTML");
             a.GetHashCode().ShouldBe(b.GetHashCode());
         }
     }
 
-    public class RegisterContentType
+    public class RegisterMethod
     {
         [Fact]
-        public void RegistersUnderFullStringKey_WhenCharSetIsPresent()
+        public void RegistersContentType_ByMimeType()
         {
-            var mimeType = UniqueMimeType();
-            var ct = new ContentType(mimeType, ContentMode.Text, "UTF-8");
-            ContentType.Register(ct);
-            ContentType.FromMimeType($"{mimeType}; charset=UTF-8").ShouldBeSameAs(ct);
-        }
-
-        [Fact]
-        public void RegistersUnderBareValueKey_WhenCharSetIsPresent()
-        {
-            var mimeType = UniqueMimeType();
-            var ct = new ContentType(mimeType, ContentMode.Text, "UTF-8");
-            ContentType.Register(ct);
-            ContentType.FromMimeType(mimeType).ShouldBeSameAs(ct);
-        }
-
-        [Fact]
-        public void FirstRegistrationWins_ForBareValueKey()
-        {
-            var mimeType = UniqueMimeType();
-            var first = new ContentType(mimeType, ContentMode.Text, "UTF-8");
-            var second = new ContentType(mimeType, ContentMode.Text, "UTF-16");
-            ContentType.Register(first);
-            ContentType.Register(second);
-            ContentType.FromMimeType(mimeType).ShouldBeSameAs(first);
+            var type = UniqueType();
+            var parts = type.Split('/');
+            ContentType.Register(type);
+            ContentType.FromMimeType(type).Type.ShouldBe(parts[0]);
         }
 
         [Fact]
         public void RegistersExtensions()
         {
-            var mimeType = UniqueMimeType();
+            var type = UniqueType();
             var ext = UniqueExtension();
-            var ct = new ContentType(mimeType, ContentMode.Binary);
-            ContentType.Register(ct, ext);
-            ContentType.FromExtension(ext).ShouldBeSameAs(ct);
+            ContentType.Register(type, ext);
+            ContentType.FromExtension(ext).ShouldBe(ContentType.Parse(type));
         }
 
         [Fact]
         public void HasNoEffect_WhenAlreadyRegistered()
         {
-            var mimeType = UniqueMimeType();
-            var first = new ContentType(mimeType, ContentMode.Binary);
-            var second = new ContentType(mimeType, ContentMode.Text);
-            ContentType.Register(first);
-            ContentType.Register(second);
-            ContentType.FromMimeType(mimeType).ShouldBeSameAs(first);
+            var type = UniqueType();
+            ContentType.Register(type);
+            var first = ContentType.FromMimeType(type);
+            ContentType.Register(type);
+            var second = ContentType.FromMimeType(type);
+            first.ShouldBeSameAs(second);
         }
 
         [Fact]
         public void Throws_WhenContentTypeIsMultipart()
         {
-            var ct = new ContentType("multipart/mixed", ContentMode.Binary);
-            Should.Throw<InvalidOperationException>(() => ContentType.Register(ct));
-        }
-    }
-
-    public class RegisterString_Mode
-    {
-        [Fact]
-        public void ParsesCombinedValueString()
-        {
-            var mimeType = UniqueMimeType();
-            ContentType.Register($"{mimeType}; charset=UTF-8", ContentMode.Text);
-            var result = ContentType.FromMimeType(mimeType);
-            result.Value.ShouldBe(mimeType);
-            result.CharSet.ShouldBe("UTF-8");
-            result.Mode.ShouldBe(ContentMode.Text);
-        }
-
-        [Fact]
-        public void RegistersBareValueString()
-        {
-            var mimeType = UniqueMimeType();
-            ContentType.Register(mimeType, ContentMode.Binary);
-            ContentType.FromMimeType(mimeType).Value.ShouldBe(mimeType);
-        }
-
-        [Fact]
-        public void Throws_WhenValueIsMultipart()
-        {
             Should.Throw<InvalidOperationException>(() =>
-                ContentType.Register("multipart/mixed", ContentMode.Binary));
-        }
-    }
-
-    public class RegisterString_CharSet_Mode
-    {
-        [Fact]
-        public void RegistersWithSeparateCharSet()
-        {
-            var mimeType = UniqueMimeType();
-            ContentType.Register(mimeType, "UTF-8", ContentMode.Text);
-            var result = ContentType.FromMimeType(mimeType);
-            result.Value.ShouldBe(mimeType);
-            result.CharSet.ShouldBe("UTF-8");
-            result.Mode.ShouldBe(ContentMode.Text);
-        }
-
-        [Fact]
-        public void TrimsWhitespaceFromValue()
-        {
-            var mimeType = UniqueMimeType();
-            ContentType.Register($"  {mimeType}  ", "UTF-8", ContentMode.Text);
-            ContentType.FromMimeType(mimeType).Value.ShouldBe(mimeType);
-        }
-
-        [Fact]
-        public void Throws_WhenValueIsMultipart()
-        {
-            Should.Throw<InvalidOperationException>(() =>
-                ContentType.Register("multipart/mixed", "UTF-8", ContentMode.Binary));
+                ContentType.Register("multipart/mixed"));
         }
     }
 
     public class FromMimeTypeMethod
     {
         [Fact]
-        public void ReturnsExactMatch_WhenFullStringIsRegistered()
+        public void ReturnsWellKnownInstance_ForKnownType()
+        {
+            ContentType.FromMimeType("text/html").ShouldBeSameAs(ContentType.Html);
+        }
+
+        [Fact]
+        public void ReturnsWellKnownInstance_WhenCharsetIncluded()
         {
             ContentType.FromMimeType("text/html; charset=UTF-8").ShouldBeSameAs(ContentType.Html);
-        }
-
-        [Fact]
-        public void ReturnsPartialMatch_WhenOnlyBareValueIsRegistered()
-        {
-            ContentType.FromMimeType("text/html; charset=utf-16").ShouldBeSameAs(ContentType.Html);
-        }
-
-        [Fact]
-        public void CreatesAndRegistersNewInstance_ForUnknownType()
-        {
-            var mimeType = UniqueMimeType();
-            var first = ContentType.FromMimeType(mimeType);
-            var second = ContentType.FromMimeType(mimeType);
-            first.ShouldBeSameAs(second);
-        }
-
-        [Fact]
-        public void InfersTextMode_ForTextPrefix()
-        {
-            var mimeType = $"text/{Guid.NewGuid():N}";
-            ContentType.FromMimeType(mimeType).Mode.ShouldBe(ContentMode.Text);
-        }
-
-        [Fact]
-        public void InfersTextMode_ForXmlSuffix()
-        {
-            var mimeType = $"{UniqueMimeType()}+xml";
-            ContentType.FromMimeType(mimeType).Mode.ShouldBe(ContentMode.Text);
-        }
-
-        [Fact]
-        public void InfersTextMode_ForJsonSuffix()
-        {
-            var mimeType = $"{UniqueMimeType()}+json";
-            ContentType.FromMimeType(mimeType).Mode.ShouldBe(ContentMode.Text);
-        }
-
-        [Fact]
-        public void DefaultsToBinaryMode_ForUnrecognizedPattern()
-        {
-            ContentType.FromMimeType(UniqueMimeType()).Mode.ShouldBe(ContentMode.Binary);
         }
 
         [Fact]
         public void IsCaseInsensitive()
         {
             ContentType.FromMimeType("TEXT/HTML").ShouldBeSameAs(ContentType.Html);
+        }
+
+        [Fact]
+        public void RegistersAndCachesNewInstance_ForUnknownType()
+        {
+            var type = UniqueType();
+            var first = ContentType.FromMimeType(type);
+            var second = ContentType.FromMimeType(type);
+            first.ShouldBeSameAs(second);
         }
 
         [Fact]
@@ -499,15 +542,7 @@ public class ContentTypeTests
         {
             var ct = ContentType.FromMimeType("multipart/mixed; charset=UTF-8; boundary=abc123");
             ct.Boundary.ShouldBe("abc123");
-            ct.CharSet.ShouldBe("UTF-8");
-        }
-
-        [Fact]
-        public void ParsesBoundaryRegardlessOfParameterOrder()
-        {
-            var ct = ContentType.FromMimeType("multipart/mixed; boundary=abc123; charset=UTF-8");
-            ct.Boundary.ShouldBe("abc123");
-            ct.CharSet.ShouldBe("UTF-8");
+            ct.Charset.ShouldBe("UTF-8");
         }
 
         [Fact]
@@ -575,9 +610,15 @@ public class ContentTypeTests
     public class MultipartFormDataProperty
     {
         [Fact]
-        public void ReturnsMultipartFormDataValue()
+        public void ReturnsCorrectType()
         {
-            ContentType.MultipartFormData.Value.ShouldBe("multipart/form-data");
+            ContentType.MultipartFormData.Type.ShouldBe("multipart");
+        }
+
+        [Fact]
+        public void ReturnsCorrectSubType()
+        {
+            ContentType.MultipartFormData.SubType.ShouldBe("form-data");
         }
 
         [Fact]
@@ -614,49 +655,51 @@ public class ContentTypeTests
         [Fact]
         public void ReturnsMixed()
         {
-            ContentType.ForMultipart(Multipart.Mixed).Value.ShouldBe("multipart/mixed");
+            var ct = ContentType.ForMultipart(Multipart.Mixed);
+            ct.Type.ShouldBe("multipart");
+            ct.SubType.ShouldBe("mixed");
         }
 
         [Fact]
         public void ReturnsAlternative()
         {
-            ContentType.ForMultipart(Multipart.Alternative).Value.ShouldBe("multipart/alternative");
+            ContentType.ForMultipart(Multipart.Alternative).SubType.ShouldBe("alternative");
         }
 
         [Fact]
         public void ReturnsDigest()
         {
-            ContentType.ForMultipart(Multipart.Digest).Value.ShouldBe("multipart/digest");
+            ContentType.ForMultipart(Multipart.Digest).SubType.ShouldBe("digest");
         }
 
         [Fact]
         public void ReturnsEncrypted()
         {
-            ContentType.ForMultipart(Multipart.Encrypted).Value.ShouldBe("multipart/encrypted");
+            ContentType.ForMultipart(Multipart.Encrypted).SubType.ShouldBe("encrypted");
         }
 
         [Fact]
         public void ReturnsFormData_WithHyphen()
         {
-            ContentType.ForMultipart(Multipart.FormData).Value.ShouldBe("multipart/form-data");
+            ContentType.ForMultipart(Multipart.FormData).SubType.ShouldBe("form-data");
         }
 
         [Fact]
         public void ReturnsRelated()
         {
-            ContentType.ForMultipart(Multipart.Related).Value.ShouldBe("multipart/related");
+            ContentType.ForMultipart(Multipart.Related).SubType.ShouldBe("related");
         }
 
         [Fact]
         public void ReturnsSigned()
         {
-            ContentType.ForMultipart(Multipart.Signed).Value.ShouldBe("multipart/signed");
+            ContentType.ForMultipart(Multipart.Signed).SubType.ShouldBe("signed");
         }
 
         [Fact]
         public void ReturnsParallel()
         {
-            ContentType.ForMultipart(Multipart.Parallel).Value.ShouldBe("multipart/parallel");
+            ContentType.ForMultipart(Multipart.Parallel).SubType.ShouldBe("parallel");
         }
 
         [Fact]
@@ -688,31 +731,35 @@ public class ContentTypeTests
         [Fact]
         public void Html_HasCorrectProperties()
         {
-            ContentType.Html.Value.ShouldBe("text/html");
+            ContentType.Html.Type.ShouldBe("text");
+            ContentType.Html.SubType.ShouldBe("html");
             ContentType.Html.Mode.ShouldBe(ContentMode.Text);
-            ContentType.Html.CharSet.ShouldBe("UTF-8");
+            ContentType.Html.Charset.ShouldBe("UTF-8");
         }
 
         [Fact]
         public void Json_HasCorrectProperties()
         {
-            ContentType.Json.Value.ShouldBe("application/json");
+            ContentType.Json.Type.ShouldBe("application");
+            ContentType.Json.SubType.ShouldBe("json");
             ContentType.Json.Mode.ShouldBe(ContentMode.Text);
-            ContentType.Json.CharSet.ShouldBe("UTF-8");
+            ContentType.Json.Charset.ShouldBe("UTF-8");
         }
 
         [Fact]
         public void Png_HasCorrectProperties()
         {
-            ContentType.Png.Value.ShouldBe("image/png");
+            ContentType.Png.Type.ShouldBe("image");
+            ContentType.Png.SubType.ShouldBe("png");
             ContentType.Png.Mode.ShouldBe(ContentMode.Binary);
-            ContentType.Png.CharSet.ShouldBe(string.Empty);
+            ContentType.Png.Charset.ShouldBeNull();
         }
 
         [Fact]
         public void Icon_HasCorrectIanaValue()
         {
-            ContentType.Icon.Value.ShouldBe("image/vnd.microsoft.icon");
+            ContentType.Icon.Type.ShouldBe("image");
+            ContentType.Icon.SubType.ShouldBe("vnd.microsoft.icon");
         }
 
         [Fact]
@@ -724,16 +771,27 @@ public class ContentTypeTests
         [Fact]
         public void Binary_HasCorrectProperties()
         {
-            ContentType.Binary.Value.ShouldBe("application/octet-stream");
+            ContentType.Binary.Type.ShouldBe("application");
+            ContentType.Binary.SubType.ShouldBe("octet-stream");
             ContentType.Binary.Mode.ShouldBe(ContentMode.Binary);
         }
 
         [Fact]
         public void Svg_HasCorrectProperties()
         {
-            ContentType.Svg.Value.ShouldBe("image/svg+xml");
+            ContentType.Svg.Type.ShouldBe("image");
+            ContentType.Svg.SubType.ShouldBe("svg+xml");
             ContentType.Svg.Mode.ShouldBe(ContentMode.Text);
-            ContentType.Svg.CharSet.ShouldBe("UTF-8");
+            ContentType.Svg.Charset.ShouldBe("UTF-8");
+        }
+
+        [Fact]
+        public void ProblemDetailsJson_HasCorrectProperties()
+        {
+            ContentType.ProblemDetailsJson.Type.ShouldBe("application");
+            ContentType.ProblemDetailsJson.SubType.ShouldBe("problem+json");
+            ContentType.ProblemDetailsJson.Mode.ShouldBe(ContentMode.Text);
+            ContentType.ProblemDetailsJson.Charset.ShouldBe("UTF-8");
         }
     }
 }

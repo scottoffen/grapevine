@@ -1,29 +1,28 @@
 using System.Collections.Concurrent;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Grapevine;
 
 /// <summary>
-/// Represents an HTTP content type (MIME type), providing a strongly-typed wrapper
-/// around a MIME type string with charset, boundary, and binary/text encoding information.
+/// Represents an HTTP content type (MIME type), providing structured access to the
+/// type, subtype, charset, boundary, and additional parameters of a content type header.
 /// </summary>
 /// <remarks>
 /// <para>
 /// A set of well-known content types is provided as static readonly fields (e.g.
 /// <see cref="Html"/>, <see cref="Json"/>, <see cref="Png"/>). These are automatically
-/// registered on first use and can be looked up by MIME type string via
+/// registered at startup and can be looked up by MIME type string via
 /// <see cref="FromMimeType"/> or by file extension via <see cref="FromExtension"/>.
 /// </para>
 /// <para>
-/// Custom content types can be registered via <see cref="Register(ContentType, string[])"/>
-/// or one of its overloads, and will then participate in the same lookup mechanisms.
-/// </para>
-/// <para>
-/// Equality is based solely on <see cref="Value"/> (the MIME type portion), ignoring
-/// charset, boundary, and other parameters. This means <c>"text/html; charset=utf-8"</c>
-/// and <c>"text/html; charset=utf-16"</c> are considered equal. This is intentional and
-/// supports the common pattern of comparing an incoming request header against a
-/// well-known content type instance regardless of charset.
+/// Equality is based solely on <see cref="Type"/> and <see cref="SubType"/>, ignoring
+/// charset, boundary, and other parameters. This supports the common pattern of
+/// comparing an incoming request header against a well-known content type instance
+/// regardless of charset.
 /// </para>
 /// <para>
 /// For multipart content types, use <see cref="ForMultipart"/> or
@@ -32,225 +31,30 @@ namespace Grapevine;
 /// headers. See <see cref="Boundary"/> for boundary access.
 /// </para>
 /// </remarks>
-public class ContentType
+[DebuggerDisplay("{ToString()}")]
+public partial class ContentType : IEquatable<ContentType>
 {
-    #region Static Fields
-
-    /// <summary>Generic binary content. Use when the content type is unknown or unspecified.</summary>
-    [FileExtensions("bin")]
-    public static readonly ContentType Binary = new ContentType("application/octet-stream", ContentMode.Binary);
-
-    /// <summary>Bitmap image format.</summary>
-    [FileExtensions("bmp")]
-    public static readonly ContentType Bmp = new ContentType("image/bmp", ContentMode.Binary);
-
-    /// <summary>Cascading Style Sheets.</summary>
-    [FileExtensions("css")]
-    public static readonly ContentType Css = new ContentType("text/css", ContentMode.Text, "UTF-8");
-
-    /// <summary>Comma-separated values.</summary>
-    [FileExtensions("csv")]
-    public static readonly ContentType Csv = new ContentType("text/csv", ContentMode.Text);
-
-    /// <summary>HTML form data encoded as URL query parameters.</summary>
-    [FileExtensions("form")]
-    public static readonly ContentType FormUrlEncoded = new ContentType("application/x-www-form-urlencoded", ContentMode.Text);
-
-    /// <summary>Graphics Interchange Format image.</summary>
-    [FileExtensions("gif")]
-    public static readonly ContentType Gif = new ContentType("image/gif", ContentMode.Binary);
-
-    /// <summary>GZip compressed archive.</summary>
-    [FileExtensions("gz", "gzip")]
-    public static readonly ContentType GZip = new ContentType("application/gzip", ContentMode.Binary);
-
-    /// <summary>HyperText Markup Language.</summary>
-    [FileExtensions("html", "htm")]
-    public static readonly ContentType Html = new ContentType("text/html", ContentMode.Text, "UTF-8");
-
-    /// <summary>
-    /// Icon image using the IANA-registered MIME type. Incoming requests using the
-    /// legacy <c>image/x-icon</c> MIME type are automatically resolved to this instance.
-    /// </summary>
-    [FileExtensions("ico")]
-    public static readonly ContentType Icon = new ContentType("image/vnd.microsoft.icon", ContentMode.Binary);
-
-    /// <summary>JavaScript source code.</summary>
-    [FileExtensions("js")]
-    public static readonly ContentType JavaScript = new ContentType("application/javascript", ContentMode.Text, "UTF-8");
-
-    /// <summary>JavaScript Object Notation.</summary>
-    [FileExtensions("json")]
-    public static readonly ContentType Json = new ContentType("application/json", ContentMode.Text, "UTF-8");
-
-    /// <summary>JPEG image.</summary>
-    [FileExtensions("jpg", "jpeg")]
-    public static readonly ContentType Jpg = new ContentType("image/jpeg", ContentMode.Binary);
-
-    /// <summary>MPEG-4 audio.</summary>
-    [FileExtensions("m4a")]
-    public static readonly ContentType M4a = new ContentType("audio/mp4", ContentMode.Binary);
-
-    /// <summary>MPEG audio (MP3).</summary>
-    [FileExtensions("mp3")]
-    public static readonly ContentType Mp3 = new ContentType("audio/mpeg", ContentMode.Binary);
-
-    /// <summary>MPEG-4 video.</summary>
-    [FileExtensions("mp4")]
-    public static readonly ContentType Mp4 = new ContentType("video/mp4", ContentMode.Binary);
-
-    /// <summary>MPEG video.</summary>
-    [FileExtensions("mpeg", "mpg")]
-    public static readonly ContentType Mpeg = new ContentType("video/mpeg", ContentMode.Binary);
-
-    /// <summary>Ogg Vorbis audio.</summary>
-    [FileExtensions("ogg")]
-    public static readonly ContentType Ogg = new ContentType("audio/ogg", ContentMode.Binary);
-
-    /// <summary>OpenType font.</summary>
-    [FileExtensions("otf")]
-    public static readonly ContentType Otf = new ContentType("font/otf", ContentMode.Binary);
-
-    /// <summary>Portable Document Format.</summary>
-    [FileExtensions("pdf")]
-    public static readonly ContentType Pdf = new ContentType("application/pdf", ContentMode.Binary);
-
-    /// <summary>Portable Network Graphics image.</summary>
-    [FileExtensions("png")]
-    public static readonly ContentType Png = new ContentType("image/png", ContentMode.Binary);
-
-    /// <summary>Scalable Vector Graphics.</summary>
-    [FileExtensions("svg")]
-    public static readonly ContentType Svg = new ContentType("image/svg+xml", ContentMode.Text, "UTF-8");
-
-    /// <summary>Tape Archive compressed file.</summary>
-    [FileExtensions("tar")]
-    public static readonly ContentType Tar = new ContentType("application/x-tar", ContentMode.Binary);
-
-    /// <summary>Plain text.</summary>
-    [FileExtensions("txt")]
-    public static readonly ContentType Text = new ContentType("text/plain", ContentMode.Text, "UTF-8");
-
-    /// <summary>Tagged Image File Format.</summary>
-    [FileExtensions("tiff", "tif")]
-    public static readonly ContentType Tiff = new ContentType("image/tiff", ContentMode.Binary);
-
-    /// <summary>TrueType font.</summary>
-    [FileExtensions("ttf")]
-    public static readonly ContentType Ttf = new ContentType("font/ttf", ContentMode.Binary);
-
-    /// <summary>WebAssembly binary format.</summary>
-    [FileExtensions("wasm")]
-    public static readonly ContentType Wasm = new ContentType("application/wasm", ContentMode.Binary);
-
-    /// <summary>WebM video.</summary>
-    [FileExtensions("webm")]
-    public static readonly ContentType WebM = new ContentType("video/webm", ContentMode.Binary);
-
-    /// <summary>WebP image.</summary>
-    [FileExtensions("webp")]
-    public static readonly ContentType WebP = new ContentType("image/webp", ContentMode.Binary);
-
-    /// <summary>Web Open Font Format.</summary>
-    [FileExtensions("woff")]
-    public static readonly ContentType Woff = new ContentType("font/woff", ContentMode.Binary);
-
-    /// <summary>Web Open Font Format 2.</summary>
-    [FileExtensions("woff2")]
-    public static readonly ContentType Woff2 = new ContentType("font/woff2", ContentMode.Binary);
-
-    /// <summary>Extensible Markup Language.</summary>
-    [FileExtensions("xml")]
-    public static readonly ContentType Xml = new ContentType("application/xml", ContentMode.Text, "UTF-8");
-
-    /// <summary>YAML Ain't Markup Language. Commonly used for configuration files.</summary>
-    [FileExtensions("yaml", "yml")]
-    public static readonly ContentType Yaml = new ContentType("text/yaml", ContentMode.Text);
-
-    /// <summary>ZIP compressed archive.</summary>
-    [FileExtensions("zip")]
-    public static readonly ContentType Zip = new ContentType("application/zip", ContentMode.Binary);
-
-    #endregion
-
-    #region Static Initialization
-
-    private static readonly ConcurrentDictionary<string, ContentType> _contentTypes = new(StringComparer.OrdinalIgnoreCase);
-    private static readonly ConcurrentDictionary<string, ContentType> _extensions = new(StringComparer.OrdinalIgnoreCase);
-
-#if NET6_0_OR_GREATER
-    private static int NextRandom(int maxValue) => Random.Shared.Next(maxValue);
-#else
-    [ThreadStatic]
-    private static Random? _random;
-    private static int NextRandom(int maxValue) => (_random ??= new Random()).Next(maxValue);
-#endif
-
-    private const int CharSetPrefixLength = 8;   // "charset=".Length
-    private const int BoundaryPrefixLength = 9;  // "boundary=".Length
-
-    private static readonly char[] _boundaryChars =
-        "-_1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".ToCharArray();
-
-    private const int MinBoundaryLength = 30;
-    private const int MaxBoundaryLength = 70;
-    private const string DefaultBoundaryPrefix = "----=NextPart_";
-
-    /// <summary>
-    /// Initializes the static registry by reflecting over all public static fields of type
-    /// <see cref="ContentType"/>, registering each with any file extensions declared via
-    /// <see cref="FileExtensionsAttribute"/>. Also registers the legacy <c>image/x-icon</c>
-    /// MIME type as an alias for <see cref="Icon"/>.
-    /// </summary>
-    static ContentType()
+    private static readonly string[] _textKeywords = new[]
     {
-        var fields = typeof(ContentType).GetFields(BindingFlags.Public | BindingFlags.Static);
-        foreach (var field in fields)
-        {
-            if (field.GetValue(null) is ContentType contentType)
-            {
-                var extensions = field.GetCustomAttribute<FileExtensionsAttribute>()?.Extensions ?? Array.Empty<string>();
-                Register(contentType, extensions);
-            }
-        }
-
-        // Register legacy MIME type alias pointing to the canonical instance
-        _contentTypes.TryAdd("image/x-icon", Icon);
-    }
-
-    #endregion
-
-    #region Static Properties
-
-    /// <summary>
-    /// Returns a new <see cref="ContentType"/> instance for multipart form data with a
-    /// lazily generated boundary. Each access produces a fresh instance suitable for use
-    /// as an outgoing response <c>Content-Type</c> header. The boundary is generated on
-    /// first access of <see cref="Boundary"/> and not before, to avoid unnecessary allocations.
-    /// </summary>
-    /// <seealso cref="ForMultipart"/>
-    /// <seealso cref="Boundary"/>
-    public static ContentType MultipartFormData => ForMultipart(Multipart.FormData);
-
-    /// <summary>
-    /// Returns a new <see cref="ContentType"/> instance for the specified multipart subtype
-    /// with a lazily generated boundary. Each call produces a fresh instance suitable for
-    /// use as an outgoing response <c>Content-Type</c> header.
-    /// </summary>
-    /// <param name="multipart">The multipart subtype to use.</param>
-    /// <seealso cref="MultipartFormData"/>
-    /// <seealso cref="Boundary"/>
-    public static ContentType ForMultipart(Multipart multipart)
-        => new ContentType($"multipart/{ToMimeSubtype(multipart)}", ContentMode.Binary);
-
-    #endregion
+        "form", "json", "xml", "javascript", "html", "css", "txt"
+    };
 
     private readonly Lazy<string> _boundary;
 
     /// <summary>
-    /// Gets the MIME type portion of this content type, e.g. <c>text/html</c>.
+    /// Gets the primary type of the content type, e.g. <c>text</c> or <c>application</c>.
     /// </summary>
-    public string Value { get; }
+    public string Type { get; }
+
+    /// <summary>
+    /// Gets the subtype of the content type, e.g. <c>html</c> or <c>json</c>.
+    /// </summary>
+    public string SubType { get; }
+
+    /// <summary>
+    /// Gets the character set of the content type, or <see langword="null"/> if not specified.
+    /// </summary>
+    public string? Charset { get; }
 
     /// <summary>
     /// Gets the <see cref="ContentMode"/> indicating whether this content type
@@ -266,17 +70,11 @@ public class ContentType
     public bool IsBinary => Mode == ContentMode.Binary;
 
     /// <summary>
-    /// Gets a value indicating whether this content type represents a multipart content
-    /// type, i.e. whether <see cref="Value"/> begins with <c>multipart/</c>.
+    /// Gets a value indicating whether this content type represents a multipart
+    /// content type.
     /// </summary>
     /// <seealso cref="IsMultipartContent"/>
-    public bool IsMultipart => Value.StartsWith("multipart/", StringComparison.OrdinalIgnoreCase);
-
-    /// <summary>
-    /// Gets the character set associated with this content type, e.g. <c>UTF-8</c>,
-    /// or an empty string if no charset is specified.
-    /// </summary>
-    public string CharSet { get; }
+    public bool IsMultipart { get; }
 
     /// <summary>
     /// Gets the boundary parameter for multipart content types. For outgoing responses,
@@ -285,267 +83,328 @@ public class ContentType
     /// <see cref="InvalidOperationException"/> if accessed on a non-multipart content type.
     /// </summary>
     /// <exception cref="InvalidOperationException">
-    /// Thrown when accessed on a content type whose <see cref="Value"/> does not begin
-    /// with <c>multipart/</c>.
+    /// Thrown when accessed on a content type whose <see cref="Type"/> is not
+    /// <c>multipart</c>.
     /// </exception>
     /// <seealso cref="ForMultipart"/>
     /// <seealso cref="FromMimeType"/>
     public string Boundary => _boundary.Value;
 
     /// <summary>
-    /// Initializes a new instance of <see cref="ContentType"/> with the specified
-    /// MIME type, content mode, optional charset, and optional boundary.
+    /// Gets the additional parameters of the content type, excluding charset and boundary.
     /// </summary>
-    /// <param name="value">The MIME type string, e.g. <c>text/html</c>.</param>
-    /// <param name="mode">
-    /// Indicates whether the content is binary or text. Defaults to
-    /// <see cref="ContentMode.Binary"/>.
-    /// </param>
-    /// <param name="charSet">
-    /// The character set to associate with this content type, e.g. <c>UTF-8</c>.
-    /// Pass an empty string if no charset applies.
+    public Dictionary<string, string> Parameters { get; } = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="ContentType"/> with the specified
+    /// type, subtype, optional charset, optional boundary, and optional content mode.
+    /// </summary>
+    /// <param name="type">The primary MIME type, e.g. <c>text</c>.</param>
+    /// <param name="subtype">The MIME subtype, e.g. <c>html</c>.</param>
+    /// <param name="charset">
+    /// The character set, e.g. <c>UTF-8</c>. Pass <see langword="null"/> if not applicable.
     /// </param>
     /// <param name="boundary">
     /// An explicit boundary string for multipart content types. If <see langword="null"/>
     /// and the content type is multipart, a boundary is generated lazily on first access
     /// of <see cref="Boundary"/>. Ignored for non-multipart content types.
     /// </param>
-    public ContentType(string value, ContentMode mode = ContentMode.Binary, string charSet = "", string? boundary = null)
+    /// <param name="mode">
+    /// The content mode. If <see langword="null"/>, the mode is auto-detected from the
+    /// type, subtype, and charset.
+    /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="type"/> is <see langword="null"/>.
+    /// </exception>
+    public ContentType(string type, string subtype, string? charset = null, string? boundary = null, ContentMode? mode = null)
     {
-        Value = value;
-        Mode = mode;
-        CharSet = charSet;
+        Type = type ?? throw new ArgumentNullException(nameof(type));
+        SubType = subtype ?? string.Empty;
+        Charset = string.IsNullOrWhiteSpace(charset) ? null : charset;
+        IsMultipart = string.Equals(Type, "multipart", StringComparison.OrdinalIgnoreCase);
+        Mode = mode ?? DetectMode(Type, SubType, Charset);
         _boundary = new Lazy<string>(() =>
         {
-            if (!value.StartsWith("multipart/", StringComparison.OrdinalIgnoreCase))
-                throw new InvalidOperationException($"Boundary is not applicable for content type '{value}'.");
+            if (!IsMultipart)
+                throw new InvalidOperationException($"Boundary is not applicable for content type '{Type}/{SubType}'.");
             return boundary ?? GenerateBoundary();
         });
     }
 
     /// <summary>
-    /// Returns the fully formatted <c>Content-Type</c> header value. For multipart types,
-    /// includes the boundary parameter (triggering lazy generation if not yet set).
-    /// For other types with a charset, includes the charset parameter.
+    /// Returns the fully formatted <c>Content-Type</c> header value, including charset,
+    /// boundary, and any additional parameters.
     /// </summary>
     public override string ToString()
     {
+        var sb = new StringBuilder();
+        sb.Append(Type);
+        if (!string.IsNullOrEmpty(SubType))
+        {
+            sb.Append('/');
+            sb.Append(SubType);
+        }
+
+        if (!string.IsNullOrWhiteSpace(Charset))
+        {
+            sb.Append("; charset=");
+            sb.Append(Charset);
+        }
+
         if (IsMultipart)
-            return $"{Value}; boundary={Boundary}";
+        {
+            sb.Append("; boundary=");
+            sb.Append(_boundary.Value);
+        }
 
-        if (!string.IsNullOrWhiteSpace(CharSet))
-            return $"{Value}; charset={CharSet}";
+        foreach (var param in Parameters)
+        {
+            sb.Append("; ");
+            sb.Append(param.Key);
+            sb.Append('=');
+            sb.Append(FormatParameterValue(param.Value));
+        }
 
-        return Value;
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// Determines whether this instance is equal to another <see cref="ContentType"/>.
+    /// Equality is based solely on <see cref="Type"/> and <see cref="SubType"/>,
+    /// ignoring charset, boundary, and other parameters.
+    /// </summary>
+    /// <param name="other">The <see cref="ContentType"/> to compare with this instance.</param>
+    /// <returns>
+    /// <see langword="true"/> if both instances have the same <see cref="Type"/> and
+    /// <see cref="SubType"/>; otherwise <see langword="false"/>.
+    /// </returns>
+    public bool Equals(ContentType? other)
+    {
+        if (other is null) return false;
+        return string.Equals(Type, other.Type, StringComparison.OrdinalIgnoreCase)
+            && string.Equals(SubType, other.SubType, StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
     /// Determines whether this instance is equal to another object. Equality is based
-    /// solely on <see cref="Value"/> using a case-insensitive ordinal comparison.
+    /// solely on <see cref="Type"/> and <see cref="SubType"/>, ignoring charset,
+    /// boundary, and other parameters.
     /// </summary>
-    /// <remarks>
-    /// Charset, boundary, and other parameters are intentionally ignored during comparison.
-    /// This means two instances with the same MIME type but different charsets or boundaries
-    /// are considered equal. As a consequence, <see cref="GetHashCode"/> also hashes only
-    /// <see cref="Value"/>, ensuring the equality/hash code contract is maintained.
-    /// When comparing against a <see cref="string"/>, only the MIME type portion before
-    /// any semicolon is used, so <c>"text/html; charset=utf-8"</c> compares equal to
-    /// <c>ContentType.Html</c>.
-    /// </remarks>
     /// <param name="obj">The object to compare with this instance.</param>
     /// <returns>
     /// <see langword="true"/> if <paramref name="obj"/> is a <see cref="ContentType"/>
-    /// or <see cref="string"/> whose MIME type portion matches <see cref="Value"/>;
-    /// otherwise <see langword="false"/>.
+    /// with the same <see cref="Type"/> and <see cref="SubType"/>; otherwise
+    /// <see langword="false"/>.
     /// </returns>
-    public override bool Equals(object? obj)
+    public override bool Equals(object? obj) => Equals(obj as ContentType);
+
+    /// <summary>
+    /// Returns a hash code based on <see cref="Type"/> and <see cref="SubType"/>,
+    /// consistent with the equality contract defined by <see cref="Equals(ContentType?)"/>.
+    /// </summary>
+    public override int GetHashCode()
+        => StringComparer.OrdinalIgnoreCase.GetHashCode(Type)
+            ^ StringComparer.OrdinalIgnoreCase.GetHashCode(SubType);
+
+    /// <summary>
+    /// Auto-detects the <see cref="ContentMode"/> from the type, subtype, and charset.
+    /// Types beginning with <c>text/</c>, containing known text keywords, or having a
+    /// charset specified are inferred as <see cref="ContentMode.Text"/>. All others
+    /// default to <see cref="ContentMode.Binary"/>.
+    /// </summary>
+    private static ContentMode DetectMode(string type, string subtype, string? charset)
     {
-        return obj switch
-        {
-            ContentType ct => string.Equals(Value, ct.Value, StringComparison.OrdinalIgnoreCase),
-            string s => string.Equals(Value, ParseContentType(s).mimeType, StringComparison.OrdinalIgnoreCase),
-            _ => false
-        };
+        if (!string.IsNullOrWhiteSpace(charset)) return ContentMode.Text;
+        var combined = $"{type}/{subtype}";
+        if (combined.StartsWithAny("text/") || combined.ContainsAny(_textKeywords))
+            return ContentMode.Text;
+        return ContentMode.Binary;
     }
 
     /// <summary>
-    /// Returns a hash code based solely on <see cref="Value"/>, consistent with the
-    /// equality contract defined by <see cref="Equals"/>.
+    /// Formats a parameter value for inclusion in a <c>Content-Type</c> header,
+    /// quoting the value and escaping internal quotes if necessary.
     /// </summary>
-    public override int GetHashCode() => StringComparer.OrdinalIgnoreCase.GetHashCode(Value);
+    private static string FormatParameterValue(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return "\"\"";
+        var needsQuoting = value.Any(c => char.IsWhiteSpace(c) || c == ';' || c == '=' || c == '"');
+        var escaped = value.Replace("\"", "\\\"");
+        return needsQuoting ? $"\"{escaped}\"" : escaped;
+    }
+}
 
-    /// <summary>Returns <see langword="true"/> if <paramref name="left"/> and <paramref name="right"/> have the same MIME type value.</summary>
-    public static bool operator ==(ContentType left, ContentType right) => left.Equals(right);
+/// <summary>
+/// Provides equality and conversion operators for <see cref="ContentType"/>.
+/// </summary>
+public partial class ContentType
+{
+    /// <summary>Returns <see langword="true"/> if <paramref name="left"/> and <paramref name="right"/> have the same type and subtype.</summary>
+    public static bool operator ==(ContentType? left, ContentType? right)
+        => left?.Equals(right) ?? right is null;
 
-    /// <summary>Returns <see langword="true"/> if <paramref name="left"/> and <paramref name="right"/> have different MIME type values.</summary>
-    public static bool operator !=(ContentType left, ContentType right) => !left.Equals(right);
-
-    /// <summary>Returns <see langword="true"/> if <paramref name="left"/> has the same MIME type value as the MIME type portion of <paramref name="right"/>.</summary>
-    public static bool operator ==(ContentType left, string right) => left.Equals(right);
-
-    /// <summary>Returns <see langword="true"/> if <paramref name="left"/> has a different MIME type value than the MIME type portion of <paramref name="right"/>.</summary>
-    public static bool operator !=(ContentType left, string right) => !left.Equals(right);
-
-    /// <summary>Returns <see langword="true"/> if the MIME type portion of <paramref name="left"/> matches the MIME type value of <paramref name="right"/>.</summary>
-    public static bool operator ==(string left, ContentType right) => right.Equals(left);
-
-    /// <summary>Returns <see langword="true"/> if the MIME type portion of <paramref name="left"/> does not match the MIME type value of <paramref name="right"/>.</summary>
-    public static bool operator !=(string left, ContentType right) => !right.Equals(left);
+    /// <summary>Returns <see langword="true"/> if <paramref name="left"/> and <paramref name="right"/> have different types or subtypes.</summary>
+    public static bool operator !=(ContentType? left, ContentType? right)
+        => !(left == right);
 
     /// <summary>
     /// Implicitly converts a <see cref="ContentType"/> to its formatted
-    /// <see cref="string"/> representation, e.g. <c>text/html; charset=UTF-8</c>.
+    /// <see cref="string"/> representation.
     /// </summary>
     /// <param name="contentType">The <see cref="ContentType"/> instance to convert.</param>
     public static implicit operator string(ContentType contentType) => contentType.ToString();
 
     /// <summary>
-    /// Registers a <see cref="ContentType"/> instance in the MIME type registry, and
-    /// optionally registers one or more file extensions that map to it. Has no effect
-    /// if the content type is already registered. Throws for multipart content types,
-    /// which cannot be registered. For content types with a charset, both
-    /// the full string (e.g. <c>text/html; charset=UTF-8</c>) and the bare MIME type
-    /// (e.g. <c>text/html</c>) are registered, with the first registration winning for
-    /// the bare MIME type key.
+    /// Implicitly converts a <see cref="string"/> to a <see cref="ContentType"/> by
+    /// parsing the string.
     /// </summary>
-    /// <param name="contentType">The <see cref="ContentType"/> instance to register.</param>
-    /// <param name="extensions">
-    /// Zero or more file extensions to associate with this content type, without a
-    /// leading dot and in lowercase (e.g. <c>"html"</c>, <c>"htm"</c>).
-    /// </param>
-    /// <exception cref="InvalidOperationException">
-    /// Thrown if <paramref name="contentType"/> is a multipart content type. Use
-    /// <see cref="MultipartFormData"/> or <see cref="FromMimeType"/> instead.
+    /// <param name="contentType">The content type string to parse.</param>
+    public static implicit operator ContentType(string contentType) => Parse(contentType);
+}
+
+/// <summary>
+/// Provides static registry, parsing, and lookup methods for <see cref="ContentType"/>.
+/// </summary>
+public partial class ContentType
+{
+    private static readonly ConcurrentDictionary<string, ContentType> _contentTypes
+        = new(StringComparer.OrdinalIgnoreCase);
+
+    private static readonly ConcurrentDictionary<string, ContentType> _extensions
+        = new(StringComparer.OrdinalIgnoreCase);
+
+    private const string CharsetTag = "charset";
+    private const string BoundaryTag = "boundary";
+
+#if NET6_0_OR_GREATER
+    private static int NextRandom(int maxValue) => Random.Shared.Next(maxValue);
+#else
+    [ThreadStatic]
+    private static Random? _random;
+    private static int NextRandom(int maxValue) => (_random ??= new Random()).Next(maxValue);
+#endif
+
+    private static readonly char[] _boundaryChars =
+        "-_1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".ToCharArray();
+
+    private const int MinBoundaryLength = 30;
+    private const int MaxBoundaryLength = 70;
+    private const string DefaultBoundaryPrefix = "----=NextPart_";
+
+    /// <summary>
+    /// Initializes the static registry by reflecting over all public static fields of
+    /// type <see cref="ContentType"/>, registering each with any file extensions declared
+    /// via <see cref="FileExtensionsAttribute"/>. Also registers the legacy
+    /// <c>image/x-icon</c> MIME type as an alias for <see cref="Icon"/>.
+    /// </summary>
+    static ContentType()
+    {
+        var fields = typeof(ContentType).GetFields(BindingFlags.Public | BindingFlags.Static);
+        foreach (var field in fields)
+        {
+            if (field.GetValue(null) is ContentType contentType)
+            {
+                var exts = field.GetCustomAttribute<FileExtensionsAttribute>()?.Extensions
+                    ?? Array.Empty<string>();
+                Register(contentType, exts);
+            }
+        }
+
+        _contentTypes.TryAdd("image/x-icon", Icon);
+    }
+
+    /// <summary>
+    /// Parses a <c>Content-Type</c> header string into a <see cref="ContentType"/> instance.
+    /// Always creates a new instance; use <see cref="FromMimeType"/> to retrieve a cached
+    /// instance for well-known types.
+    /// </summary>
+    /// <param name="contentType">The content type string to parse.</param>
+    /// <returns>A new <see cref="ContentType"/> instance.</returns>
+    /// <exception cref="ArgumentException">
+    /// Thrown when <paramref name="contentType"/> is null or whitespace.
     /// </exception>
-    public static void Register(ContentType contentType, params string[] extensions)
+    public static ContentType Parse(string contentType)
     {
-        if (contentType.IsMultipart)
-            throw new InvalidOperationException($"Multipart content types cannot be registered. Use ContentType.MultipartFormData or ContentType.FromMimeType to work with multipart content types.");
+        if (string.IsNullOrWhiteSpace(contentType))
+            throw new ArgumentException("Missing or invalid content type.", nameof(contentType));
 
-        _contentTypes.TryAdd(contentType.ToString(), contentType);
-        if (!string.IsNullOrWhiteSpace(contentType.CharSet))
-            _contentTypes.TryAdd(contentType.Value, contentType);
+        var parts = contentType.Trim().Split(';');
+        var typeParts = parts[0].Trim().Split('/');
 
-        foreach (var ext in extensions)
-            _extensions.TryAdd(ext, contentType);
+        var type = typeParts[0].Trim();
+        var subtype = typeParts.Length > 1 ? typeParts[1].Trim() : string.Empty;
+
+        string? charset = null;
+        string? boundary = null;
+        var @params = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var part in parts.Skip(1))
+        {
+            var paramParts = part.Split(new[] { '=' }, 2, StringSplitOptions.None);
+            var key = paramParts[0].Trim().ToLowerInvariant();
+            var value = paramParts.Length > 1
+                ? paramParts[1].Trim().Trim('"')
+                : string.Empty;
+
+            switch (key)
+            {
+                case CharsetTag:
+                    charset = value;
+                    break;
+                case BoundaryTag:
+                    boundary = value;
+                    break;
+                default:
+                    @params[key] = value;
+                    break;
+            }
+        }
+
+        var result = new ContentType(type, subtype, charset, boundary);
+        foreach (var param in @params)
+            result.Parameters[param.Key] = param.Value;
+
+        return result;
     }
 
     /// <summary>
-    /// Registers a new <see cref="ContentType"/> by parsing the MIME type and optional
-    /// charset from a single value string, and optionally registers file extensions.
-    /// The value may include a charset parameter (e.g. <c>"text/html; charset=utf-8"</c>)
-    /// or omit it (e.g. <c>"text/html"</c>).
-    /// </summary>
-    /// <param name="value">
-    /// The MIME type string, optionally including a charset parameter separated by a
-    /// semicolon, e.g. <c>"application/json"</c> or <c>"text/html; charset=utf-8"</c>.
-    /// </param>
-    /// <param name="mode">Indicates whether the content is binary or text.</param>
-    /// <param name="extensions">
-    /// Zero or more file extensions to associate with this content type, without a
-    /// leading dot and in lowercase (e.g. <c>"html"</c>, <c>"htm"</c>).
-    /// </param>
-    /// <exception cref="InvalidOperationException">
-    /// Thrown if <paramref name="value"/> represents a multipart content type. Use
-    /// <see cref="MultipartFormData"/> or <see cref="FromMimeType"/> instead.
-    /// </exception>
-    public static void Register(string value, ContentMode mode, params string[] extensions)
-    {
-        var (mimeType, charSet, _) = ParseContentType(value);
-        Register(new ContentType(mimeType, mode, charSet ?? string.Empty), extensions);
-    }
-
-    /// <summary>
-    /// Registers a new <see cref="ContentType"/> with the MIME type and charset provided
-    /// as separate arguments, and optionally registers file extensions. Use this overload
-    /// when the MIME type and charset are known independently. To pass them as a single
-    /// combined string, use <see cref="Register(string, ContentMode, string[])"/> instead.
-    /// </summary>
-    /// <param name="value">
-    /// The bare MIME type string, without a charset parameter, e.g. <c>"text/html"</c>.
-    /// </param>
-    /// <param name="charSet">
-    /// The character set to associate with this content type, e.g. <c>"utf-8"</c>.
-    /// </param>
-    /// <param name="mode">Indicates whether the content is binary or text.</param>
-    /// <param name="extensions">
-    /// Zero or more file extensions to associate with this content type, without a
-    /// leading dot and in lowercase (e.g. <c>"html"</c>, <c>"htm"</c>).
-    /// </param>
-    /// <exception cref="InvalidOperationException">
-    /// Thrown if <paramref name="value"/> represents a multipart content type. Use
-    /// <see cref="MultipartFormData"/> or <see cref="FromMimeType"/> instead.
-    /// </exception>
-    public static void Register(string value, string charSet, ContentMode mode, params string[] extensions)
-    {
-        Register(new ContentType(value.Trim(), mode, charSet), extensions);
-    }
-
-    /// <summary>
-    /// Returns <see langword="true"/> if the given string represents a multipart content
-    /// type, i.e. if the MIME type portion begins with <c>multipart/</c>. Use this for a
-    /// quick check against a raw header string without constructing a full
-    /// <see cref="ContentType"/> instance.
-    /// </summary>
-    /// <param name="value">The raw <c>Content-Type</c> header string to check.</param>
-    /// <seealso cref="IsMultipart"/>
-    public static bool IsMultipartContent(string value)
-    {
-        var (mimeType, _, _) = ParseContentType(value);
-        return mimeType.StartsWith("multipart/", StringComparison.OrdinalIgnoreCase);
-    }
-
-    /// <summary>
-    /// Looks up a <see cref="ContentType"/> by MIME type string. First attempts an exact
-    /// match (including charset), then falls back to matching on the bare MIME type only.
-    /// For multipart content types, always returns a new instance with the boundary parsed
-    /// from the header value, since boundaries are unique per request or response.
-    /// For non-multipart types, if no match is found a new instance is created with the
-    /// content mode inferred from the MIME type pattern, registered, and returned.
-    /// Unrecognized types default to <see cref="ContentMode.Binary"/>.
+    /// Looks up a <see cref="ContentType"/> by MIME type string. Returns a cached instance
+    /// for well-known and previously registered types. For multipart types, always returns
+    /// a new instance with the boundary parsed from the header value. For unknown types,
+    /// creates, registers, and returns a new instance.
     /// </summary>
     /// <param name="mimeType">
     /// The MIME type string to look up, e.g. <c>"text/html"</c>,
     /// <c>"text/html; charset=utf-8"</c>, or
-    /// <c>"multipart/form-data; boundary=----WebKitFormBoundary"</c>.
+    /// <c>"multipart/form-data; boundary=abc123"</c>.
     /// </param>
     /// <returns>
-    /// The registered <see cref="ContentType"/> instance for non-multipart types, or a
-    /// new instance with the parsed boundary for multipart types.
+    /// A cached <see cref="ContentType"/> instance for non-multipart types, or a new
+    /// instance with the parsed boundary for multipart types.
     /// </returns>
     /// <seealso cref="IsMultipartContent"/>
     /// <seealso cref="Boundary"/>
     public static ContentType FromMimeType(string mimeType)
     {
-        var (value, charSet, boundary) = ParseContentType(mimeType.Trim());
+        var parsed = Parse(mimeType);
 
-        if (value.StartsWith("multipart/", StringComparison.OrdinalIgnoreCase))
-            return new ContentType(value, ContentMode.Binary, charSet ?? string.Empty, boundary);
+        if (parsed.IsMultipart) return parsed;
 
-        var key = mimeType.Trim();
+        var key = $"{parsed.Type}/{parsed.SubType}";
 
-        if (_contentTypes.TryGetValue(key, out var exact))
-            return exact;
+        if (_contentTypes.TryGetValue(key, out var cached)) return cached;
 
-        if (_contentTypes.TryGetValue(value, out var partial))
-            return partial;
-
-        var mode = InferContentMode(value);
-        var contentType = new ContentType(value, mode, charSet ?? string.Empty);
-        Register(contentType);
-        return contentType;
+        _contentTypes.TryAdd(key, parsed);
+        return parsed;
     }
 
     /// <summary>
     /// Looks up a <see cref="ContentType"/> by file extension. The extension may be
-    /// provided with or without a leading dot (e.g. <c>"png"</c> or <c>".PNG"</c>)
-    /// and is matched case-insensitively. Returns <see cref="Binary"/> if the extension
-    /// is not registered, since treating unknown content as binary is safer than treating
-    /// it as text.
+    /// provided with or without a leading dot and is matched case-insensitively.
+    /// Returns <see cref="Binary"/> if the extension is not registered.
     /// </summary>
     /// <param name="extension">
-    /// The file extension to look up, with or without a leading dot, e.g.
-    /// <c>"html"</c>, <c>".HTML"</c>.
+    /// The file extension to look up, e.g. <c>"html"</c> or <c>".HTML"</c>.
     /// </param>
     /// <returns>
     /// The registered <see cref="ContentType"/> for the given extension, or
@@ -555,11 +414,74 @@ public class ContentType
     {
         var index = extension.IndexOf('.');
         var key = index < 0 ? extension : extension.Substring(index + 1);
-
-        return _extensions.TryGetValue(key, out var contentType)
-            ? contentType
-            : Binary;
+        return _extensions.TryGetValue(key, out var contentType) ? contentType : Binary;
     }
+
+    /// <summary>
+    /// Registers a <see cref="ContentType"/> instance in the MIME type registry, and
+    /// optionally registers one or more file extensions that map to it. Throws for
+    /// multipart content types, which cannot be registered.
+    /// </summary>
+    /// <param name="contentType">The <see cref="ContentType"/> instance to register.</param>
+    /// <param name="extensions">
+    /// Zero or more file extensions to associate with this content type, without a
+    /// leading dot (e.g. <c>"html"</c>, <c>"htm"</c>).
+    /// </param>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown if <paramref name="contentType"/> is a multipart content type.
+    /// </exception>
+    public static void Register(ContentType contentType, params string[] extensions)
+    {
+        if (contentType.IsMultipart)
+            throw new InvalidOperationException("Multipart content types cannot be registered. Use ContentType.MultipartFormData or ContentType.ForMultipart instead.");
+
+        var key = $"{contentType.Type}/{contentType.SubType}";
+        _contentTypes.TryAdd(key, contentType);
+
+        foreach (var ext in extensions)
+            _extensions.TryAdd(ext, contentType);
+    }
+
+    /// <summary>
+    /// Registers a new <see cref="ContentType"/> parsed from the specified string,
+    /// and optionally registers file extensions. Throws for multipart content types.
+    /// </summary>
+    /// <param name="value">
+    /// The MIME type string, optionally including a charset parameter, e.g.
+    /// <c>"text/html; charset=utf-8"</c>.
+    /// </param>
+    /// <param name="extensions">
+    /// Zero or more file extensions to associate with this content type.
+    /// </param>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown if <paramref name="value"/> represents a multipart content type.
+    /// </exception>
+    public static void Register(string value, params string[] extensions)
+        => Register(Parse(value), extensions);
+
+    /// <summary>
+    /// Returns <see langword="true"/> if the given string represents a multipart content
+    /// type. Use this for a quick check against a raw header string without constructing
+    /// a full <see cref="ContentType"/> instance.
+    /// </summary>
+    /// <param name="value">The raw <c>Content-Type</c> header string to check.</param>
+    /// <seealso cref="IsMultipart"/>
+    public static bool IsMultipartContent(string value)
+    {
+        var typeEnd = value.IndexOf('/');
+        if (typeEnd < 0) return false;
+        return string.Equals(value.Substring(0, typeEnd).Trim(), "multipart", StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Returns a new <see cref="ContentType"/> instance for the specified multipart
+    /// subtype with a lazily generated boundary.
+    /// </summary>
+    /// <param name="multipart">The multipart subtype to use.</param>
+    /// <seealso cref="MultipartFormData"/>
+    /// <seealso cref="Boundary"/>
+    public static ContentType ForMultipart(Multipart multipart)
+        => new ContentType("multipart", ToMimeSubtype(multipart));
 
     /// <summary>
     /// Generates a random multipart boundary string between <c>30</c> and <c>70</c>
@@ -567,7 +489,7 @@ public class ContentType
     /// </summary>
     private static string GenerateBoundary()
     {
-        var sb = new System.Text.StringBuilder(DefaultBoundaryPrefix);
+        var sb = new StringBuilder(DefaultBoundaryPrefix);
         var endSize = NextRandom(MaxBoundaryLength - MinBoundaryLength + 1) + MinBoundaryLength;
         for (var i = DefaultBoundaryPrefix.Length; i < endSize; i++)
             sb.Append(_boundaryChars[NextRandom(_boundaryChars.Length)]);
@@ -575,11 +497,8 @@ public class ContentType
     }
 
     /// <summary>
-    /// Maps a <see cref="Multipart"/> enum value to its correct MIME subtype string,
-    /// handling cases like <see cref="Multipart.FormData"/> which requires a hyphen.
+    /// Maps a <see cref="Multipart"/> enum value to its correct MIME subtype string.
     /// </summary>
-    /// <param name="multipart">The multipart subtype to map.</param>
-    /// <returns>The lowercase MIME subtype string, e.g. <c>"form-data"</c>.</returns>
     /// <exception cref="ArgumentOutOfRangeException">
     /// Thrown when <paramref name="multipart"/> is not a recognized enum value.
     /// </exception>
@@ -595,67 +514,164 @@ public class ContentType
         Multipart.Parallel    => "parallel",
         _ => throw new ArgumentOutOfRangeException(nameof(multipart), multipart, "Unknown multipart subtype.")
     };
+}
+
+/// <summary>
+/// Provides the static well-known content type fields for <see cref="ContentType"/>.
+/// </summary>
+public partial class ContentType
+{
+    /// <summary>Generic binary content. Use when the content type is unknown or unspecified.</summary>
+    [FileExtensions("bin")]
+    public static readonly ContentType Binary = Parse("application/octet-stream");
+
+    /// <summary>Bitmap image format.</summary>
+    [FileExtensions("bmp")]
+    public static readonly ContentType Bmp = Parse("image/bmp");
+
+    /// <summary>Cascading Style Sheets.</summary>
+    [FileExtensions("css")]
+    public static readonly ContentType Css = Parse("text/css; charset=UTF-8");
+
+    /// <summary>Comma-separated values.</summary>
+    [FileExtensions("csv")]
+    public static readonly ContentType Csv = Parse("text/csv");
+
+    /// <summary>HTML form data encoded as URL query parameters.</summary>
+    [FileExtensions("form")]
+    public static readonly ContentType FormUrlEncoded = Parse("application/x-www-form-urlencoded");
+
+    /// <summary>Graphics Interchange Format image.</summary>
+    [FileExtensions("gif")]
+    public static readonly ContentType Gif = Parse("image/gif");
+
+    /// <summary>GZip compressed archive.</summary>
+    [FileExtensions("gz", "gzip")]
+    public static readonly ContentType GZip = Parse("application/gzip");
+
+    /// <summary>HyperText Markup Language.</summary>
+    [FileExtensions("html", "htm")]
+    public static readonly ContentType Html = Parse("text/html; charset=UTF-8");
 
     /// <summary>
-    /// Infers the <see cref="ContentMode"/> for an unrecognized MIME type based on
-    /// known patterns. MIME types beginning with <c>text/</c> or ending with
-    /// <c>+xml</c> or <c>+json</c> are inferred as <see cref="ContentMode.Text"/>.
-    /// All other types default to <see cref="ContentMode.Binary"/>.
+    /// Icon image using the IANA-registered MIME type. Incoming requests using the
+    /// legacy <c>image/x-icon</c> MIME type are automatically resolved to this instance.
     /// </summary>
-    /// <param name="mimeType">The bare MIME type string to evaluate.</param>
-    /// <returns>The inferred <see cref="ContentMode"/>.</returns>
-    private static ContentMode InferContentMode(string mimeType)
-    {
-        if (mimeType.StartsWith("text/", StringComparison.OrdinalIgnoreCase))
-            return ContentMode.Text;
+    [FileExtensions("ico")]
+    public static readonly ContentType Icon = Parse("image/vnd.microsoft.icon");
 
-        if (mimeType.EndsWith("+xml", StringComparison.OrdinalIgnoreCase))
-            return ContentMode.Text;
+    /// <summary>JavaScript source code.</summary>
+    [FileExtensions("js")]
+    public static readonly ContentType JavaScript = Parse("application/javascript; charset=UTF-8");
 
-        if (mimeType.EndsWith("+json", StringComparison.OrdinalIgnoreCase))
-            return ContentMode.Text;
+    /// <summary>JavaScript Object Notation.</summary>
+    [FileExtensions("json")]
+    public static readonly ContentType Json = Parse("application/json; charset=UTF-8");
 
-        return ContentMode.Binary;
-    }
+    /// <summary>JPEG image.</summary>
+    [FileExtensions("jpg", "jpeg")]
+    public static readonly ContentType Jpg = Parse("image/jpeg");
+
+    /// <summary>MPEG-4 audio.</summary>
+    [FileExtensions("m4a")]
+    public static readonly ContentType M4a = Parse("audio/mp4");
+
+    /// <summary>MPEG audio (MP3).</summary>
+    [FileExtensions("mp3")]
+    public static readonly ContentType Mp3 = Parse("audio/mpeg");
+
+    /// <summary>MPEG-4 video.</summary>
+    [FileExtensions("mp4")]
+    public static readonly ContentType Mp4 = Parse("video/mp4");
+
+    /// <summary>MPEG video.</summary>
+    [FileExtensions("mpeg", "mpg")]
+    public static readonly ContentType Mpeg = Parse("video/mpeg");
 
     /// <summary>
-    /// Parses a <c>Content-Type</c> header value into its MIME type, optional charset,
-    /// and optional boundary components. For example,
-    /// <c>"multipart/form-data; boundary=abc123"</c> returns
-    /// <c>("multipart/form-data", null, "abc123")</c>, and
-    /// <c>"text/html; charset=utf-8"</c> returns <c>("text/html", "utf-8", null)</c>.
-    /// Parameter order is not significant.
+    /// Returns a new <see cref="ContentType"/> instance for multipart form data with a
+    /// lazily generated boundary. Each access produces a fresh instance suitable for use
+    /// as an outgoing response <c>Content-Type</c> header.
     /// </summary>
-    /// <param name="value">The raw content type string to parse.</param>
-    /// <returns>
-    /// A tuple containing the trimmed MIME type, the charset value if present, and the
-    /// boundary value if present. Either or both of charset and boundary may be
-    /// <see langword="null"/> if not found in the string.
-    /// </returns>
-    private static (string mimeType, string? charSet, string? boundary) ParseContentType(string value)
-    {
-        var index = value.IndexOf(';');
-        if (index < 0) return (value.Trim(), null, null);
+    /// <seealso cref="ForMultipart"/>
+    /// <seealso cref="Boundary"/>
+    public static ContentType MultipartFormData => ForMultipart(Multipart.FormData);
 
-        var mimeType = value.Substring(0, index).Trim();
-        string? charSet = null;
-        string? boundary = null;
+    /// <summary>Ogg Vorbis audio.</summary>
+    [FileExtensions("ogg")]
+    public static readonly ContentType Ogg = Parse("audio/ogg");
 
-        var remaining = value.Substring(index + 1);
-        while (remaining.Length > 0)
-        {
-            var next = remaining.IndexOf(';');
-            var part = next < 0 ? remaining.Trim() : remaining.Substring(0, next).Trim();
-            remaining = next < 0 ? string.Empty : remaining.Substring(next + 1);
+    /// <summary>OpenType font.</summary>
+    [FileExtensions("otf")]
+    public static readonly ContentType Otf = Parse("font/otf");
 
-            if (part.StartsWith("charset=", StringComparison.OrdinalIgnoreCase))
-                charSet = part.Substring(CharSetPrefixLength).Trim();
-            else if (part.StartsWith("boundary=", StringComparison.OrdinalIgnoreCase))
-                boundary = part.Substring(BoundaryPrefixLength).Trim();
-        }
+    /// <summary>Portable Document Format.</summary>
+    [FileExtensions("pdf")]
+    public static readonly ContentType Pdf = Parse("application/pdf");
 
-        return (mimeType,
-            string.IsNullOrWhiteSpace(charSet) ? null : charSet,
-            string.IsNullOrWhiteSpace(boundary) ? null : boundary);
-    }
+    /// <summary>Portable Network Graphics image.</summary>
+    [FileExtensions("png")]
+    public static readonly ContentType Png = Parse("image/png");
+
+    /// <summary>
+    /// Problem Details JSON, as defined in RFC 7807. Used for structured error responses.
+    /// </summary>
+    public static readonly ContentType ProblemDetailsJson = Parse("application/problem+json; charset=UTF-8");
+
+    /// <summary>
+    /// Problem Details XML, as defined in RFC 7807. Used for structured error responses.
+    /// </summary>
+    public static readonly ContentType ProblemDetailsXml = Parse("application/problem+xml; charset=UTF-8");
+
+    /// <summary>Scalable Vector Graphics.</summary>
+    [FileExtensions("svg")]
+    public static readonly ContentType Svg = Parse("image/svg+xml; charset=UTF-8");
+
+    /// <summary>Tape Archive compressed file.</summary>
+    [FileExtensions("tar")]
+    public static readonly ContentType Tar = Parse("application/x-tar");
+
+    /// <summary>Plain text.</summary>
+    [FileExtensions("txt")]
+    public static readonly ContentType Text = Parse("text/plain; charset=UTF-8");
+
+    /// <summary>Tagged Image File Format.</summary>
+    [FileExtensions("tiff", "tif")]
+    public static readonly ContentType Tiff = Parse("image/tiff");
+
+    /// <summary>TrueType font.</summary>
+    [FileExtensions("ttf")]
+    public static readonly ContentType Ttf = Parse("font/ttf");
+
+    /// <summary>WebAssembly binary format.</summary>
+    [FileExtensions("wasm")]
+    public static readonly ContentType Wasm = Parse("application/wasm");
+
+    /// <summary>WebM video.</summary>
+    [FileExtensions("webm")]
+    public static readonly ContentType WebM = Parse("video/webm");
+
+    /// <summary>WebP image.</summary>
+    [FileExtensions("webp")]
+    public static readonly ContentType WebP = Parse("image/webp");
+
+    /// <summary>Web Open Font Format.</summary>
+    [FileExtensions("woff")]
+    public static readonly ContentType Woff = Parse("font/woff");
+
+    /// <summary>Web Open Font Format 2.</summary>
+    [FileExtensions("woff2")]
+    public static readonly ContentType Woff2 = Parse("font/woff2");
+
+    /// <summary>Extensible Markup Language.</summary>
+    [FileExtensions("xml")]
+    public static readonly ContentType Xml = Parse("application/xml; charset=UTF-8");
+
+    /// <summary>YAML Ain't Markup Language. Commonly used for configuration files.</summary>
+    [FileExtensions("yaml", "yml")]
+    public static readonly ContentType Yaml = Parse("text/yaml");
+
+    /// <summary>ZIP compressed archive.</summary>
+    [FileExtensions("zip")]
+    public static readonly ContentType Zip = Parse("application/zip");
 }
