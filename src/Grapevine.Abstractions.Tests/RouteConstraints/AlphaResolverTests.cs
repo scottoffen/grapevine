@@ -1,27 +1,72 @@
 using Grapevine.Abstractions.RouteConstraints;
 using Shouldly;
-using Xunit;
 
 namespace Grapevine.Abstractions.Tests.RouteConstraints;
 
 public class AlphaResolverTests
 {
-    [Theory]
-    [InlineData(null, "(?<letters>[a-zA-Z]+)")]
-    [InlineData("", "(?<letters>[a-zA-Z]+)")]
-    [InlineData(" ", "(?<letters>[a-zA-Z]+)")]
-    public void Resolve_ShouldReturnUnboundedPattern_WhenArgsIsNullOrWhitespace(string? args, string expected)
+    public class Resolve
     {
-        AlphaResolver.Resolve("letters", args).ShouldBe(expected);
-    }
+        [Fact]
+        public void ReturnsUnboundPattern_WhenArgsIsNull()
+        {
+            var (pattern, _, _) = AlphaResolver.Resolve("name", null);
+            pattern.ShouldBe("(?<name>[a-zA-Z]+)");
+        }
 
-    [Theory]
-    [InlineData("3", "(?<letters>[a-zA-Z]{3})")]
-    [InlineData("1,", "(?<letters>[a-zA-Z]{1,})")]
-    [InlineData(",5", "(?<letters>[a-zA-Z]{1,5})")]
-    [InlineData("1,5", "(?<letters>[a-zA-Z]{1,5})")]
-    public void Resolve_ShouldReturnBoundedPattern_WhenArgsAreValid(string args, string expected)
-    {
-        AlphaResolver.Resolve("letters", args).ShouldBe(expected);
+        [Fact]
+        public void ReturnsUnboundPattern_WhenArgsIsEmpty()
+        {
+            var (pattern, _, _) = AlphaResolver.Resolve("name", string.Empty);
+            pattern.ShouldBe("(?<name>[a-zA-Z]+)");
+        }
+
+        [Fact]
+        public void ReturnsExactLengthPattern_WhenArgIsExact()
+        {
+            var (pattern, _, _) = AlphaResolver.Resolve("name", "3");
+            pattern.ShouldBe("(?<name>[a-zA-Z]{3})");
+        }
+
+        [Fact]
+        public void ReturnsMinLengthPattern_WhenArgIsMinOnly()
+        {
+            var (pattern, _, _) = AlphaResolver.Resolve("name", "1,");
+            pattern.ShouldBe("(?<name>[a-zA-Z]{1,})");
+        }
+
+        [Fact]
+        public void ReturnsMaxLengthPattern_WhenArgIsMaxOnly()
+        {
+            var (pattern, _, _) = AlphaResolver.Resolve("name", ",5");
+            pattern.ShouldBe("(?<name>[a-zA-Z]{1,5})");
+        }
+
+        [Fact]
+        public void ReturnsRangePattern_WhenArgIsRange()
+        {
+            var (pattern, _, _) = AlphaResolver.Resolve("name", "1,5");
+            pattern.ShouldBe("(?<name>[a-zA-Z]{1,5})");
+        }
+
+        [Fact]
+        public void ReturnsCorrectStrictness()
+        {
+            var (_, strictness, _) = AlphaResolver.Resolve("name", null);
+            strictness.ShouldBe(AlphaResolver.Strictness);
+        }
+
+        [Fact]
+        public void ReturnsCorrectGroup()
+        {
+            var (_, _, group) = AlphaResolver.Resolve("name", null);
+            group.ShouldBe(AlphaResolver.Group);
+        }
+
+        [Fact]
+        public void Throws_WhenArgsIsInvalid()
+        {
+            Should.Throw<ArgumentException>(() => AlphaResolver.Resolve("name", "0"));
+        }
     }
 }

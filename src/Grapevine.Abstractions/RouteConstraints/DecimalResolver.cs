@@ -6,8 +6,11 @@ namespace Grapevine.Abstractions.RouteConstraints;
 /// </summary>
 public static class DecimalResolver
 {
+    internal static readonly int Strictness = 50;
+    internal static readonly int Group      = (int)ConstraintGroup.Numeric;
+
     private static readonly string _pattern = @"[-]?\d+(?:\.\d{length})?";
-    private static readonly string _unbound = @"[-]?\d+(?:\.\d+)?";
+    private static readonly string _unbound  = @"[-]?\d+(?:\.\d+)?";
 
     /// <summary>
     /// Returns a named capture group pattern matching a decimal number, with an
@@ -26,14 +29,17 @@ public static class DecimalResolver
     /// </remarks>
     /// <param name="name">The route parameter name for the named capture group.</param>
     /// <param name="args">An optional precision constraint string.</param>
-    /// <returns>A named capture group regular expression pattern.</returns>
+    /// <returns>
+    /// A tuple containing the named capture group pattern, a strictness value of
+    /// <c>50</c>, and a group of <see cref="ConstraintGroup.Numeric"/>.
+    /// </returns>
     /// <exception cref="ArgumentException">Thrown when <paramref name="args"/> is invalid.</exception>
-    public static string Resolve(string name, string? args)
+    public static (string pattern, int strictness, int group) Resolve(string name, string? args)
     {
         if (string.IsNullOrWhiteSpace(args))
-            return $"(?<{name}>{_unbound})";
+            return ($"(?<{name}>{_unbound})", Strictness, Group);
 
-        var length = PrecisionPatternResolver.Resolve(args);
-        return $"(?<{name}>{_pattern.Replace("{length}", length)})";
+        var quantifier = PrecisionPatternResolver.Resolve(args);
+        return ($"(?<{name}>{_pattern.Replace("{length}", quantifier)})", Strictness, Group);
     }
 }

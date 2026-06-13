@@ -6,7 +6,10 @@ namespace Grapevine.Abstractions.RouteConstraints;
 /// </summary>
 public static class DefaultResolver
 {
-    private static readonly string _pattern = @"[^/]";
+    internal static readonly int Strictness = 100;
+    internal static readonly int Group      = (int)ConstraintGroup.Text;
+
+    private static readonly string _basePattern = "[^/]";
 
     /// <summary>
     /// Returns a named capture group pattern matching one or more non-slash characters,
@@ -24,14 +27,17 @@ public static class DefaultResolver
     /// </remarks>
     /// <param name="name">The route parameter name for the named capture group.</param>
     /// <param name="args">An optional length constraint string.</param>
-    /// <returns>A named capture group regular expression pattern.</returns>
+    /// <returns>
+    /// A tuple containing the named capture group pattern, a strictness value of
+    /// <c>100</c>, and a group of <see cref="ConstraintGroup.Text"/>.
+    /// </returns>
     /// <exception cref="ArgumentException">Thrown when <paramref name="args"/> is invalid.</exception>
-    public static string Resolve(string name, string? args)
+    public static (string pattern, int strictness, int group) Resolve(string name, string? args)
     {
-        if (string.IsNullOrWhiteSpace(args))
-            return $"(?<{name}>{_pattern}+)";
+        var quantifier = string.IsNullOrWhiteSpace(args)
+            ? "+"
+            : LengthPatternResolver.Resolve(args);
 
-        var length = LengthPatternResolver.Resolve(args);
-        return $"(?<{name}>{_pattern}{length})";
+        return ($"(?<{name}>{_basePattern}{quantifier})", Strictness, Group);
     }
 }

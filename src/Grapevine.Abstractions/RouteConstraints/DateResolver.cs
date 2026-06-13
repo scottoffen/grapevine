@@ -10,6 +10,11 @@ namespace Grapevine.Abstractions.RouteConstraints;
 /// </remarks>
 public static class DateResolver
 {
+    internal static readonly int    Strictness             = 30;
+    internal static readonly int    Group                  = (int)ConstraintGroup.Date;
+    internal static readonly string UnsupportedFormatMessage =
+        "The 'date' constraint does not support the argument '{0}'. Supported values: {1}. For date and time matching use the 'datetime' constraint.";
+
     private static readonly Dictionary<string, string> _patterns = new(StringComparer.OrdinalIgnoreCase)
     {
         ["iso"]   = @"\d{4}-\d{2}-\d{2}",
@@ -36,18 +41,21 @@ public static class DateResolver
     /// </remarks>
     /// <param name="name">The route parameter name for the named capture group.</param>
     /// <param name="args">An optional format identifier string.</param>
-    /// <returns>A named capture group regular expression pattern.</returns>
+    /// <returns>
+    /// A tuple containing the named capture group pattern, a strictness value of
+    /// <c>30</c>, and a group of <see cref="ConstraintGroup.Date"/>.
+    /// </returns>
     /// <exception cref="ArgumentException">Thrown when <paramref name="args"/> is not a supported format.</exception>
-    public static string Resolve(string name, string? args)
+    public static (string pattern, int strictness, int group) Resolve(string name, string? args)
     {
         if (string.IsNullOrWhiteSpace(args))
-            return $"(?<{name}>{_patterns["iso"]})";
+            return ($"(?<{name}>{_patterns["iso"]})", Strictness, Group);
 
         if (_patterns.TryGetValue(args!.Trim(), out var value))
-            return $"(?<{name}>{value})";
+            return ($"(?<{name}>{value})", Strictness, Group);
 
         throw new ArgumentException(
-            $"The 'date' constraint does not support the argument '{args}'. Supported values: {string.Join(", ", _patterns.Keys)}. For date and time matching use the 'datetime' constraint.",
+            string.Format(UnsupportedFormatMessage, args, string.Join(", ", _patterns.Keys)),
             nameof(args));
     }
 }

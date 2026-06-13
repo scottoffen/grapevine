@@ -1,18 +1,10 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 
 namespace Grapevine.Abstractions.RouteConstraints;
 
 /// <summary>
-/// Represents a method that resolves a route constraint to a regular expression pattern.
-/// </summary>
-/// <param name="name">The name of the route parameter to use for the named capture group.</param>
-/// <param name="value">Optional arguments for the constraint, or <see langword="null"/> if none.</param>
-/// <returns>A regular expression pattern string wrapped in a named capture group.</returns>
-public delegate string RouteConstraintResolver(string name, string? value);
-
-/// <summary>
 /// A registry of <see cref="RouteConstraintResolver"/> delegates used to convert route
-/// template constraint segments into regular expression patterns.
+/// template constraint segments into <see cref="SegmentDescriptor"/> instances.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -62,18 +54,22 @@ public static class ResolverRegistry
 
     /// <summary>
     /// Attempts to resolve a route template segment in the format <c>{name}</c>,
-    /// <c>{name:constraint}</c>, or <c>{name:constraint(args)}</c> into a named
-    /// regular expression capture group pattern.
+    /// <c>{name:constraint}</c>, or <c>{name:constraint(args)}</c> into a
+    /// <see cref="SegmentDescriptor"/>.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// If no constraint is specified, the <c>text</c> resolver is used as the default.
-    /// Returns <see langword="false"/> if the segment is not in a recognized format.
-    /// Throws if the segment is valid but references an unregistered constraint.
+    /// Returns <see langword="false"/> if the segment is not in a recognized brace format.
+    /// </para>
+    /// <para>
+    /// Throws if the segment is valid but references an unregistered constraint key.
+    /// </para>
     /// </remarks>
     /// <param name="segment">The route template segment to resolve.</param>
-    /// <param name="pattern">
-    /// When this method returns <see langword="true"/>, contains the resolved regular
-    /// expression pattern; otherwise <see langword="null"/>.
+    /// <param name="descriptor">
+    /// When this method returns <see langword="true"/>, contains the fully populated
+    /// <see cref="SegmentDescriptor"/> for the segment; otherwise the default value.
     /// </param>
     /// <returns>
     /// <see langword="true"/> if the segment was successfully resolved; otherwise
@@ -82,16 +78,17 @@ public static class ResolverRegistry
     /// <exception cref="ArgumentException">
     /// Thrown when the segment references a constraint key that is not registered.
     /// </exception>
-    public static bool TryResolveSegment(string segment, out string? pattern)
+    public static bool TryResolveSegment(string segment, out SegmentDescriptor descriptor)
     {
-        pattern = null;
+        descriptor = default;
 
         if (!TryParseSegment(segment, out var name, out var key, out var args))
             return false;
 
         if (_resolvers.TryGetValue(key, out var resolver))
         {
-            pattern = resolver(name, args);
+            var (pattern, strictness, group) = resolver(name, args);
+            descriptor = SegmentDescriptor.Parameter(segment, pattern, name, key, args, strictness, group);
             return true;
         }
 
@@ -167,13 +164,13 @@ public static class ResolverRegistry
     /// if none were specified.
     /// </param>
     /// <returns>
-    /// <see langword="true"/> if the input was successfully parsed; otherwise
-    /// <see langword="false"/>.
+    /// <see langword="true"/> if the input was successfully parsed as a parameter
+    /// segment; otherwise <see langword="false"/>.
     /// </returns>
     private static bool TryParseSegment(string input, out string name, out string key, out string? args)
     {
         name = string.Empty;
-        key = "text";
+        key  = "text";
         args = null;
 
         if (string.IsNullOrEmpty(input) || input.Length < 3
@@ -200,7 +197,7 @@ public static class ResolverRegistry
             if (closingParenIndex < parenIndex)
                 return false;
 
-            key = inner.Substring(colonIndex + 1, parenIndex - colonIndex - 1);
+            key  = inner.Substring(colonIndex + 1, parenIndex - colonIndex - 1);
             args = inner.Substring(parenIndex + 1, closingParenIndex - parenIndex - 1);
         }
         else

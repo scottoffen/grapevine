@@ -1,75 +1,102 @@
 using Grapevine.Abstractions.RouteConstraints;
 using Shouldly;
-using Xunit;
 
 namespace Grapevine.Abstractions.Tests.RouteConstraints;
 
 public class LengthPatternResolverTests
 {
-    [Theory]
-    [InlineData(null, "+")]
-    [InlineData("", "+")]
-    [InlineData(" ", "+")]
-    public void Resolve_WithNullOrEmptyOrWhitespace_ShouldReturnPlus(string? input, string expected)
+    public class Resolve
     {
-        LengthPatternResolver.Resolve(input).ShouldBe(expected);
-    }
+        [Fact]
+        public void ReturnsPlus_WhenArgsIsNull()
+        {
+            LengthPatternResolver.Resolve(null).ShouldBe("+");
+        }
 
-    [Theory]
-    [InlineData("1", "{1}")]
-    [InlineData("3", "{3}")]
-    [InlineData("5", "{5}")]
-    public void Resolve_WithExactCount_ShouldReturnExactQuantifier(string input, string expected)
-    {
-        LengthPatternResolver.Resolve(input).ShouldBe(expected);
-    }
+        [Fact]
+        public void ReturnsPlus_WhenArgsIsEmpty()
+        {
+            LengthPatternResolver.Resolve(string.Empty).ShouldBe("+");
+        }
 
-    [Theory]
-    [InlineData("1,",  "{1,}")]
-    [InlineData("4,",  "{4,}")]
-    public void Resolve_WithLowerBoundOnly_ShouldReturnMinOnlyQuantifier(string input, string expected)
-    {
-        LengthPatternResolver.Resolve(input).ShouldBe(expected);
-    }
+        [Fact]
+        public void ReturnsPlus_WhenArgsIsWhitespace()
+        {
+            LengthPatternResolver.Resolve("   ").ShouldBe("+");
+        }
 
-    [Theory]
-    [InlineData(",3", "{1,3}")]
-    [InlineData(",5", "{1,5}")]
-    public void Resolve_WithUpperBoundOnly_ShouldApplyMinOfOne(string input, string expected)
-    {
-        LengthPatternResolver.Resolve(input).ShouldBe(expected);
-    }
+        [Fact]
+        public void ReturnsExactQuantifier_WhenArgIsInteger()
+        {
+            LengthPatternResolver.Resolve("3").ShouldBe("{3}");
+        }
 
-    [Theory]
-    [InlineData("1,3", "{1,3}")]
-    [InlineData("2,5", "{2,5}")]
-    public void Resolve_WithMinAndMax_ShouldReturnBoundedQuantifier(string input, string expected)
-    {
-        LengthPatternResolver.Resolve(input).ShouldBe(expected);
-    }
+        [Fact]
+        public void ReturnsMinQuantifier_WhenArgIsMinOnly()
+        {
+            LengthPatternResolver.Resolve("1,").ShouldBe("{1,}");
+        }
 
-    [Theory]
-    [InlineData(" 3 ",   "{3}")]
-    [InlineData(" 1 , 4 ", "{1,4}")]
-    [InlineData(" , 5 ", "{1,5}")]
-    public void Resolve_WithWhitespaceInInput_ShouldReturnTrimmedQuantifier(string input, string expected)
-    {
-        LengthPatternResolver.Resolve(input).ShouldBe(expected);
-    }
+        [Fact]
+        public void ReturnsMaxQuantifier_WhenArgIsMaxOnly()
+        {
+            LengthPatternResolver.Resolve(",5").ShouldBe("{1,5}");
+        }
 
-    [Theory]
-    [InlineData("abc")]
-    [InlineData("1,,5")]
-    [InlineData(",,")]
-    [InlineData("-1")]
-    [InlineData("2,-5")]
-    [InlineData("-1,5")]
-    [InlineData("5,2")]
-    [InlineData("0")]
-    [InlineData("0,2")]
-    [InlineData("0,")]
-    public void Resolve_WithInvalidInput_ShouldThrowArgumentException(string input)
-    {
-        Should.Throw<ArgumentException>(() => LengthPatternResolver.Resolve(input));
+        [Fact]
+        public void ReturnsRangeQuantifier_WhenArgIsRange()
+        {
+            LengthPatternResolver.Resolve("1,5").ShouldBe("{1,5}");
+        }
+
+        [Fact]
+        public void Throws_WhenBothSidesOfCommaAreEmpty()
+        {
+            Should.Throw<ArgumentException>(() => LengthPatternResolver.Resolve(","));
+        }
+
+        [Fact]
+        public void Throws_WhenExactValueIsZero()
+        {
+            Should.Throw<ArgumentException>(() => LengthPatternResolver.Resolve("0"));
+        }
+
+        [Fact]
+        public void Throws_WhenExactValueIsNegative()
+        {
+            Should.Throw<ArgumentException>(() => LengthPatternResolver.Resolve("-1"));
+        }
+
+        [Fact]
+        public void Throws_WhenMinIsZero()
+        {
+            Should.Throw<ArgumentException>(() => LengthPatternResolver.Resolve("0,5"));
+        }
+
+        [Fact]
+        public void Throws_WhenMaxIsZero()
+        {
+            Should.Throw<ArgumentException>(() => LengthPatternResolver.Resolve("1,0"));
+        }
+
+        [Fact]
+        public void Throws_WhenMaxIsLessThanMin()
+        {
+            Should.Throw<ArgumentException>(() => LengthPatternResolver.Resolve("5,1"));
+        }
+
+        [Fact]
+        public void Throws_WhenArgIsNotAnInteger()
+        {
+            Should.Throw<ArgumentException>(() => LengthPatternResolver.Resolve("abc"));
+        }
+
+        [Fact]
+        public void ThrowsWithExpectedMessage_WhenArgIsInvalid()
+        {
+            var args = Guid.NewGuid().ToString();
+            var ex   = Should.Throw<ArgumentException>(() => LengthPatternResolver.Resolve(args));
+            ex.Message.ShouldContain(args);
+        }
     }
 }

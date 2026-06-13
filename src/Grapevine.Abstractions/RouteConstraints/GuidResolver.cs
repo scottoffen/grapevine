@@ -6,6 +6,8 @@ namespace Grapevine.Abstractions.RouteConstraints;
 /// </summary>
 public static class GuidResolver
 {
+    internal static readonly int    Strictness         = 10;
+    internal static readonly int    Group              = (int)ConstraintGroup.None;
     internal static readonly string NoArgumentsMessage = "The 'guid' constraint does not accept arguments.";
 
     private static readonly string _pattern =
@@ -17,13 +19,16 @@ public static class GuidResolver
     /// </summary>
     /// <param name="name">The route parameter name for the named capture group.</param>
     /// <param name="args">Must be <see langword="null"/> or empty.</param>
-    /// <returns>A named capture group regular expression pattern.</returns>
+    /// <returns>
+    /// A tuple containing the named capture group pattern, a strictness value of
+    /// <c>10</c>, and a group of <see cref="ConstraintGroup.None"/>.
+    /// </returns>
     /// <exception cref="ArgumentException">Thrown if <paramref name="args"/> is non-empty.</exception>
-    public static string Resolve(string name, string? args)
+    public static (string pattern, int strictness, int group) Resolve(string name, string? args)
     {
         if (!string.IsNullOrWhiteSpace(args))
             throw new ArgumentException(NoArgumentsMessage, nameof(args));
 
-        return $"(?<{name}>{_pattern})";
+        return ($"(?<{name}>{_pattern})", Strictness, Group);
     }
 }

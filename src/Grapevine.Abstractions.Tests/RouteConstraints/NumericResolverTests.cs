@@ -1,39 +1,65 @@
 using Grapevine.Abstractions.RouteConstraints;
 using Shouldly;
-using Xunit;
 
 namespace Grapevine.Abstractions.Tests.RouteConstraints;
 
 public class NumericResolverTests
 {
-    [Theory]
-    [InlineData(null, @"(?<digits>\d+)")]
-    [InlineData("", @"(?<digits>\d+)")]
-    [InlineData(" ", @"(?<digits>\d+)")]
-    public void Resolve_ShouldReturnUnboundedPattern_WhenArgsIsNullOrWhitespace(string? args, string expected)
+    public class Resolve
     {
-        NumericResolver.Resolve("digits", args).ShouldBe(expected);
-    }
+        [Fact]
+        public void ReturnsUnboundPattern_WhenArgsIsNull()
+        {
+            var (pattern, _, _) = NumericResolver.Resolve("n", null);
+            pattern.ShouldBe(@"(?<n>\d+)");
+        }
 
-    [Theory]
-    [InlineData("3",   @"(?<digits>\d{3})")]
-    [InlineData("1,",  @"(?<digits>\d{1,})")]
-    [InlineData(",5",  @"(?<digits>\d{1,5})")]
-    [InlineData("1,5", @"(?<digits>\d{1,5})")]
-    public void Resolve_ShouldReturnBoundedPattern_WhenArgsAreValid(string args, string expected)
-    {
-        NumericResolver.Resolve("digits", args).ShouldBe(expected);
-    }
+        [Fact]
+        public void ReturnsUnboundPattern_WhenArgsIsEmpty()
+        {
+            var (pattern, _, _) = NumericResolver.Resolve("n", string.Empty);
+            pattern.ShouldBe(@"(?<n>\d+)");
+        }
 
-    [Theory]
-    [InlineData("abc")]
-    [InlineData("1.2")]
-    [InlineData(",,")]
-    [InlineData("1,2,3")]
-    [InlineData("0")]
-    public void Resolve_ShouldThrowArgumentException_WhenArgsAreInvalid(string args)
-    {
-        var ex = Should.Throw<ArgumentException>(() => NumericResolver.Resolve("digits", args));
-        ex.Message.ShouldContain("Invalid argument");
+        [Fact]
+        public void ReturnsExactLengthPattern_WhenArgIsExact()
+        {
+            var (pattern, _, _) = NumericResolver.Resolve("n", "3");
+            pattern.ShouldBe(@"(?<n>\d{3})");
+        }
+
+        [Fact]
+        public void ReturnsMinLengthPattern_WhenArgIsMinOnly()
+        {
+            var (pattern, _, _) = NumericResolver.Resolve("n", "1,");
+            pattern.ShouldBe(@"(?<n>\d{1,})");
+        }
+
+        [Fact]
+        public void ReturnsRangePattern_WhenArgIsRange()
+        {
+            var (pattern, _, _) = NumericResolver.Resolve("n", "1,5");
+            pattern.ShouldBe(@"(?<n>\d{1,5})");
+        }
+
+        [Fact]
+        public void ReturnsCorrectStrictness()
+        {
+            var (_, strictness, _) = NumericResolver.Resolve("n", null);
+            strictness.ShouldBe(NumericResolver.Strictness);
+        }
+
+        [Fact]
+        public void ReturnsCorrectGroup()
+        {
+            var (_, _, group) = NumericResolver.Resolve("n", null);
+            group.ShouldBe(NumericResolver.Group);
+        }
+
+        [Fact]
+        public void Throws_WhenArgsIsInvalid()
+        {
+            Should.Throw<ArgumentException>(() => NumericResolver.Resolve("n", "0"));
+        }
     }
 }

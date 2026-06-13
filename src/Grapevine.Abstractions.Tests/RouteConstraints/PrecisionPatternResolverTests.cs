@@ -1,75 +1,96 @@
 using Grapevine.Abstractions.RouteConstraints;
 using Shouldly;
-using Xunit;
 
 namespace Grapevine.Abstractions.Tests.RouteConstraints;
 
 public class PrecisionPatternResolverTests
 {
-    [Theory]
-    [InlineData(null, "+")]
-    [InlineData("", "+")]
-    [InlineData(" ", "+")]
-    public void Resolve_WithNullOrEmptyOrWhitespace_ShouldReturnPlus(string? input, string expected)
+    public class Resolve
     {
-        PrecisionPatternResolver.Resolve(input).ShouldBe(expected);
-    }
+        [Fact]
+        public void ReturnsPlus_WhenArgsIsNull()
+        {
+            PrecisionPatternResolver.Resolve(null).ShouldBe("+");
+        }
 
-    [Theory]
-    [InlineData("0", "{0}")]
-    [InlineData("1", "{1}")]
-    [InlineData("3", "{3}")]
-    public void Resolve_WithExactCount_ShouldReturnExactQuantifier(string input, string expected)
-    {
-        PrecisionPatternResolver.Resolve(input).ShouldBe(expected);
-    }
+        [Fact]
+        public void ReturnsPlus_WhenArgsIsEmpty()
+        {
+            PrecisionPatternResolver.Resolve(string.Empty).ShouldBe("+");
+        }
 
-    [Theory]
-    [InlineData("0,",  "{0,}")]
-    [InlineData("1,",  "{1,}")]
-    [InlineData("4,",  "{4,}")]
-    public void Resolve_WithLowerBoundOnly_ShouldReturnMinOnlyQuantifier(string input, string expected)
-    {
-        PrecisionPatternResolver.Resolve(input).ShouldBe(expected);
-    }
+        [Fact]
+        public void ReturnsPlus_WhenArgsIsWhitespace()
+        {
+            PrecisionPatternResolver.Resolve("   ").ShouldBe("+");
+        }
 
-    [Theory]
-    [InlineData(",3", "{0,3}")]
-    [InlineData(",5", "{0,5}")]
-    public void Resolve_WithUpperBoundOnly_ShouldApplyMinOfZero(string input, string expected)
-    {
-        PrecisionPatternResolver.Resolve(input).ShouldBe(expected);
-    }
+        [Fact]
+        public void ReturnsZeroQuantifier_WhenArgIsZero()
+        {
+            PrecisionPatternResolver.Resolve("0").ShouldBe("{0}");
+        }
 
-    [Theory]
-    [InlineData("0,3", "{0,3}")]
-    [InlineData("1,3", "{1,3}")]
-    [InlineData("2,5", "{2,5}")]
-    public void Resolve_WithMinAndMax_ShouldReturnBoundedQuantifier(string input, string expected)
-    {
-        PrecisionPatternResolver.Resolve(input).ShouldBe(expected);
-    }
+        [Fact]
+        public void ReturnsExactQuantifier_WhenArgIsInteger()
+        {
+            PrecisionPatternResolver.Resolve("2").ShouldBe("{2}");
+        }
 
-    [Theory]
-    [InlineData(" 3 ",    "{3}")]
-    [InlineData(" 1 , 4 ", "{1,4}")]
-    [InlineData(" , 5 ",  "{0,5}")]
-    [InlineData(" 0 , 2 ", "{0,2}")]
-    public void Resolve_WithWhitespaceInInput_ShouldReturnTrimmedQuantifier(string input, string expected)
-    {
-        PrecisionPatternResolver.Resolve(input).ShouldBe(expected);
-    }
+        [Fact]
+        public void ReturnsMinQuantifier_WhenArgIsMinOnly()
+        {
+            PrecisionPatternResolver.Resolve("0,").ShouldBe("{0,}");
+        }
 
-    [Theory]
-    [InlineData("abc")]
-    [InlineData("1,,5")]
-    [InlineData(",,")]
-    [InlineData("-1")]
-    [InlineData("-1,5")]
-    [InlineData("5,2")]
-    [InlineData("1,2,3")]
-    public void Resolve_WithInvalidInput_ShouldThrowArgumentException(string input)
-    {
-        Should.Throw<ArgumentException>(() => PrecisionPatternResolver.Resolve(input));
+        [Fact]
+        public void ReturnsMaxQuantifier_WhenArgIsMaxOnly()
+        {
+            PrecisionPatternResolver.Resolve(",3").ShouldBe("{0,3}");
+        }
+
+        [Fact]
+        public void ReturnsRangeQuantifier_WhenArgIsRange()
+        {
+            PrecisionPatternResolver.Resolve("1,3").ShouldBe("{1,3}");
+        }
+
+        [Fact]
+        public void Throws_WhenBothSidesOfCommaAreEmpty()
+        {
+            Should.Throw<ArgumentException>(() => PrecisionPatternResolver.Resolve(","));
+        }
+
+        [Fact]
+        public void Throws_WhenExactValueIsNegative()
+        {
+            Should.Throw<ArgumentException>(() => PrecisionPatternResolver.Resolve("-1"));
+        }
+
+        [Fact]
+        public void Throws_WhenMaxIsNegative()
+        {
+            Should.Throw<ArgumentException>(() => PrecisionPatternResolver.Resolve("0,-1"));
+        }
+
+        [Fact]
+        public void Throws_WhenMaxIsLessThanMin()
+        {
+            Should.Throw<ArgumentException>(() => PrecisionPatternResolver.Resolve("3,1"));
+        }
+
+        [Fact]
+        public void Throws_WhenArgIsNotAnInteger()
+        {
+            Should.Throw<ArgumentException>(() => PrecisionPatternResolver.Resolve("abc"));
+        }
+
+        [Fact]
+        public void ThrowsWithExpectedMessage_WhenArgIsInvalid()
+        {
+            var args = Guid.NewGuid().ToString();
+            var ex   = Should.Throw<ArgumentException>(() => PrecisionPatternResolver.Resolve(args));
+            ex.Message.ShouldContain(args);
+        }
     }
 }

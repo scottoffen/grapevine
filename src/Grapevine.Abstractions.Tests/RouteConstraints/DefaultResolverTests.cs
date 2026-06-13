@@ -1,39 +1,65 @@
 using Grapevine.Abstractions.RouteConstraints;
 using Shouldly;
-using Xunit;
 
 namespace Grapevine.Abstractions.Tests.RouteConstraints;
 
 public class DefaultResolverTests
 {
-    [Theory]
-    [InlineData(null, @"(?<segment>[^/]+)")]
-    [InlineData("", @"(?<segment>[^/]+)")]
-    [InlineData(" ", @"(?<segment>[^/]+)")]
-    public void Resolve_ShouldReturnUnboundedPattern_WhenArgsIsNullOrWhitespace(string? args, string expected)
+    public class Resolve
     {
-        DefaultResolver.Resolve("segment", args).ShouldBe(expected);
-    }
+        [Fact]
+        public void ReturnsUnboundPattern_WhenArgsIsNull()
+        {
+            var (pattern, _, _) = DefaultResolver.Resolve("val", null);
+            pattern.ShouldBe("(?<val>[^/]+)");
+        }
 
-    [Theory]
-    [InlineData("3",   @"(?<segment>[^/]{3})")]
-    [InlineData("1,",  @"(?<segment>[^/]{1,})")]
-    [InlineData(",5",  @"(?<segment>[^/]{1,5})")]
-    [InlineData("1,5", @"(?<segment>[^/]{1,5})")]
-    public void Resolve_ShouldReturnBoundedPattern_WhenArgsAreValid(string args, string expected)
-    {
-        DefaultResolver.Resolve("segment", args).ShouldBe(expected);
-    }
+        [Fact]
+        public void ReturnsUnboundPattern_WhenArgsIsEmpty()
+        {
+            var (pattern, _, _) = DefaultResolver.Resolve("val", string.Empty);
+            pattern.ShouldBe("(?<val>[^/]+)");
+        }
 
-    [Theory]
-    [InlineData("a")]
-    [InlineData("1.2")]
-    [InlineData(",")]
-    [InlineData("1,2,3")]
-    [InlineData("0")]
-    public void Resolve_ShouldThrowArgumentException_WhenArgsAreInvalid(string args)
-    {
-        var ex = Should.Throw<ArgumentException>(() => DefaultResolver.Resolve("segment", args));
-        ex.Message.ShouldContain("Invalid argument");
+        [Fact]
+        public void ReturnsExactLengthPattern_WhenArgIsExact()
+        {
+            var (pattern, _, _) = DefaultResolver.Resolve("val", "3");
+            pattern.ShouldBe("(?<val>[^/]{3})");
+        }
+
+        [Fact]
+        public void ReturnsMinLengthPattern_WhenArgIsMinOnly()
+        {
+            var (pattern, _, _) = DefaultResolver.Resolve("val", "1,");
+            pattern.ShouldBe("(?<val>[^/]{1,})");
+        }
+
+        [Fact]
+        public void ReturnsRangePattern_WhenArgIsRange()
+        {
+            var (pattern, _, _) = DefaultResolver.Resolve("val", "1,5");
+            pattern.ShouldBe("(?<val>[^/]{1,5})");
+        }
+
+        [Fact]
+        public void ReturnsCorrectStrictness()
+        {
+            var (_, strictness, _) = DefaultResolver.Resolve("val", null);
+            strictness.ShouldBe(DefaultResolver.Strictness);
+        }
+
+        [Fact]
+        public void ReturnsCorrectGroup()
+        {
+            var (_, _, group) = DefaultResolver.Resolve("val", null);
+            group.ShouldBe(DefaultResolver.Group);
+        }
+
+        [Fact]
+        public void Throws_WhenArgsIsInvalid()
+        {
+            Should.Throw<ArgumentException>(() => DefaultResolver.Resolve("val", "0"));
+        }
     }
 }

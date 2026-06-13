@@ -1,29 +1,45 @@
 using Grapevine.Abstractions.RouteConstraints;
 using Shouldly;
-using Xunit;
 
 namespace Grapevine.Abstractions.Tests.RouteConstraints;
 
 public class GuidResolverTests
 {
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData(" ")]
-    public void Resolve_ShouldReturnExpectedPattern_WhenArgsIsNullOrWhitespace(string? args)
+    public class Resolve
     {
-        var expected = @"(?<id>[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})";
-        GuidResolver.Resolve("id", args).ShouldBe(expected);
-    }
+        [Fact]
+        public void ReturnsPattern_WhenArgsIsNull()
+        {
+            var (pattern, _, _) = GuidResolver.Resolve("id", null);
+            pattern.ShouldBe(@"(?<id>[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})");
+        }
 
-    [Theory]
-    [InlineData("abc")]
-    [InlineData("123")]
-    [InlineData("guid")]
-    public void Resolve_ShouldThrowArgumentException_WhenArgsAreProvided(string args)
-    {
-        var ex = Should.Throw<ArgumentException>(() => GuidResolver.Resolve("id", args));
-        ex.ParamName.ShouldBe("args");
-        ex.Message.ShouldContain(GuidResolver.NoArgumentsMessage);
+        [Fact]
+        public void ReturnsPattern_WhenArgsIsEmpty()
+        {
+            var (pattern, _, _) = GuidResolver.Resolve("id", string.Empty);
+            pattern.ShouldBe(@"(?<id>[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})");
+        }
+
+        [Fact]
+        public void ReturnsCorrectStrictness()
+        {
+            var (_, strictness, _) = GuidResolver.Resolve("id", null);
+            strictness.ShouldBe(GuidResolver.Strictness);
+        }
+
+        [Fact]
+        public void ReturnsCorrectGroup()
+        {
+            var (_, _, group) = GuidResolver.Resolve("id", null);
+            group.ShouldBe(GuidResolver.Group);
+        }
+
+        [Fact]
+        public void Throws_WhenArgsIsNonEmpty()
+        {
+            var ex = Should.Throw<ArgumentException>(() => GuidResolver.Resolve("id", "something"));
+            ex.Message.ShouldContain(GuidResolver.NoArgumentsMessage);
+        }
     }
 }

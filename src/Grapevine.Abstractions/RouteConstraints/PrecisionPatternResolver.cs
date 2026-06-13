@@ -12,6 +12,8 @@ namespace Grapevine.Abstractions.RouteConstraints;
 /// </remarks>
 public static class PrecisionPatternResolver
 {
+    internal static readonly string InvalidArgumentMessage = "Invalid argument '{0}' for precision constraint.";
+
     /// <summary>
     /// Converts a precision constraint argument into a regular expression quantifier
     /// string suitable for appending to a decimal place pattern, e.g. <c>\d{1,3}</c>.
@@ -47,7 +49,7 @@ public static class PrecisionPatternResolver
             var right = args.Substring(commaIndex + 1);
 
             if (string.IsNullOrWhiteSpace(left) && string.IsNullOrWhiteSpace(right))
-                throw new ArgumentException($"Invalid argument '{args}' for precision constraint.");
+                throw new ArgumentException(string.Format(InvalidArgumentMessage, args));
 
             var min = 0;
             int? max = null;
@@ -55,7 +57,7 @@ public static class PrecisionPatternResolver
             if (!string.IsNullOrWhiteSpace(left))
             {
                 if (!int.TryParse(left, out var minParsed) || minParsed < 0)
-                    throw new ArgumentException($"Invalid argument '{args}' for precision constraint.");
+                    throw new ArgumentException(string.Format(InvalidArgumentMessage, args));
 
                 min = minParsed;
             }
@@ -63,20 +65,20 @@ public static class PrecisionPatternResolver
             if (!string.IsNullOrWhiteSpace(right))
             {
                 if (!int.TryParse(right, out var maxParsed) || maxParsed < 0)
-                    throw new ArgumentException($"Invalid argument '{args}' for precision constraint.");
+                    throw new ArgumentException(string.Format(InvalidArgumentMessage, args));
 
                 max = maxParsed;
             }
 
             if (max != null && max < min)
-                throw new ArgumentException($"Invalid argument '{args}' for precision constraint.");
+                throw new ArgumentException(string.Format(InvalidArgumentMessage, args));
 
             return max.HasValue ? $"{{{min},{max}}}" : $"{{{min},}}";
         }
         else
         {
             if (!int.TryParse(args, out var exact) || exact < 0)
-                throw new ArgumentException($"Invalid argument '{args}' for precision constraint.");
+                throw new ArgumentException(string.Format(InvalidArgumentMessage, args));
 
             return $"{{{exact}}}";
         }

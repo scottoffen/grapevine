@@ -6,6 +6,11 @@ namespace Grapevine.Abstractions.RouteConstraints;
 /// </summary>
 public static class AlphaResolver
 {
+    internal static readonly int Strictness = 90;
+    internal static readonly int Group      = (int)ConstraintGroup.Text;
+
+    private static readonly string _basePattern = "[a-zA-Z]";
+
     /// <summary>
     /// Returns a named capture group pattern matching alphabetic characters,
     /// with an optional length constraint.
@@ -22,14 +27,17 @@ public static class AlphaResolver
     /// </remarks>
     /// <param name="name">The route parameter name for the named capture group.</param>
     /// <param name="args">An optional length constraint string.</param>
-    /// <returns>A named capture group regular expression pattern.</returns>
+    /// <returns>
+    /// A tuple containing the named capture group pattern, a strictness value of
+    /// <c>90</c>, and a group of <see cref="ConstraintGroup.Text"/>.
+    /// </returns>
     /// <exception cref="ArgumentException">Thrown when <paramref name="args"/> is invalid.</exception>
-    public static string Resolve(string name, string? args)
+    public static (string pattern, int strictness, int group) Resolve(string name, string? args)
     {
-        if (string.IsNullOrWhiteSpace(args))
-            return $"(?<{name}>[a-zA-Z]+)";
+        var quantifier = string.IsNullOrWhiteSpace(args)
+            ? "+"
+            : LengthPatternResolver.Resolve(args);
 
-        var length = LengthPatternResolver.Resolve(args);
-        return $"(?<{name}>[a-zA-Z]{length})";
+        return ($"(?<{name}>{_basePattern}{quantifier})", Strictness, Group);
     }
 }

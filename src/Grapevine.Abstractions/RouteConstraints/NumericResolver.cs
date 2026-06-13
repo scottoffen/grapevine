@@ -2,7 +2,7 @@ namespace Grapevine.Abstractions.RouteConstraints;
 
 /// <summary>
 /// Resolves the <c>numeric</c> route constraint to a regular expression pattern
-/// that matches one or more digit characters (0–9) with no sign or other characters.
+/// that matches one or more digit characters (0-9) with no sign or other characters.
 /// </summary>
 /// <remarks>
 /// Unlike <see cref="IntResolver"/>, this resolver does not allow a leading minus sign.
@@ -11,8 +11,11 @@ namespace Grapevine.Abstractions.RouteConstraints;
 /// </remarks>
 public static class NumericResolver
 {
-    private static readonly string _pattern = @"\d";
-    private static readonly string _unbound = @"\d+";
+    internal static readonly int Strictness = 80;
+    internal static readonly int Group      = (int)ConstraintGroup.Numeric;
+
+    private static readonly string _basePattern = @"\d";
+    private static readonly string _unbound      = @"\d+";
 
     /// <summary>
     /// Returns a named capture group pattern matching one or more digit characters,
@@ -30,14 +33,17 @@ public static class NumericResolver
     /// </remarks>
     /// <param name="name">The route parameter name for the named capture group.</param>
     /// <param name="args">An optional length constraint string.</param>
-    /// <returns>A named capture group regular expression pattern.</returns>
+    /// <returns>
+    /// A tuple containing the named capture group pattern, a strictness value of
+    /// <c>80</c>, and a group of <see cref="ConstraintGroup.Numeric"/>.
+    /// </returns>
     /// <exception cref="ArgumentException">Thrown when <paramref name="args"/> is invalid.</exception>
-    public static string Resolve(string name, string? args)
+    public static (string pattern, int strictness, int group) Resolve(string name, string? args)
     {
         if (string.IsNullOrWhiteSpace(args))
-            return $"(?<{name}>{_unbound})";
+            return ($"(?<{name}>{_unbound})", Strictness, Group);
 
-        var length = LengthPatternResolver.Resolve(args);
-        return $"(?<{name}>{_pattern}{length})";
+        var quantifier = LengthPatternResolver.Resolve(args);
+        return ($"(?<{name}>{_basePattern}{quantifier})", Strictness, Group);
     }
 }
