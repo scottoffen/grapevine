@@ -127,29 +127,6 @@ public static class NameValueCollectionExtensions
     }
 
     /// <summary>
-    /// Retrieves the value associated with the specified key and parses it as a
-    /// quality value header, returning an ordered list of values from most preferred
-    /// to least preferred.
-    /// </summary>
-    /// <remarks>
-    /// If the key is not present or the value is empty, an empty array is returned.
-    /// </remarks>
-    /// <param name="collection">The collection to retrieve the value from.</param>
-    /// <param name="key">The key to look up.</param>
-    /// <returns>
-    /// An ordered list of values from most preferred to least preferred, or an empty
-    /// array if the key is not present or the value is empty.
-    /// </returns>
-    public static IList<string> SortQualityValues(this NameValueCollection collection, string key)
-    {
-        var unparsed = collection.GetValue<string>(key, string.Empty);
-
-        if (string.IsNullOrWhiteSpace(unparsed)) return Array.Empty<string>();
-
-        return QualityValues.Parse(unparsed!);
-    }
-
-    /// <summary>
     /// Retrieves the cached <see cref="TypeConverter"/> for the specified type, or
     /// creates and caches a new one. Throws if no converter capable of converting from
     /// <see cref="string"/> exists for the type.
