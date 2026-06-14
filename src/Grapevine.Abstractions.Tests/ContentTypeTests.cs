@@ -2,7 +2,7 @@ using Grapevine;
 using Shouldly;
 using Xunit;
 
-namespace Grapevine.Tests;
+namespace Grapevine.Abstractions.Tests;
 
 public class ContentTypeTests
 {
@@ -257,6 +257,108 @@ public class ContentTypeTests
             var a = ContentType.Parse("text/html");
             var b = ContentType.Parse("text/html");
             a.ShouldNotBeSameAs(b);
+        }
+    }
+
+    public class TryParseMethod
+    {
+        [Fact]
+        public void ReturnsFalse_WhenValueIsNull()
+        {
+            ContentType.TryParse(null, out var result).ShouldBeFalse();
+            result.ShouldBeNull();
+        }
+
+        [Fact]
+        public void ReturnsFalse_WhenValueIsEmpty()
+        {
+            ContentType.TryParse(string.Empty, out var result).ShouldBeFalse();
+            result.ShouldBeNull();
+        }
+
+        [Fact]
+        public void ReturnsFalse_WhenValueIsWhitespace()
+        {
+            ContentType.TryParse("   ", out var result).ShouldBeFalse();
+            result.ShouldBeNull();
+        }
+
+        [Fact]
+        public void ReturnsTrue_WhenValueIsValid()
+        {
+            ContentType.TryParse("text/html", out var result).ShouldBeTrue();
+            result.ShouldNotBeNull();
+        }
+
+        [Fact]
+        public void ParsesType_WhenValueIsValid()
+        {
+            ContentType.TryParse("text/html", out var result);
+            result!.Type.ShouldBe("text");
+        }
+
+        [Fact]
+        public void ParsesSubType_WhenValueIsValid()
+        {
+            ContentType.TryParse("text/html", out var result);
+            result!.SubType.ShouldBe("html");
+        }
+
+        [Fact]
+        public void ParsesCharset_WhenPresent()
+        {
+            ContentType.TryParse("text/html; charset=UTF-8", out var result);
+            result!.Charset.ShouldBe("UTF-8");
+        }
+
+        [Fact]
+        public void ParsesBoundary_WhenMultipart()
+        {
+            ContentType.TryParse("multipart/form-data; boundary=abc123", out var result);
+            result!.Boundary.ShouldBe("abc123");
+        }
+
+        [Fact]
+        public void ParsesAdditionalParameters_WhenPresent()
+        {
+            var key = Guid.NewGuid().ToString("N");
+            var value = Guid.NewGuid().ToString("N");
+            ContentType.TryParse($"text/html; {key}={value}", out var result);
+            result!.Parameters[key].ShouldBe(value);
+        }
+
+        [Fact]
+        public void ReturnsTrue_ForMultipartType()
+        {
+            ContentType.TryParse("multipart/form-data; boundary=abc123", out var result).ShouldBeTrue();
+            result.ShouldNotBeNull();
+        }
+
+        [Fact]
+        public void SetsIsMultipart_WhenTypeIsMultipart()
+        {
+            ContentType.TryParse("multipart/form-data; boundary=abc123", out var result);
+            result!.IsMultipart.ShouldBeTrue();
+        }
+
+        [Fact]
+        public void AlwaysCreatesNewInstance()
+        {
+            ContentType.TryParse("text/html", out var a);
+            ContentType.TryParse("text/html", out var b);
+            a.ShouldNotBeSameAs(b);
+        }
+
+        [Fact]
+        public void ReturnsTrue_WhenValueHasNoSlash()
+        {
+            // Parse does not throw for a value with no slash; it produces a
+            // ContentType with the full input as Type and an empty SubType.
+            // TryParse documents the same behaviour rather than imposing stricter
+            // validation, keeping the two methods consistent.
+            ContentType.TryParse("text", out var result).ShouldBeTrue();
+            result!.Type.ShouldBe("text");
+            result.SubType.ShouldBe(string.Empty);
         }
     }
 

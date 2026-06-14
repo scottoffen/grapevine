@@ -368,6 +368,47 @@ public partial class ContentType
     }
 
     /// <summary>
+    /// Attempts to parse a <c>Content-Type</c> header string into a
+    /// <see cref="ContentType"/> instance without throwing on failure.
+    /// </summary>
+    /// <param name="value">The content type string to parse.</param>
+    /// <param name="contentType">
+    /// When this method returns <see langword="true"/>, contains the parsed
+    /// <see cref="ContentType"/> instance. When this method returns
+    /// <see langword="false"/>, contains <see langword="null"/>.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> if <paramref name="value"/> was successfully parsed;
+    /// otherwise <see langword="false"/>.
+    /// </returns>
+    /// <remarks>
+    /// This method is the non-throwing counterpart to <see cref="Parse"/>. It
+    /// returns <see langword="false"/> for null, empty, or whitespace input, and
+    /// for any input that <see cref="Parse"/> would reject with an exception.
+    /// Use this method when parsing untrusted input such as incoming request
+    /// <c>Content-Type</c> headers.
+    /// </remarks>
+    public static bool TryParse(string? value, [NotNullWhen(true)] out ContentType? contentType)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            contentType = null;
+            return false;
+        }
+ 
+        try
+        {
+            contentType = Parse(value!);
+            return true;
+        }
+        catch
+        {
+            contentType = null;
+            return false;
+        }
+    }
+
+    /// <summary>
     /// Looks up a <see cref="ContentType"/> by MIME type string. Returns a cached instance
     /// for well-known and previously registered types. For multipart types, always returns
     /// a new instance with the boundary parsed from the header value. For unknown types,
