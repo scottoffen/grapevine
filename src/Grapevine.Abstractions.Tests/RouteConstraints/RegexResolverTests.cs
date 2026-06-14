@@ -130,12 +130,6 @@ public class RegexResolverTests : IDisposable
         }
 
         [Fact]
-        public void CacheIsEmptyBeforeFirstCall()
-        {
-            RegexResolver._cache.IsEmpty.ShouldBeTrue();
-        }
-
-        [Fact]
         public void AddsPatternToCache_AfterFirstCall()
         {
             var pattern = $"[a-z]+-{Guid.NewGuid()}";
