@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using System.Reflection;
 
 namespace Grapevine;
 
@@ -8,7 +7,162 @@ namespace Grapevine;
 /// Provides a comprehensive set of well-known status codes as static members, along
 /// with implicit conversions to and from <see cref="int"/> and <see cref="string"/>.
 /// </summary>
-public class HttpStatusCode
+public partial class HttpStatusCode
+{
+    private readonly int _value;
+
+    private readonly string _message;
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="HttpStatusCode"/> with the specified
+    /// numeric value and no descriptive text.
+    /// </summary>
+    /// <param name="value">The numeric HTTP status code.</param>
+    public HttpStatusCode(int value) : this(value, string.Empty) { }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="HttpStatusCode"/> with the specified
+    /// numeric value and descriptive text.
+    /// </summary>
+    /// <param name="value">The numeric HTTP status code.</param>
+    /// <param name="text">A short description of the status code.</param>
+    public HttpStatusCode(int value, string text)
+    {
+        _value = value;
+        _message = $"{value}{(string.IsNullOrWhiteSpace(text) ? "" : $":{text}")}";
+    }
+
+    /// <summary>
+    /// Returns the formatted status code message, e.g. <c>404:Not Found</c>.
+    /// </summary>
+    public override string ToString() => _message;
+}
+
+public partial class HttpStatusCode
+{
+    /// <summary>
+    /// Implicitly converts an <see cref="int"/> to an <see cref="HttpStatusCode"/> by
+    /// looking up or registering the value in the shared dictionary.
+    /// </summary>
+    /// <param name="value">The numeric HTTP status code.</param>
+    public static implicit operator HttpStatusCode(int value) => FromCode(value);
+
+    /// <summary>
+    /// Implicitly converts an <see cref="HttpStatusCode"/> to its numeric <see cref="int"/> value.
+    /// </summary>
+    /// <param name="value">The <see cref="HttpStatusCode"/> instance.</param>
+    public static implicit operator int(HttpStatusCode value) => value._value;
+
+    /// <summary>
+    /// Implicitly converts an <see cref="HttpStatusCode"/> to its formatted <see cref="string"/>
+    /// message, e.g. <c>404:Not Found</c>.
+    /// </summary>
+    /// <param name="value">The <see cref="HttpStatusCode"/> instance.</param>
+    public static implicit operator string(HttpStatusCode value) => value._message;
+}
+
+public partial class HttpStatusCode
+{
+    private static readonly ConcurrentDictionary<int, HttpStatusCode> _statusCodes = new();
+
+    /// <summary>
+    /// Retrieves the <see cref="HttpStatusCode"/> for the specified numeric value,
+    /// registering it in the shared dictionary with no descriptive text if it is
+    /// not already present.
+    /// </summary>
+    /// <param name="value">The numeric HTTP status code to look up.</param>
+    /// <returns>The corresponding <see cref="HttpStatusCode"/> instance.</returns>
+    public static HttpStatusCode FromCode(int value)
+        => _statusCodes.GetOrAdd(value, v => new HttpStatusCode(v));
+
+    /// <summary>
+    /// Registers a new <see cref="HttpStatusCode"/> in the shared dictionary if the
+    /// specified numeric value is not already present. Has no effect if the value
+    /// is already registered.
+    /// </summary>
+    /// <param name="value">The numeric HTTP status code to register.</param>
+    /// <param name="text">An optional description for the status code.</param>
+    public static void Register(int value, string? text = null)
+        => _statusCodes.TryAdd(value, new HttpStatusCode(value, text ?? string.Empty));
+
+    /// <summary>
+    /// Initializes the static registry by explicitly registering each well-known
+    /// <see cref="HttpStatusCode"/> with its numeric value.
+    /// </summary>
+    /// <remarks>
+    /// This replaces the previous reflection-based approach that used
+    /// <c>GetFields</c> and <c>GetValue</c> to discover registrations at runtime.
+    /// The explicit registration is AOT-safe: no metadata preservation is required,
+    /// and the trimmer can statically analyse all field references.
+    /// </remarks>
+    static HttpStatusCode()
+    {
+        _statusCodes.TryAdd(Continue, Continue);
+        _statusCodes.TryAdd(SwitchingProtocols, SwitchingProtocols);
+        _statusCodes.TryAdd(Processing, Processing);
+        _statusCodes.TryAdd(Ok, Ok);
+        _statusCodes.TryAdd(Created, Created);
+        _statusCodes.TryAdd(Accepted, Accepted);
+        _statusCodes.TryAdd(NonAuthoritativeInformation, NonAuthoritativeInformation);
+        _statusCodes.TryAdd(NoContent, NoContent);
+        _statusCodes.TryAdd(ResetContent, ResetContent);
+        _statusCodes.TryAdd(PartialContent, PartialContent);
+        _statusCodes.TryAdd(MultiStatus, MultiStatus);
+        _statusCodes.TryAdd(AlreadyReported, AlreadyReported);
+        _statusCodes.TryAdd(IMUsed, IMUsed);
+        _statusCodes.TryAdd(MultipleChoices, MultipleChoices);
+        _statusCodes.TryAdd(MovedPermanently, MovedPermanently);
+        _statusCodes.TryAdd(Found, Found);
+        _statusCodes.TryAdd(SeeOther, SeeOther);
+        _statusCodes.TryAdd(NotModified, NotModified);
+        _statusCodes.TryAdd(UseProxy, UseProxy);
+        _statusCodes.TryAdd(SwitchProxy, SwitchProxy);
+        _statusCodes.TryAdd(TemporaryRedirect, TemporaryRedirect);
+        _statusCodes.TryAdd(PermanentRedirect, PermanentRedirect);
+        _statusCodes.TryAdd(BadRequest, BadRequest);
+        _statusCodes.TryAdd(Unauthorized, Unauthorized);
+        _statusCodes.TryAdd(PaymentRequired, PaymentRequired);
+        _statusCodes.TryAdd(Forbidden, Forbidden);
+        _statusCodes.TryAdd(NotFound, NotFound);
+        _statusCodes.TryAdd(MethodNotAllowed, MethodNotAllowed);
+        _statusCodes.TryAdd(NotAcceptable, NotAcceptable);
+        _statusCodes.TryAdd(ProxyAuthenticationRequired, ProxyAuthenticationRequired);
+        _statusCodes.TryAdd(RequestTimeout, RequestTimeout);
+        _statusCodes.TryAdd(Conflict, Conflict);
+        _statusCodes.TryAdd(Gone, Gone);
+        _statusCodes.TryAdd(LengthRequired, LengthRequired);
+        _statusCodes.TryAdd(PreconditionFailed, PreconditionFailed);
+        _statusCodes.TryAdd(PayloadTooLarge, PayloadTooLarge);
+        _statusCodes.TryAdd(URITooLong, URITooLong);
+        _statusCodes.TryAdd(UnsupportedMediaType, UnsupportedMediaType);
+        _statusCodes.TryAdd(RangeNotSatisfiable, RangeNotSatisfiable);
+        _statusCodes.TryAdd(ExpectationFailed, ExpectationFailed);
+        _statusCodes.TryAdd(ImATeapot, ImATeapot);
+        _statusCodes.TryAdd(EnhanceYourCalm, EnhanceYourCalm);
+        _statusCodes.TryAdd(MisdirectedRequest, MisdirectedRequest);
+        _statusCodes.TryAdd(UnprocessableEntity, UnprocessableEntity);
+        _statusCodes.TryAdd(Locked, Locked);
+        _statusCodes.TryAdd(FailedDependency, FailedDependency);
+        _statusCodes.TryAdd(UpgradeRequired, UpgradeRequired);
+        _statusCodes.TryAdd(PreconditionRequired, PreconditionRequired);
+        _statusCodes.TryAdd(TooManyRequests, TooManyRequests);
+        _statusCodes.TryAdd(RequestHeaderFieldsTooLarge, RequestHeaderFieldsTooLarge);
+        _statusCodes.TryAdd(UnavailableForLegalReasons, UnavailableForLegalReasons);
+        _statusCodes.TryAdd(InternalServerError, InternalServerError);
+        _statusCodes.TryAdd(NotImplemented, NotImplemented);
+        _statusCodes.TryAdd(BadGateway, BadGateway);
+        _statusCodes.TryAdd(ServiceUnavailable, ServiceUnavailable);
+        _statusCodes.TryAdd(GatewayTimeout, GatewayTimeout);
+        _statusCodes.TryAdd(HTTPVersionNotSupported, HTTPVersionNotSupported);
+        _statusCodes.TryAdd(VariantAlsoNegotiates, VariantAlsoNegotiates);
+        _statusCodes.TryAdd(InsufficientStorage, InsufficientStorage);
+        _statusCodes.TryAdd(LoopDetected, LoopDetected);
+        _statusCodes.TryAdd(NotExtended, NotExtended);
+        _statusCodes.TryAdd(NetworkAuthenticationRequired, NetworkAuthenticationRequired);
+    }
+}
+
+public partial class HttpStatusCode
 {
     #region 1xx Informational
 
@@ -339,89 +493,4 @@ public class HttpStatusCode
     public static readonly HttpStatusCode NetworkAuthenticationRequired = new HttpStatusCode(511, "Network Authentication Required");
 
     #endregion
-
-    private static readonly ConcurrentDictionary<int, HttpStatusCode> _statusCodes = new();
-
-    /// <summary>
-    /// Initializes the static well-known status code entries by reflecting over all
-    /// public static fields of type <see cref="HttpStatusCode"/> and registering them
-    /// in the shared lookup dictionary.
-    /// </summary>
-    static HttpStatusCode()
-    {
-        var fields = typeof(HttpStatusCode).GetFields(BindingFlags.Public | BindingFlags.Static);
-        foreach (var field in fields)
-        {
-            if (field.GetValue(null) is HttpStatusCode statusCode)
-                _statusCodes.TryAdd(statusCode, statusCode);
-        }
-    }
-
-    private readonly int _value;
-
-    private readonly string _message;
-
-    /// <summary>
-    /// Initializes a new instance of <see cref="HttpStatusCode"/> with the specified
-    /// numeric value and no descriptive text.
-    /// </summary>
-    /// <param name="value">The numeric HTTP status code.</param>
-    public HttpStatusCode(int value) : this(value, string.Empty) { }
-
-    /// <summary>
-    /// Initializes a new instance of <see cref="HttpStatusCode"/> with the specified
-    /// numeric value and descriptive text.
-    /// </summary>
-    /// <param name="value">The numeric HTTP status code.</param>
-    /// <param name="text">A short description of the status code.</param>
-    public HttpStatusCode(int value, string text)
-    {
-        _value = value;
-        _message = $"{value}{(string.IsNullOrWhiteSpace(text) ? "" : $":{text}")}";
-    }
-
-    /// <summary>
-    /// Implicitly converts an <see cref="int"/> to an <see cref="HttpStatusCode"/> by
-    /// looking up or registering the value in the shared dictionary.
-    /// </summary>
-    /// <param name="value">The numeric HTTP status code.</param>
-    public static implicit operator HttpStatusCode(int value) => FromCode(value);
-
-    /// <summary>
-    /// Implicitly converts an <see cref="HttpStatusCode"/> to its numeric <see cref="int"/> value.
-    /// </summary>
-    /// <param name="value">The <see cref="HttpStatusCode"/> instance.</param>
-    public static implicit operator int(HttpStatusCode value) => value._value;
-
-    /// <summary>
-    /// Implicitly converts an <see cref="HttpStatusCode"/> to its formatted <see cref="string"/>
-    /// message, e.g. <c>404:Not Found</c>.
-    /// </summary>
-    /// <param name="value">The <see cref="HttpStatusCode"/> instance.</param>
-    public static implicit operator string(HttpStatusCode value) => value._message;
-
-    /// <summary>
-    /// Returns the formatted status code message, e.g. <c>404:Not Found</c>.
-    /// </summary>
-    public override string ToString() => _message;
-
-    /// <summary>
-    /// Retrieves the <see cref="HttpStatusCode"/> for the specified numeric value,
-    /// registering it in the shared dictionary with no descriptive text if it is
-    /// not already present.
-    /// </summary>
-    /// <param name="value">The numeric HTTP status code to look up.</param>
-    /// <returns>The corresponding <see cref="HttpStatusCode"/> instance.</returns>
-    public static HttpStatusCode FromCode(int value)
-        => _statusCodes.GetOrAdd(value, v => new HttpStatusCode(v));
-
-    /// <summary>
-    /// Registers a new <see cref="HttpStatusCode"/> in the shared dictionary if the
-    /// specified numeric value is not already present. Has no effect if the value
-    /// is already registered.
-    /// </summary>
-    /// <param name="value">The numeric HTTP status code to register.</param>
-    /// <param name="text">An optional description for the status code.</param>
-    public static void Register(int value, string? text = null)
-        => _statusCodes.TryAdd(value, new HttpStatusCode(value, text ?? string.Empty));
 }
