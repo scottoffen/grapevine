@@ -5,6 +5,12 @@
     <Description>Abstractions used by Grapevine.</Description>
   </PropertyGroup>
 
+  <PropertyGroup Label="AOT">
+    <IsAotCompatible>true</IsAotCompatible>
+    <PublishAot>false</PublishAot>
+    <TrimMode>link</TrimMode>
+  </PropertyGroup>
+
   <ItemGroup>
     <InternalsVisibleTo Include="Grapevine.Abstractions.Tests, PublicKey=$(GrapevinePublicKey)" />
   </ItemGroup>
