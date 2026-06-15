@@ -5,9 +5,9 @@ using Xunit;
 
 namespace Grapevine.Abstractions.Tests;
 
-public class QueryParamsExtensionsTests
+public class StringParamsExtensionsTests
 {
-    private static IQueryParams Parse(string raw) => QueryParams.Parse(raw);
+    private static IStringParams Parse(string raw) => QueryParams.Parse(raw);
 
     public class TryGetValueMethod
     {
@@ -15,7 +15,7 @@ public class QueryParamsExtensionsTests
         public void Throws_WhenQueryParamsIsNull()
         {
             Should.Throw<ArgumentNullException>(() =>
-                ((IQueryParams)null!).TryGetValue<string>("key", out _));
+                ((IStringParams)null!).TryGetValue<string>("key", out _));
         }
 
         [Fact]
@@ -120,7 +120,7 @@ public class QueryParamsExtensionsTests
         public void Throws_WhenQueryParamsIsNull()
         {
             Should.Throw<ArgumentNullException>(() =>
-                ((IQueryParams)null!).GetValue<string>("key"));
+                ((IStringParams)null!).GetValue<string>("key"));
         }
 
         [Fact]
