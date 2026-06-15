@@ -67,7 +67,11 @@ public sealed class RequestHeaderCollection : HeaderCollection, IRequestHeaderCo
         // Validate that the mapping array covers every declared enum member.
         // This catches the case where a new RequestHeader member is added
         // without a corresponding entry in HeaderNameMap.
-        var enumCount = Enum.GetValues(typeof(RequestHeader)).Length;
+#if NET6_0_OR_GREATER
+        var enumCount = Enum.GetValues<RequestHeader>().Length;
+#else
+        var enumCount = ((RequestHeader[])Enum.GetValues(typeof(RequestHeader))).Length;
+#endif
         if (HeaderNameMap.Length != enumCount)
         {
             throw new InvalidOperationException(

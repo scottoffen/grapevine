@@ -65,7 +65,11 @@ public sealed class ResponseHeaderCollection : HeaderCollection, IResponseHeader
         // Validate that the mapping array covers every declared enum member.
         // This catches the case where a new ResponseHeader member is added
         // without a corresponding entry in HeaderNameMap.
-        var enumCount = Enum.GetValues(typeof(ResponseHeader)).Length;
+#if NET6_0_OR_GREATER
+        var enumCount = Enum.GetValues<ResponseHeader>().Length;
+#else
+        var enumCount = ((ResponseHeader[])Enum.GetValues(typeof(ResponseHeader))).Length;
+#endif
         if (HeaderNameMap.Length != enumCount)
         {
             throw new InvalidOperationException(
