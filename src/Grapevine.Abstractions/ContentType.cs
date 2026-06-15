@@ -1,9 +1,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using System.Text;
-using System.Text.RegularExpressions;
 
 namespace Grapevine;
 
@@ -292,24 +290,56 @@ public partial class ContentType
     private const string DefaultBoundaryPrefix = "----=NextPart_";
 
     /// <summary>
-    /// Initializes the static registry by reflecting over all public static fields of
-    /// type <see cref="ContentType"/>, registering each with any file extensions declared
-    /// via <see cref="FileExtensionsAttribute"/>. Also registers the legacy
-    /// <c>image/x-icon</c> MIME type as an alias for <see cref="Icon"/>.
+    /// Initializes the static registry by explicitly registering each well-known
+    /// <see cref="ContentType"/> field with its associated file extensions.
+    /// Also registers the legacy <c>image/x-icon</c> MIME type as an alias for
+    /// <see cref="Icon"/>.
     /// </summary>
+    /// <remarks>
+    /// This replaces the previous reflection-based approach that used
+    /// <c>GetFields</c> and <c>GetCustomAttribute</c> to discover registrations
+    /// at runtime. The explicit registration is AOT-safe: no metadata preservation
+    /// is required, and the trimmer can statically analyse all field references.
+    /// </remarks>
     static ContentType()
     {
-        var fields = typeof(ContentType).GetFields(BindingFlags.Public | BindingFlags.Static);
-        foreach (var field in fields)
-        {
-            if (field.GetValue(null) is ContentType contentType)
-            {
-                var exts = field.GetCustomAttribute<FileExtensionsAttribute>()?.Extensions
-                    ?? Array.Empty<string>();
-                Register(contentType, exts);
-            }
-        }
+        Register(Binary,            "bin");
+        Register(Bmp,               "bmp");
+        Register(Css,               "css");
+        Register(Csv,               "csv");
+        Register(FormUrlEncoded,    "form");
+        Register(Gif,               "gif");
+        Register(GZip,              "gz", "gzip");
+        Register(Html,              "html", "htm");
+        Register(Icon,              "ico");
+        Register(JavaScript,        "js");
+        Register(Json,              "json");
+        Register(Jpg,               "jpg", "jpeg");
+        Register(M4a,               "m4a");
+        Register(Mp3,               "mp3");
+        Register(Mp4,               "mp4");
+        Register(Mpeg,              "mpeg", "mpg");
+        Register(Ogg,               "ogg");
+        Register(Otf,               "otf");
+        Register(Pdf,               "pdf");
+        Register(Png,               "png");
+        Register(ProblemDetailsJson);
+        Register(ProblemDetailsXml);
+        Register(Svg,               "svg");
+        Register(Tar,               "tar");
+        Register(Text,              "txt");
+        Register(Tiff,              "tiff", "tif");
+        Register(Ttf,               "ttf");
+        Register(Wasm,              "wasm");
+        Register(WebM,              "webm");
+        Register(WebP,              "webp");
+        Register(Woff,              "woff");
+        Register(Woff2,             "woff2");
+        Register(Xml,               "xml");
+        Register(Yaml,              "yaml", "yml");
+        Register(Zip,               "zip");
 
+        // Register the legacy image/x-icon MIME type as an alias for Icon.
         _contentTypes.TryAdd("image/x-icon", Icon);
     }
 
@@ -563,70 +593,54 @@ public partial class ContentType
 public partial class ContentType
 {
     /// <summary>Generic binary content. Use when the content type is unknown or unspecified.</summary>
-    [FileExtensions("bin")]
     public static readonly ContentType Binary = Parse("application/octet-stream");
 
     /// <summary>Bitmap image format.</summary>
-    [FileExtensions("bmp")]
     public static readonly ContentType Bmp = Parse("image/bmp");
 
     /// <summary>Cascading Style Sheets.</summary>
-    [FileExtensions("css")]
     public static readonly ContentType Css = Parse("text/css; charset=UTF-8");
 
     /// <summary>Comma-separated values.</summary>
-    [FileExtensions("csv")]
     public static readonly ContentType Csv = Parse("text/csv");
 
     /// <summary>HTML form data encoded as URL query parameters.</summary>
-    [FileExtensions("form")]
     public static readonly ContentType FormUrlEncoded = Parse("application/x-www-form-urlencoded");
 
     /// <summary>Graphics Interchange Format image.</summary>
-    [FileExtensions("gif")]
     public static readonly ContentType Gif = Parse("image/gif");
 
     /// <summary>GZip compressed archive.</summary>
-    [FileExtensions("gz", "gzip")]
     public static readonly ContentType GZip = Parse("application/gzip");
 
     /// <summary>HyperText Markup Language.</summary>
-    [FileExtensions("html", "htm")]
     public static readonly ContentType Html = Parse("text/html; charset=UTF-8");
 
     /// <summary>
     /// Icon image using the IANA-registered MIME type. Incoming requests using the
     /// legacy <c>image/x-icon</c> MIME type are automatically resolved to this instance.
     /// </summary>
-    [FileExtensions("ico")]
     public static readonly ContentType Icon = Parse("image/vnd.microsoft.icon");
 
     /// <summary>JavaScript source code.</summary>
-    [FileExtensions("js")]
     public static readonly ContentType JavaScript = Parse("application/javascript; charset=UTF-8");
 
     /// <summary>JavaScript Object Notation.</summary>
-    [FileExtensions("json")]
     public static readonly ContentType Json = Parse("application/json; charset=UTF-8");
 
     /// <summary>JPEG image.</summary>
-    [FileExtensions("jpg", "jpeg")]
     public static readonly ContentType Jpg = Parse("image/jpeg");
 
     /// <summary>MPEG-4 audio.</summary>
-    [FileExtensions("m4a")]
     public static readonly ContentType M4a = Parse("audio/mp4");
 
     /// <summary>MPEG audio (MP3).</summary>
-    [FileExtensions("mp3")]
     public static readonly ContentType Mp3 = Parse("audio/mpeg");
 
     /// <summary>MPEG-4 video.</summary>
-    [FileExtensions("mp4")]
     public static readonly ContentType Mp4 = Parse("video/mp4");
 
     /// <summary>MPEG video.</summary>
-    [FileExtensions("mpeg", "mpg")]
     public static readonly ContentType Mpeg = Parse("video/mpeg");
 
     /// <summary>
@@ -639,19 +653,15 @@ public partial class ContentType
     public static ContentType MultipartFormData => ForMultipart(Multipart.FormData);
 
     /// <summary>Ogg Vorbis audio.</summary>
-    [FileExtensions("ogg")]
     public static readonly ContentType Ogg = Parse("audio/ogg");
 
     /// <summary>OpenType font.</summary>
-    [FileExtensions("otf")]
     public static readonly ContentType Otf = Parse("font/otf");
 
     /// <summary>Portable Document Format.</summary>
-    [FileExtensions("pdf")]
     public static readonly ContentType Pdf = Parse("application/pdf");
 
     /// <summary>Portable Network Graphics image.</summary>
-    [FileExtensions("png")]
     public static readonly ContentType Png = Parse("image/png");
 
     /// <summary>
@@ -665,54 +675,41 @@ public partial class ContentType
     public static readonly ContentType ProblemDetailsXml = Parse("application/problem+xml; charset=UTF-8");
 
     /// <summary>Scalable Vector Graphics.</summary>
-    [FileExtensions("svg")]
     public static readonly ContentType Svg = Parse("image/svg+xml; charset=UTF-8");
 
     /// <summary>Tape Archive compressed file.</summary>
-    [FileExtensions("tar")]
     public static readonly ContentType Tar = Parse("application/x-tar");
 
     /// <summary>Plain text.</summary>
-    [FileExtensions("txt")]
     public static readonly ContentType Text = Parse("text/plain; charset=UTF-8");
 
     /// <summary>Tagged Image File Format.</summary>
-    [FileExtensions("tiff", "tif")]
     public static readonly ContentType Tiff = Parse("image/tiff");
 
     /// <summary>TrueType font.</summary>
-    [FileExtensions("ttf")]
     public static readonly ContentType Ttf = Parse("font/ttf");
 
     /// <summary>WebAssembly binary format.</summary>
-    [FileExtensions("wasm")]
     public static readonly ContentType Wasm = Parse("application/wasm");
 
     /// <summary>WebM video.</summary>
-    [FileExtensions("webm")]
     public static readonly ContentType WebM = Parse("video/webm");
 
     /// <summary>WebP image.</summary>
-    [FileExtensions("webp")]
     public static readonly ContentType WebP = Parse("image/webp");
 
     /// <summary>Web Open Font Format.</summary>
-    [FileExtensions("woff")]
     public static readonly ContentType Woff = Parse("font/woff");
 
     /// <summary>Web Open Font Format 2.</summary>
-    [FileExtensions("woff2")]
     public static readonly ContentType Woff2 = Parse("font/woff2");
 
     /// <summary>Extensible Markup Language.</summary>
-    [FileExtensions("xml")]
     public static readonly ContentType Xml = Parse("application/xml; charset=UTF-8");
 
     /// <summary>YAML Ain't Markup Language. Commonly used for configuration files.</summary>
-    [FileExtensions("yaml", "yml")]
     public static readonly ContentType Yaml = Parse("text/yaml");
 
     /// <summary>ZIP compressed archive.</summary>
-    [FileExtensions("zip")]
     public static readonly ContentType Zip = Parse("application/zip");
 }
