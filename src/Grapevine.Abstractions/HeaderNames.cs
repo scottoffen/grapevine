@@ -176,6 +176,9 @@ public static class HeaderNames
     /// <summary>The date and time at which the message was originated.</summary>
     public static readonly string Date = "Date";
 
+    /// <summary>Indicates whether the connection should be kept alive after the current request/response exchange.</summary>
+    public static readonly string KeepAlive = "Keep-Alive";
+
     /// <summary>Implementation-specific directives for backward compatibility with HTTP/1.0 caches.</summary>
     public static readonly string Pragma = "Pragma";
 

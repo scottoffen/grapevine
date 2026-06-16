@@ -58,6 +58,20 @@ public interface IHttpResponse
     long ContentLength64 { get; set; }
 
     /// <summary>
+    /// Gets a value indicating whether a response has been sent, or the connection
+    /// has been closed or aborted.
+    /// </summary>
+    /// <remarks>
+    /// This property is set to <see langword="true"/> automatically when
+    /// <see cref="Abort"/>, <see cref="Close"/>, <see cref="CloseAsync"/>, or
+    /// <see cref="Redirect"/> is called. Pipeline components that need to check
+    /// or set this value should do so via <see cref="IHttpResponse"/> directly.
+    /// Use <see cref="IHttpContext.WasRespondedTo"/> for a read-only view of the
+    /// same value at the context level.
+    /// </remarks>
+    bool WasRespondedTo { get; set; }
+
+    /// <summary>
     /// Closes the connection immediately without sending any response data.
     /// </summary>
     /// <remarks>
@@ -85,7 +99,8 @@ public interface IHttpResponse
     Task CloseAsync();
 
     /// <summary>
-    /// Redirects the client to the specified URL by sending a redirect response.
+    /// Redirects the client to the specified URL by sending a redirect response
+    /// and closing the connection.
     /// </summary>
     /// <param name="url">The URL to redirect the client to.</param>
     void Redirect(string url);

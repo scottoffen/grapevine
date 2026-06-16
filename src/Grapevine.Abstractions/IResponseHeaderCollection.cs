@@ -58,6 +58,17 @@ public interface IResponseHeaderCollection : IEnumerable<KeyValuePair<string, IR
     void Add(string name, string value);
 
     /// <summary>
+    /// Adds multiple values to the collection under the specified header name.
+    /// </summary>
+    /// <param name="name">The header name.</param>
+    /// <param name="values">The header values to add.</param>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="name"/> or <paramref name="values"/> is <see langword="null"/>.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">Thrown when the collection is sealed.</exception>
+    void Add(string name, string[] values);
+
+    /// <summary>
     /// Sets the collection to contain exactly one value for the specified header name,
     /// replacing any existing values.
     /// </summary>

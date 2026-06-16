@@ -67,7 +67,7 @@ public abstract class HeaderCollection : IEnumerable<KeyValuePair<string, IReadO
     /// on response collections, immediately before the response body begins writing.
     /// Calling <see cref="Seal"/> more than once has no effect.
     /// </remarks>
-    internal void Seal()
+    public void Seal()
     {
         if (IsSealed) return;
         IsSealed = true;
@@ -108,6 +108,33 @@ public abstract class HeaderCollection : IEnumerable<KeyValuePair<string, IReadO
         }
 
         list.Add(value);
+    }
+
+    /// <summary>
+    /// Adds multiple values to the collection under the specified header name.
+    /// </summary>
+    /// <param name="name">The header name.</param>
+    /// <param name="values">The header values to add.</param>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="name"/> or <paramref name="values"/> is
+    /// <see langword="null"/>.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when the collection is sealed.
+    /// </exception>
+    public void Add(string name, string[] values)
+    {
+        ThrowIfSealed();
+        ThrowIfNull(name, nameof(name));
+        if (values == null) throw new ArgumentNullException(nameof(values));
+
+        if (!_headers.TryGetValue(name, out var list))
+        {
+            list = new List<string>();
+            _headers[name] = list;
+        }
+
+        list.AddRange(values);
     }
 
     /// <summary>

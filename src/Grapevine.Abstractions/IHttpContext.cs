@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Threading;
 
 namespace Grapevine;
 
@@ -14,12 +15,12 @@ namespace Grapevine;
 /// </para>
 /// <para>
 /// A new instance is created for each incoming request and is not shared across
-/// requests. Pipeline components should set <see cref="WasRespondedTo"/> to
-/// <see langword="true"/> once a response has been sent to signal to the remaining
-/// pipeline that no further response should be written.
+/// requests. Pipeline components should check <see cref="WasRespondedTo"/> before
+/// writing a response. To set this value, use <see cref="IHttpResponse.WasRespondedTo"/>
+/// directly.
 /// </para>
 /// </remarks>
-public interface IHttpContext
+public interface IHttpContext : IDisposable
 {
     /// <summary>
     /// Gets the unique identifier for this request. Defaults to a new GUID
@@ -39,7 +40,7 @@ public interface IHttpContext
     IHttpResponse Response { get; init; }
 
     /// <summary>
-    /// Gets the authenticated user associated with this request, or
+    /// Gets or sets the authenticated user associated with this request, or
     /// <see langword="null"/> if the request is unauthenticated.
     /// </summary>
     /// <remarks>
@@ -47,7 +48,7 @@ public interface IHttpContext
     /// pipeline. Route handlers and other components should treat a
     /// <see langword="null"/> value as an unauthenticated request.
     /// </remarks>
-    ClaimsPrincipal? User { get; init; }
+    ClaimsPrincipal? User { get; set; }
 
     /// <summary>
     /// Gets the per-request ambient state bag for passing arbitrary data between
@@ -73,14 +74,28 @@ public interface IHttpContext
     CancellationToken RequestAborted { get; init; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether a response has been sent for this
-    /// request.
+    /// Gets a value indicating whether a response has been sent for this request.
     /// </summary>
     /// <remarks>
-    /// Pipeline components should check this value before writing a response, and
-    /// set it to <see langword="true"/> after doing so. This prevents multiple
-    /// pipeline stages from attempting to write conflicting responses to the same
-    /// request.
+    /// This is a read-only view of <see cref="IHttpResponse.WasRespondedTo"/>.
+    /// To set this value, use <see cref="IHttpResponse.WasRespondedTo"/> directly.
     /// </remarks>
-    bool WasRespondedTo { get; set; }
+    bool WasRespondedTo { get; }
+
+    /// <summary>
+    /// Cancels <see cref="RequestAborted"/>, signalling to any in-flight async
+    /// operations that they should stop work for this request.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This method only cancels the token. It does not close the connection, set
+    /// <see cref="WasRespondedTo"/>, or dispose any resources. Cleanup remains
+    /// the responsibility of the pipeline runner after it observes the cancellation.
+    /// </para>
+    /// <para>
+    /// This is distinct from <see cref="IHttpResponse.Abort"/>, which closes the
+    /// underlying connection at the HTTP level without sending a response.
+    /// </para>
+    /// </remarks>
+    void Abort();
 }

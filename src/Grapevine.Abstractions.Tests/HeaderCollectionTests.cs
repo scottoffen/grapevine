@@ -108,54 +108,122 @@ public class HeaderCollectionTests
 
     public class AddMethod
     {
-        [Fact]
-        public void AddsFirstValue_ForNewName()
+        public class SingleValue
         {
-            var c = CreateCollection();
-            c.Add("Accept", "text/html");
-            c["Accept"].ShouldBe("text/html");
+            [Fact]
+            public void AddsFirstValue_ForNewName()
+            {
+                var c = CreateCollection();
+                c.Add("Accept", "text/html");
+                c["Accept"].ShouldBe("text/html");
+            }
+
+            [Fact]
+            public void AddsAdditionalValue_ForExistingName()
+            {
+                var c = CreateCollection();
+                c.Add("Accept", "text/html");
+                c.Add("Accept", "application/json");
+                c.TryGetValues("Accept", out var values).ShouldBeTrue();
+                values!.Count.ShouldBe(2);
+            }
+
+            [Fact]
+            public void IsCaseInsensitive_ForName()
+            {
+                var c = CreateCollection();
+                c.Add("accept", "text/html");
+                c.Add("ACCEPT", "application/json");
+                c.TryGetValues("Accept", out var values).ShouldBeTrue();
+                values!.Count.ShouldBe(2);
+            }
+
+            [Fact]
+            public void Throws_WhenNameIsNull()
+            {
+                var c = CreateCollection();
+                Should.Throw<ArgumentNullException>(() => c.Add(null!, "text/html"));
+            }
+
+            [Fact]
+            public void Throws_WhenValueIsNull()
+            {
+                var c = CreateCollection();
+                Should.Throw<ArgumentNullException>(() => c.Add("Accept", (string?)null!));
+            }
+
+            [Fact]
+            public void Throws_WhenSealed()
+            {
+                var ex = Should.Throw<InvalidOperationException>(() =>
+                    CreateSealed().Add("Accept", "text/html"));
+                ex.Message.ShouldBe(HeaderCollection.SealedCollectionMessage);
+            }
         }
 
-        [Fact]
-        public void AddsAdditionalValue_ForExistingName()
+        public class MultiValue
         {
-            var c = CreateCollection();
-            c.Add("Accept", "text/html");
-            c.Add("Accept", "application/json");
-            c.TryGetValues("Accept", out var values).ShouldBeTrue();
-            values!.Count.ShouldBe(2);
-        }
+            [Fact]
+            public void AddsAllValues_ForNewName()
+            {
+                var c = CreateCollection();
+                c.Add("Accept", ["text/html", "application/json"]);
+                c.TryGetValues("Accept", out var values).ShouldBeTrue();
+                values!.Count.ShouldBe(2);
+            }
 
-        [Fact]
-        public void IsCaseInsensitive_ForName()
-        {
-            var c = CreateCollection();
-            c.Add("accept", "text/html");
-            c.Add("ACCEPT", "application/json");
-            c.TryGetValues("Accept", out var values).ShouldBeTrue();
-            values!.Count.ShouldBe(2);
-        }
+            [Fact]
+            public void AppendsValues_ForExistingName()
+            {
+                var c = CreateCollection();
+                c.Add("Accept", "text/html");
+                c.Add("Accept", ["application/json", "application/xml"]);
+                c.TryGetValues("Accept", out var values).ShouldBeTrue();
+                values!.Count.ShouldBe(3);
+            }
 
-        [Fact]
-        public void Throws_WhenNameIsNull()
-        {
-            var c = CreateCollection();
-            Should.Throw<ArgumentNullException>(() => c.Add(null!, "text/html"));
-        }
+            [Fact]
+            public void IsCaseInsensitive_ForName()
+            {
+                var c = CreateCollection();
+                c.Add("accept", ["text/html"]);
+                c.Add("ACCEPT", ["application/json"]);
+                c.TryGetValues("Accept", out var values).ShouldBeTrue();
+                values!.Count.ShouldBe(2);
+            }
 
-        [Fact]
-        public void Throws_WhenValueIsNull()
-        {
-            var c = CreateCollection();
-            Should.Throw<ArgumentNullException>(() => c.Add("Accept", null!));
-        }
+            [Fact]
+            public void PreservesOrder_OfAddedValues()
+            {
+                var c = CreateCollection();
+                c.Add("Accept", ["text/html", "application/json", "application/xml"]);
+                c.TryGetValues("Accept", out var values).ShouldBeTrue();
+                values![0].ShouldBe("text/html");
+                values![1].ShouldBe("application/json");
+                values![2].ShouldBe("application/xml");
+            }
 
-        [Fact]
-        public void Throws_WhenSealed()
-        {
-            var ex = Should.Throw<InvalidOperationException>(() =>
-                CreateSealed().Add("Accept", "text/html"));
-            ex.Message.ShouldBe(HeaderCollection.SealedCollectionMessage);
+            [Fact]
+            public void Throws_WhenNameIsNull()
+            {
+                var c = CreateCollection();
+                Should.Throw<ArgumentNullException>(() => c.Add(null!, ["text/html"]));
+            }
+
+            [Fact]
+            public void Throws_WhenValuesIsNull()
+            {
+                var c = CreateCollection();
+                Should.Throw<ArgumentNullException>(() => c.Add("Accept", (string[])null!));
+            }
+
+            [Fact]
+            public void Throws_WhenSealed()
+            {
+                var ex = Should.Throw<InvalidOperationException>(() =>
+                    CreateSealed().Add("Accept", ["text/html"]));
+                ex.Message.ShouldBe(HeaderCollection.SealedCollectionMessage);
+            }
         }
     }
 
