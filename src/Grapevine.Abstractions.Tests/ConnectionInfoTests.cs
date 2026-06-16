@@ -1,6 +1,3 @@
-using Shouldly;
-using Xunit;
-
 namespace Grapevine.Abstractions.Tests;
 
 public class ConnectionInfoTests

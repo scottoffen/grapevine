@@ -1,7 +1,3 @@
-using Grapevine;
-using Shouldly;
-using Xunit;
-
 namespace Grapevine.Abstractions.Tests;
 
 public class ResponseCookieCollectionTests

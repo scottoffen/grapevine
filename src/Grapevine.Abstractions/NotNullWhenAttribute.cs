@@ -3,7 +3,7 @@
 // These nullable flow analysis attributes were introduced in .NET Core 3.0 and
 // netstandard2.1. On netstandard2.0 the types do not exist in the BCL, so we
 // define them here to allow the same source to compile across all target frameworks.
-// The compiler recognises these by name and namespace regardless of which assembly
+// The compiler recognizes these by name and namespace regardless of which assembly
 // they originate from.
 
 namespace System.Diagnostics.CodeAnalysis;

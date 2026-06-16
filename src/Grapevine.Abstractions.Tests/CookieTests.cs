@@ -1,7 +1,3 @@
-using Grapevine;
-using Shouldly;
-using Xunit;
-
 namespace Grapevine.Abstractions.Tests;
 
 public class CookieTests
@@ -342,10 +338,10 @@ public class CookieTests
         }
 
         [Fact]
-        public void DelegatesAttributeSerialisation_ToOptions()
+        public void DelegatesAttributeSerialization_ToOptions()
         {
             // ToString should produce exactly "name=value" + Options.ToString(),
-            // confirming full delegation rather than independent serialisation.
+            // confirming full delegation rather than independent serialization.
             var value = Guid.NewGuid().ToString();
             var c = new Cookie("session", value)
             {

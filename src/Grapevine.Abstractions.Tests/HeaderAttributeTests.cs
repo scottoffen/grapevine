@@ -1,5 +1,3 @@
-using Grapevine;
-
 namespace Grapevine.Abstractions.Tests;
 
 public class HeaderAttributeTests
