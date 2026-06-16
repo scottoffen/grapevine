@@ -233,7 +233,7 @@ public class Cookie
 
     /// <summary>
     /// Gets or sets a value indicating whether <c>Path=/</c> is always emitted
-    /// in the serialised cookie even when <see cref="Path"/> is not explicitly set.
+    /// in the serialized cookie even when <see cref="Path"/> is not explicitly set.
     /// </summary>
     /// <seealso cref="CookieOptions.AlwaysEmitPath"/>
     public bool AlwaysEmitPath

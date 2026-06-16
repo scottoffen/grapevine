@@ -30,6 +30,7 @@ public class HttpResponse : IHttpResponse, IDisposable
         Cookies = new ResponseCookieCollection();
         StatusCode = HttpStatusCode.Ok;
         ContentType = ContentType.Html;
+        OutputStream = new ResponseStream(_response.OutputStream, CommitResponse);
     }
 
     /// <inheritdoc/>
@@ -45,7 +46,7 @@ public class HttpResponse : IHttpResponse, IDisposable
     public IResponseCookieCollection Cookies { get; }
 
     /// <inheritdoc/>
-    public Stream OutputStream => _response.OutputStream;
+    public Stream OutputStream { get; }
 
     /// <inheritdoc/>
     public bool SendChunked
@@ -117,7 +118,7 @@ public class HttpResponse : IHttpResponse, IDisposable
     /// <c>Headers.Add</c>.
     /// </para>
     /// <para>
-    /// Cookies are serialised as <c>Set-Cookie</c> header values via
+    /// Cookies are serialized as <c>Set-Cookie</c> header values via
     /// <see cref="ResponseCookieCollection.ToHeaderValues"/> since
     /// <see cref="HttpListenerResponse"/> does not provide a safe structured
     /// cookie API that works across all target TFMs.
@@ -125,6 +126,8 @@ public class HttpResponse : IHttpResponse, IDisposable
     /// </remarks>
     private void CommitResponse()
     {
+        if (Headers.IsSealed) return;
+
         // Seal headers and cookies together before writing anything to the
         // underlying response. ResponseHeaderCollection.OnSealed cascades the
         // seal to the ResponseCookieCollection, so a single call covers both.

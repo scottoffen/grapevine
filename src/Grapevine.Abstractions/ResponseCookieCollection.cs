@@ -5,7 +5,7 @@ using Grapevine.Abstractions;
 namespace Grapevine;
 
 /// <summary>
-/// Represents the cookies to be sent with an HTTP response, serialised as
+/// Represents the cookies to be sent with an HTTP response, serialized as
 /// <c>Set-Cookie</c> response headers.
 /// </summary>
 /// <remarks>

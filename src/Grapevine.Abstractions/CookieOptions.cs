@@ -21,7 +21,7 @@ namespace Grapevine;
 /// <para>
 /// Path behaviour is controlled by <see cref="AlwaysEmitPath"/>. When
 /// <see langword="true"/> (the default), the <c>Path=/</c> attribute is always
-/// included in the serialised cookie, even when <see cref="Path"/> has not been
+/// included in the serialized cookie, even when <see cref="Path"/> has not been
 /// explicitly set. This is the recommended default for embedded HTTP servers
 /// where the cookie should be scoped to the entire domain. Set
 /// <see cref="AlwaysEmitPath"/> to <see langword="false"/> only when you need
@@ -30,7 +30,7 @@ namespace Grapevine;
 /// <para>
 /// When both <see cref="Expires"/> and <see cref="MaxAge"/> are set,
 /// <see cref="MaxAge"/> takes precedence per RFC 6265. Both are emitted in
-/// the serialised output for compatibility with older clients that do not
+/// the serialized output for compatibility with older clients that do not
 /// support <c>Max-Age</c>.
 /// </para>
 /// </remarks>
@@ -149,7 +149,7 @@ public class CookieOptions
     /// <para>
     /// When both <see cref="Expires"/> and <see cref="MaxAge"/> are set,
     /// <see cref="MaxAge"/> takes precedence per RFC 6265. Both are emitted
-    /// in the serialised output for compatibility with clients that do not
+    /// in the serialized output for compatibility with clients that do not
     /// support <c>Max-Age</c>.
     /// </para>
     /// <para>
@@ -197,7 +197,7 @@ public class CookieOptions
 
     /// <summary>
     /// Gets or sets a value indicating whether the <c>Path</c> attribute is
-    /// always included in the serialised cookie, even when <see cref="Path"/>
+    /// always included in the serialized cookie, even when <see cref="Path"/>
     /// has not been explicitly set.
     /// </summary>
     /// <remarks>
@@ -210,7 +210,7 @@ public class CookieOptions
     public bool AlwaysEmitPath { get; set; } = true;
 
     /// <summary>
-    /// Returns the serialised attribute suffix for this cookie options instance,
+    /// Returns the serialized attribute suffix for this cookie options instance,
     /// suitable for appending after the <c>name=value</c> pair in a
     /// <c>Set-Cookie</c> header.
     /// </summary>
