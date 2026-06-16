@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using Grapevine;
 
 namespace Grapevine.Abstractions;
 
@@ -91,8 +90,8 @@ public sealed class RouteDescriptor
     /// </returns>
     public bool Matches(IHttpRequest request)
     {
-        if (!HttpMethod.Matches(request.HttpMethod)) return false;
-        return RouteTemplate.CompiledRegex.IsMatch(request.Endpoint);
+        if (!HttpMethod.Matches(request.Method)) return false;
+        return RouteTemplate.CompiledRegex.IsMatch(request.Path);
     }
 
     /// <summary>
