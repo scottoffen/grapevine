@@ -9,11 +9,9 @@ namespace Grapevine;
 /// <see cref="IHttpResponse"/>.
 /// </summary>
 [ExcludeFromCodeCoverage]
-public class HttpResponse : IHttpResponse, IDisposable
+public class HttpResponse : IHttpResponse
 {
     private readonly HttpListenerResponse _response;
-    private bool _disposed;
-
     /// <summary>
     /// Initializes a new instance of <see cref="HttpResponse"/> wrapping the
     /// specified <see cref="HttpListenerResponse"/>.
@@ -165,32 +163,4 @@ public class HttpResponse : IHttpResponse, IDisposable
             _response.Headers.Add(HeaderNames.SetCookie, setCookieValue);
     }
 
-    /// <summary>
-    /// Releases the resources used by this <see cref="HttpResponse"/>, including
-    /// the underlying <see cref="HttpListenerResponse.OutputStream"/>.
-    /// </summary>
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    /// <summary>
-    /// Releases the managed resources used by this <see cref="HttpResponse"/>.
-    /// </summary>
-    /// <param name="disposing">
-    /// <see langword="true"/> to release managed resources; <see langword="false"/>
-    /// if called from a finalizer.
-    /// </param>
-    protected virtual void Dispose(bool disposing)
-    {
-        if (_disposed) return;
-
-        if (disposing)
-        {
-            _response.OutputStream.Dispose();
-        }
-
-        _disposed = true;
-    }
 }

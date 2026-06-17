@@ -95,14 +95,11 @@ public class HttpContext : IHttpContext
 
         if (disposing)
         {
+            // Only dispose the CancellationTokenSource. HttpListener owns the
+            // request and response objects and manages their lifetime internally.
+            // Disposing the underlying streams causes HttpListener to malfunction
+            // on subsequent requests.
             _cts.Dispose();
-
-            // Dispose request and response if they implement IDisposable, which
-            // the concrete implementations do. Checked defensively here so that
-            // mock or alternative implementations are not required to implement
-            // IDisposable.
-            (Request as IDisposable)?.Dispose();
-            (Response as IDisposable)?.Dispose();
         }
 
         _disposed = true;

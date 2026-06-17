@@ -9,11 +9,9 @@ namespace Grapevine;
 /// <see cref="IHttpRequest"/>.
 /// </summary>
 [ExcludeFromCodeCoverage]
-public class HttpRequest : IHttpRequest, IDisposable
+public class HttpRequest : IHttpRequest
 {
     private readonly HttpListenerRequest _request;
-    private bool _disposed;
-
     /// <summary>
     /// Initializes a new instance of <see cref="HttpRequest"/> wrapping the
     /// specified <see cref="HttpListenerRequest"/>.
@@ -116,32 +114,4 @@ public class HttpRequest : IHttpRequest, IDisposable
     /// <inheritdoc/>
     public ConnectionInfo RemoteEndpoint { get; }
 
-    /// <summary>
-    /// Releases the resources used by this <see cref="HttpRequest"/>, including
-    /// the underlying <see cref="HttpListenerRequest.InputStream"/>.
-    /// </summary>
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    /// <summary>
-    /// Releases the managed resources used by this <see cref="HttpRequest"/>.
-    /// </summary>
-    /// <param name="disposing">
-    /// <see langword="true"/> to release managed resources; <see langword="false"/>
-    /// if called from a finalizer.
-    /// </param>
-    protected virtual void Dispose(bool disposing)
-    {
-        if (_disposed) return;
-
-        if (disposing)
-        {
-            _request.InputStream.Dispose();
-        }
-
-        _disposed = true;
-    }
 }
