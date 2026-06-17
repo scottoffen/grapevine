@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Threading.Channels;
+using Grapevine.Abstractions;
 
 namespace Grapevine;
 
@@ -23,7 +24,7 @@ namespace Grapevine;
 /// <para>
 /// Incoming requests are dropped onto a bounded channel for processing by the
 /// middleware pipeline. The channel capacity is configured via
-/// <see cref="HttpServerOptions"/>.
+/// <see cref="Abstractions.HttpServerOptions.ChannelCapacity"/>.
 /// </para>
 /// <para>
 /// The lifecycle events on this class are observability hooks intended for
@@ -86,6 +87,8 @@ public partial class HttpServer : IHttpServer
 
         _shutdownTimeout = options.ShutdownTimeout;
 
+        Queue = new ChannelContextQueue(_channel.Reader);
+
         Prefixes = new PrefixCollection();
 
         // Pre-populate prefixes from options, skipping any that are invalid.
@@ -109,16 +112,8 @@ public partial class HttpServer
     /// <inheritdoc/>
     public bool IsListening => _state == ServerState.Listening;
 
-    /// <summary>
-    /// Gets the channel reader that the middleware pipeline reads
-    /// <see cref="IHttpContext"/> instances from.
-    /// </summary>
-    /// <remarks>
-    /// The pipeline consumer should read from this channel and process each
-    /// context through the middleware pipeline. The channel is completed when
-    /// the server stops.
-    /// </remarks>
-    public ChannelReader<IHttpContext> ContextChannel => _channel.Reader;
+    /// <inheritdoc/>
+    public IContextQueue Queue { get; }
 }
 
 // =============================================================================

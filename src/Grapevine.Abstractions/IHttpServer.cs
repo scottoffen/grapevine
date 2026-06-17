@@ -1,3 +1,5 @@
+using Grapevine.Abstractions;
+
 namespace Grapevine;
 
 /// <summary>
@@ -45,6 +47,17 @@ public interface IHttpServer : IDisposable
     /// incoming requests.
     /// </summary>
     bool IsListening { get; }
+
+    /// <summary>
+    /// Gets the queue from which the middleware pipeline reads incoming
+    /// <see cref="IHttpContext"/> instances.
+    /// </summary>
+    /// <remarks>
+    /// The server writes to this queue as requests arrive. The pipeline
+    /// reads from it and processes each context in turn. The queue is
+    /// completed when the server stops.
+    /// </remarks>
+    IContextQueue Queue { get; }
 
     // -------------------------------------------------------------------------
     // Lifecycle methods
