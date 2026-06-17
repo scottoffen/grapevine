@@ -32,10 +32,10 @@ namespace Grapevine;
 [DebuggerDisplay("{ToString()}")]
 public partial class ContentType : IEquatable<ContentType>
 {
-    private static readonly string[] _textKeywords = new[]
-    {
+    private static readonly string[] _textKeywords =
+    [
         "form", "json", "xml", "javascript", "html", "css", "txt"
-    };
+    ];
 
     private readonly Lazy<string> _boundary;
 
@@ -370,7 +370,7 @@ public partial class ContentType
 
         foreach (var part in parts.Skip(1))
         {
-            var paramParts = part.Split(new[] { '=' }, 2, StringSplitOptions.None);
+            var paramParts = part.Split(['='], 2, StringSplitOptions.None);
             var key = paramParts[0].Trim().ToLowerInvariant();
             var value = paramParts.Length > 1
                 ? paramParts[1].Trim().Trim('"')

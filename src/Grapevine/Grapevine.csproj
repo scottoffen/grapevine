@@ -9,6 +9,11 @@
     <InternalsVisibleTo Include="Grapevine.Tests, PublicKey=$(GrapevinePublicKey)" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' OR '$(TargetFramework)' == 'netstandard2.1'">
+    <PackageReference Include="System.ComponentModel.Annotations" Version="[5.0.0, )" />
+    <PackageReference Include="System.Threading.Channels" Version="8.0.0" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Grapevine.Abstractions\Grapevine.Abstractions.csproj" />
   </ItemGroup>

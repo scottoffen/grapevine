@@ -26,7 +26,7 @@ public sealed class RequestHeaderCollection : HeaderCollection, IRequestHeaderCo
     /// also reordering the enum.
     /// </remarks>
     internal static readonly string[] HeaderNameMap =
-    {
+    [
         HeaderNames.Accept,             // Accept
         HeaderNames.AcceptCharset,      // AcceptCharset
         HeaderNames.AcceptEncoding,     // AcceptEncoding
@@ -60,7 +60,7 @@ public sealed class RequestHeaderCollection : HeaderCollection, IRequestHeaderCo
         HeaderNames.UserAgent,          // UserAgent
         HeaderNames.Via,                // Via
         HeaderNames.Warning,            // Warning
-    };
+    ];
 
     static RequestHeaderCollection()
     {

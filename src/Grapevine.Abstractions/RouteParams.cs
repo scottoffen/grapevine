@@ -64,7 +64,7 @@ public sealed class RouteParams : Grapevine.IRouteParams
     public IReadOnlyList<string> GetValues(string key)
     {
         if (_params.TryGetValue(key, out var value))
-            return new[] { value };
+            return [value];
 
         return Array.Empty<string>();
     }
@@ -74,7 +74,7 @@ public sealed class RouteParams : Grapevine.IRouteParams
     {
         if (_params.TryGetValue(key, out var value))
         {
-            values = new[] { value };
+            values = [value];
             return true;
         }
 
@@ -89,7 +89,7 @@ public sealed class RouteParams : Grapevine.IRouteParams
     {
         foreach (var pair in _params)
             yield return new KeyValuePair<string, IReadOnlyList<string>>(
-                pair.Key, new[] { pair.Value });
+                pair.Key, [pair.Value]);
     }
 
     /// <inheritdoc/>

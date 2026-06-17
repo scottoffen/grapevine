@@ -26,7 +26,7 @@ public sealed class ResponseHeaderCollection : HeaderCollection, IResponseHeader
     /// also reordering the enum.
     /// </remarks>
     internal static readonly string[] HeaderNameMap =
-    {
+    [
         HeaderNames.AcceptRanges,           // AcceptRanges
         HeaderNames.Age,                    // Age
         HeaderNames.Allow,                  // Allow
@@ -58,7 +58,7 @@ public sealed class ResponseHeaderCollection : HeaderCollection, IResponseHeader
         HeaderNames.Vary,                   // Vary
         HeaderNames.Via,                    // Via
         HeaderNames.WWWAuthenticate,        // WWWAuthenticate
-    };
+    ];
 
     static ResponseHeaderCollection()
     {

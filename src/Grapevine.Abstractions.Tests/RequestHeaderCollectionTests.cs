@@ -41,8 +41,8 @@ public class RequestHeaderCollectionTests
                 .ShouldBe(HeaderNames.UserAgent);
             RequestHeaderCollection.HeaderNameMap[(int)RequestHeader.Host]
                 .ShouldBe(HeaderNames.Host);
-            RequestHeaderCollection.HeaderNameMap[(int)RequestHeader.Warning]
-                .ShouldBe(HeaderNames.Warning);
+            RequestHeaderCollection.HeaderNameMap[(int)RequestHeader.Via]
+                .ShouldBe(HeaderNames.Via);
         }
     }
 

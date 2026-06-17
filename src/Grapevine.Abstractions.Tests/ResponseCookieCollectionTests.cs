@@ -143,7 +143,7 @@ public class ResponseCookieCollectionTests
         public void AddsAllCookies()
         {
             var c = Create();
-            c.AddRange(new[] { MakeCookie("a"), MakeCookie("b"), MakeCookie("c") });
+            c.AddRange([MakeCookie("a"), MakeCookie("b"), MakeCookie("c")]);
             c.Count.ShouldBe(3);
         }
 
@@ -153,7 +153,7 @@ public class ResponseCookieCollectionTests
             var c = Create();
             var first = new Cookie("session", Guid.NewGuid().ToString("N"));
             var second = new Cookie("session", Guid.NewGuid().ToString("N"));
-            c.AddRange(new[] { first, second });
+            c.AddRange([first, second]);
             c.Count.ShouldBe(1);
             c["session"].ShouldBeSameAs(second);
         }
@@ -168,7 +168,7 @@ public class ResponseCookieCollectionTests
         public void Throws_WhenSealed()
         {
             var ex = Should.Throw<InvalidOperationException>(() =>
-                CreateSealed().AddRange(new[] { MakeCookie() }));
+                CreateSealed().AddRange([MakeCookie()]));
             ex.Message.ShouldBe(ResponseCookieCollection.SealedCollectionMessage);
         }
     }

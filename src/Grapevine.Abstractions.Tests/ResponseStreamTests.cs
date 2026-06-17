@@ -109,7 +109,7 @@ public class ResponseStreamTests
             var inner = CreateInnerStream();
             var sut = new ResponseStream(inner, () => callCount++);
 
-            sut.Write(new byte[] { 1, 2, 3 }, 0, 3);
+            sut.Write([1, 2, 3], 0, 3);
 
             callCount.ShouldBe(1);
         }
@@ -121,9 +121,9 @@ public class ResponseStreamTests
             var inner = CreateInnerStream();
             var sut = new ResponseStream(inner, () => callCount++);
 
-            sut.Write(new byte[] { 1 }, 0, 1);
-            sut.Write(new byte[] { 2 }, 0, 1);
-            sut.Write(new byte[] { 3 }, 0, 1);
+            sut.Write([1], 0, 1);
+            sut.Write([2], 0, 1);
+            sut.Write([3], 0, 1);
 
             callCount.ShouldBe(1);
         }
@@ -151,10 +151,10 @@ public class ResponseStreamTests
                 throw new InvalidOperationException("commit failed");
             });
 
-            Should.Throw<InvalidOperationException>(() => sut.Write(new byte[] { 1 }, 0, 1));
+            Should.Throw<InvalidOperationException>(() => sut.Write([1], 0, 1));
 
             // The second write should succeed without retrying the callback.
-            Should.NotThrow(() => sut.Write(new byte[] { 2 }, 0, 1));
+            Should.NotThrow(() => sut.Write([2], 0, 1));
 
             callCount.ShouldBe(1);
         }
@@ -169,7 +169,7 @@ public class ResponseStreamTests
             var inner = CreateInnerStream();
             var sut = new ResponseStream(inner, () => callCount++);
 
-            await sut.WriteAsync(new byte[] { 1, 2, 3 }, 0, 3, CancellationToken.None);
+            await sut.WriteAsync([1, 2, 3], 0, 3, CancellationToken.None);
 
             callCount.ShouldBe(1);
         }
@@ -181,9 +181,9 @@ public class ResponseStreamTests
             var inner = CreateInnerStream();
             var sut = new ResponseStream(inner, () => callCount++);
 
-            await sut.WriteAsync(new byte[] { 1 }, 0, 1, CancellationToken.None);
-            await sut.WriteAsync(new byte[] { 2 }, 0, 1, CancellationToken.None);
-            await sut.WriteAsync(new byte[] { 3 }, 0, 1, CancellationToken.None);
+            await sut.WriteAsync([1], 0, 1, CancellationToken.None);
+            await sut.WriteAsync([2], 0, 1, CancellationToken.None);
+            await sut.WriteAsync([3], 0, 1, CancellationToken.None);
 
             callCount.ShouldBe(1);
         }
@@ -207,8 +207,8 @@ public class ResponseStreamTests
             var inner = CreateInnerStream();
             var sut = new ResponseStream(inner, () => callCount++);
 
-            sut.Write(new byte[] { 1 }, 0, 1);
-            await sut.WriteAsync(new byte[] { 2 }, 0, 1, CancellationToken.None);
+            sut.Write([1], 0, 1);
+            await sut.WriteAsync([2], 0, 1, CancellationToken.None);
 
             callCount.ShouldBe(1);
         }
