@@ -19,7 +19,7 @@ namespace Grapevine;
 /// </remarks>
 [ExcludeFromCodeCoverage]
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-public class RouteGroupAttribute : Attribute
+public class HttpGroupAttribute : Attribute
 {
     private string _basePath = string.Empty;
 
@@ -39,9 +39,9 @@ public class RouteGroupAttribute : Attribute
 /// Marks a class as a REST resource containing route handler methods.
 /// </summary>
 /// <remarks>
-/// This attribute is obsolete. Use <see cref="RouteGroupAttribute"/> instead.
+/// This attribute is obsolete. Use <see cref="HttpGroupAttribute"/> instead.
 /// </remarks>
 [Obsolete("RestResourceAttribute is obsolete. Use RouteGroupAttribute instead.")]
 [ExcludeFromCodeCoverage]
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-public class RestResourceAttribute : RouteGroupAttribute { }
+public class RestResourceAttribute : HttpGroupAttribute { }

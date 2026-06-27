@@ -13,7 +13,7 @@ namespace Grapevine;
 /// </remarks>
 [ExcludeFromCodeCoverage]
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-public class RouteAttribute : Attribute
+public abstract class HttpAttribute : Attribute
 {
     /// <summary>
     /// Gets or sets an optional description for the route.
@@ -43,7 +43,7 @@ public class RouteAttribute : Attribute
     public string RouteTemplate { get; init; } = string.Empty;
 
     /// <summary>
-    /// Initializes a new instance of <see cref="RouteAttribute"/> with the specified
+    /// Initializes a new instance of <see cref="HttpAttribute"/> with the specified
     /// HTTP method and route template.
     /// </summary>
     /// <param name="httpMethod">
@@ -54,7 +54,7 @@ public class RouteAttribute : Attribute
     /// The route template to match, e.g. <c>"/api/users"</c>. Defaults to an empty
     /// string, which matches any path.
     /// </param>
-    public RouteAttribute(string? httpMethod = null, string? routeTemplate = null)
+    public HttpAttribute(string? httpMethod = null, string? routeTemplate = null)
     {
         HttpMethod = httpMethod ?? HttpMethod.Any;
         RouteTemplate = routeTemplate ?? string.Empty;
@@ -69,7 +69,7 @@ public class RouteAttribute : Attribute
 /// </remarks>
 [ExcludeFromCodeCoverage]
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-public class HttpGetAttribute : RouteAttribute
+public class HttpGetAttribute : HttpAttribute
 {
     /// <summary>
     /// Initializes a new instance of <see cref="HttpGetAttribute"/> with an optional
@@ -89,7 +89,7 @@ public class HttpGetAttribute : RouteAttribute
 /// </remarks>
 [ExcludeFromCodeCoverage]
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-public class HttpPostAttribute : RouteAttribute
+public class HttpPostAttribute : HttpAttribute
 {
     /// <summary>
     /// Initializes a new instance of <see cref="HttpPostAttribute"/> with an optional
@@ -109,7 +109,7 @@ public class HttpPostAttribute : RouteAttribute
 /// </remarks>
 [ExcludeFromCodeCoverage]
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-public class HttpPutAttribute : RouteAttribute
+public class HttpPutAttribute : HttpAttribute
 {
     /// <summary>
     /// Initializes a new instance of <see cref="HttpPutAttribute"/> with an optional
@@ -129,7 +129,7 @@ public class HttpPutAttribute : RouteAttribute
 /// </remarks>
 [ExcludeFromCodeCoverage]
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-public class HttpDeleteAttribute : RouteAttribute
+public class HttpDeleteAttribute : HttpAttribute
 {
     /// <summary>
     /// Initializes a new instance of <see cref="HttpDeleteAttribute"/> with an optional
@@ -149,7 +149,7 @@ public class HttpDeleteAttribute : RouteAttribute
 /// </remarks>
 [ExcludeFromCodeCoverage]
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-public class HttpPatchAttribute : RouteAttribute
+public class HttpPatchAttribute : HttpAttribute
 {
     /// <summary>
     /// Initializes a new instance of <see cref="HttpPatchAttribute"/> with an optional
@@ -169,7 +169,7 @@ public class HttpPatchAttribute : RouteAttribute
 /// </remarks>
 [ExcludeFromCodeCoverage]
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-public class HttpHeadAttribute : RouteAttribute
+public class HttpHeadAttribute : HttpAttribute
 {
     /// <summary>
     /// Initializes a new instance of <see cref="HttpHeadAttribute"/> with an optional
@@ -189,7 +189,7 @@ public class HttpHeadAttribute : RouteAttribute
 /// </remarks>
 [ExcludeFromCodeCoverage]
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-public class HttpOptionsAttribute : RouteAttribute
+public class HttpOptionsAttribute : HttpAttribute
 {
     /// <summary>
     /// Initializes a new instance of <see cref="HttpOptionsAttribute"/> with an optional
@@ -202,15 +202,41 @@ public class HttpOptionsAttribute : RouteAttribute
 }
 
 /// <summary>
-/// Marks a method as a REST route handler.
+/// Marks a method as a route handler for the specified HTTP method and
+/// optional route template.
 /// </summary>
 /// <remarks>
-/// This attribute is obsolete. Use <see cref="RouteAttribute"/> instead.
+/// Use this attribute when none of the method-specific variants
+/// (<see cref="HttpGetAttribute"/>, <see cref="HttpPostAttribute"/>, etc.)
+/// fit your needs, or when you need to handle a non-standard HTTP method.
+/// </remarks>
+[ExcludeFromCodeCoverage]
+[AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
+public class RouteAttribute : HttpAttribute
+{
+    /// <summary>
+    /// Initializes a new instance of <see cref="RouteAttribute"/> with an optional
+    /// route template.
+    /// </summary>
+    /// <param name="routeTemplate">
+    /// The route template to match. Defaults to an empty string, which matches any path.
+    /// </param>
+    public RouteAttribute(string httpMethod, string? routeTemplate = null) : base(httpMethod, routeTemplate) { }
+}
+
+/// <summary>
+/// Obsolete. Use <see cref="RouteAttribute"/> to mark a method as a route handler.
+/// </summary>
+/// <remarks>
+/// This attribute is retained for backward compatibility only and will be
+/// removed in a future release. Replace all usages with
+/// <see cref="RouteAttribute"/> or one of the method-specific variants such
+/// as <see cref="HttpGetAttribute"/> or <see cref="HttpPostAttribute"/>.
 /// </remarks>
 [ExcludeFromCodeCoverage]
 [Obsolete("RestRouteAttribute is obsolete. Use RouteAttribute instead.")]
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-public class RestRouteAttribute : RouteAttribute
+public class RestRouteAttribute : HttpAttribute
 {
     /// <summary>
     /// Initializes a new instance of <see cref="RestRouteAttribute"/>.
