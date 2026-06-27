@@ -19,7 +19,7 @@ body:
           required: true
         - label: This is **not** a usage/how-to question.
           required: true
-        - label: I have read the [contribution guidelines](https://github.com/scottoffen/grapevine/blob/main/CONTRIBUTING.md).
+        - label: I have read the [contribution guidelines](https://github.com/scottoffen/grapevine/blob/main/.github/contributing.md).
           required: true
 
   - type: input

@@ -23,7 +23,7 @@ jobs:
     # IMPORTANT: this job name ('build') is what branch protection sees as
     # the required status check. Renaming it here means updating branch
     # protection on the consuming repo to match.
-    uses: scottoffen/workflows/.github/workflows/dotnet-build-and-publish.yml@v0
+    uses: scottoffen/workflows/.github/workflows/dotnet-build-and-publish.yml@main
     permissions:
       contents: write
       packages: write

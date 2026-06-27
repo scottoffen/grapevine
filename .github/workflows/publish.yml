@@ -42,7 +42,7 @@ concurrency:
 
 jobs:
   publish:
-    uses: scottoffen/workflows/.github/workflows/dotnet-build-and-publish.yml@v0
+    uses: scottoffen/workflows/.github/workflows/dotnet-build-and-publish.yml@main
     permissions:
       contents: write
       packages: write

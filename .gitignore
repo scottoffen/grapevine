@@ -481,3 +481,11 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# Coverage Reports
+coverage/*
+
+# Docusaurus
+/docs/node_modules/
+/docs/build/
+/docs/.docusaurus/

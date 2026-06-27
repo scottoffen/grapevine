@@ -1,0 +1,34 @@
+# Build and deploy the Docusaurus documentation site to GitHub Pages.
+# Delegates to the shared reusable workflow.
+#
+# One-time setup in this repo: Settings -> Pages -> Source -> "GitHub Actions".
+# Without that, the deploy step fails.
+name: Deploy Documentation
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    # Only rebuild when docs content or this workflow itself changes.
+    # Source-code commits that don't touch docs won't trigger a deploy.
+    paths:
+      - 'docs/**'
+      - '.github/workflows/deploy-docs.yml'
+
+jobs:
+  deploy:
+    uses: scottoffen/workflows/.github/workflows/docusaurus-deploy-pages.yml@main
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    # All defaults match the original workflow (docs path, Node 20, npm ci,
+    # npm run build), so most projects need no 'with:' block at all. Add
+    # inputs only if this repo deviates from the defaults, e.g.:
+    #
+    # with:
+    #   docs-path: website
+    #   node-version: '22'
+    #   install-command: pnpm install --frozen-lockfile
+    #   build-command: pnpm build

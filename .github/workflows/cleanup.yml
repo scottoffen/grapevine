@@ -34,7 +34,7 @@ concurrency:
 
 jobs:
   cleanup:
-    uses: scottoffen/workflows/.github/workflows/dotnet-cleanup-packages.yml@v0
+    uses: scottoffen/workflows/.github/workflows/dotnet-cleanup-packages.yml@main
     with:
       mode: ${{ github.event.inputs.mode }}
       days: ${{ fromJSON(github.event.inputs.days) }}

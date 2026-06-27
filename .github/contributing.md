@@ -39,18 +39,18 @@ Issues are for things that can be **fixed, added, resolved, or implemented.**
 
 ### Issues That Can't or Won't Be Fixed
 
-Some reports are too vague, undefined, or out of scope. In those cases, we'll ask you to clarify what “done” looks like. If the goal remains undefined or unachievable (e.g., outside Grapevine's vision), the issue will be closed.
+Some reports are too vague, undefined, or out of scope. In those cases, we'll ask you to clarify what "done" looks like. If the goal remains undefined or unachievable (e.g., outside Grapevine's vision), the issue will be closed.
 
 ### Abandoned Issues
 
 If maintainers request more information, the issue will be labeled `more-information-needed`.
 
-* If no response is received within **1 week**, we'll send a reminder.
-* If no response after **30 days**, the issue will be closed.
+* If no response is received within **1 week or less**, we'll send a reminder.
+* If no response after **30 days or more**, the issue will be closed.
 
 ## Coding Conventions
 
-Grapevine is written in C#. The repository includes a comprehensive [`.editorconfig`](./.editorconfig) file that defines code style, formatting, and naming conventions across the project, as well as consistent rules for indentation, naming, style preferences, and analyzer severities.
+Grapevine is written in C#. The repository includes a comprehensive [`.editorconfig`](../.editorconfig) file that defines code style, formatting, and naming conventions across the project, as well as consistent rules for indentation, naming, style preferences, and analyzer severities.
 
 * Prefer **[readable code](https://www.amazon.com/Art-Readable-Code-Practical-Techniques/dp/0596802293) > rigid convention.**
 * Follow [Microsoft's C# Coding Conventions](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/inside-a-program/coding-conventions).

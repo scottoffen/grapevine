@@ -15,7 +15,7 @@
 - [ ] Tests added/updated (xUnit + Shouldly + Moq if needed)
 - [ ] Docs updated (if user-facing behavior changed)
 - [ ] No cosmetic/whitespace-only changes
-- [ ] Follows the [contribution guidelines](https://github.com/scottoffen/grapevine/blob/main/CONTRIBUTING.md) and C# conventions, with readability as a priority
+- [ ] Follows the [contribution guidelines](https://github.com/scottoffen/grapevine)$/blob/main/.github/contributing.md) and C# conventions, with readability as a priority
 
 ## Notes
 <!-- Breaking changes, migration notes, perf considerations, etc. -->
