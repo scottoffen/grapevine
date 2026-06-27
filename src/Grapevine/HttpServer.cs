@@ -35,10 +35,19 @@ namespace Grapevine;
 [ExcludeFromCodeCoverage]
 public partial class HttpServer : IHttpServer
 {
+    internal static readonly string LogStarting           = "HttpServer starting on: {0}";
+    internal static readonly string LogStarted            = "HttpServer started.";
+    internal static readonly string LogStartFailed        = "HttpServer failed to start.";
+    internal static readonly string LogStopping           = "HttpServer stopping.";
+    internal static readonly string LogStopped            = "HttpServer stopped.";
+    internal static readonly string LogEventHandlerFailed = "A lifecycle event handler threw an exception and was suppressed.";
+    internal static readonly string LogRequestLoopError   = "An unexpected error occurred in the request loop.";
+
     private readonly HttpListener _listener;
     private readonly Channel<IHttpContext> _channel;
     private readonly TimeSpan _shutdownTimeout;
     private readonly SemaphoreSlim _lifecycleLock = new(1, 1);
+    private readonly IHttpLogger _logger;
 
     private CancellationTokenSource? _cts;
     private Task? _requestLoopTask;
@@ -48,15 +57,15 @@ public partial class HttpServer : IHttpServer
 
     /// <summary>
     /// Initializes a new instance of <see cref="HttpServer"/> with default
-    /// options.
+    /// options and no logging.
     /// </summary>
-    public HttpServer() : this(new HttpServerOptions())
+    public HttpServer() : this(new HttpServerOptions(), null)
     {
     }
 
     /// <summary>
     /// Initializes a new instance of <see cref="HttpServer"/> with the
-    /// specified options.
+    /// specified options and no logging.
     /// </summary>
     /// <param name="options">
     /// The options used to configure the server and the underlying
@@ -65,9 +74,30 @@ public partial class HttpServer : IHttpServer
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="options"/> is <see langword="null"/>.
     /// </exception>
-    public HttpServer(HttpServerOptions options)
+    public HttpServer(HttpServerOptions options) : this(options, null)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="HttpServer"/> with the
+    /// specified options and logger.
+    /// </summary>
+    /// <param name="options">
+    /// The options used to configure the server and the underlying
+    /// <see cref="HttpListener"/>.
+    /// </param>
+    /// <param name="logger">
+    /// The logger to use for server lifecycle and error messages. Pass
+    /// <see langword="null"/> to disable logging.
+    /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="options"/> is <see langword="null"/>.
+    /// </exception>
+    public HttpServer(HttpServerOptions options, IHttpLogger? logger)
     {
         if (options == null) throw new ArgumentNullException(nameof(options));
+
+        _logger = logger ?? HttpNullLogger.Instance;
 
         _listener = new HttpListener();
         _listener.AuthenticationSchemes = options.AuthenticationSchemes;
@@ -150,6 +180,8 @@ public partial class HttpServer
 
             Prefixes.Seal();
 
+            _logger.LogInformation(string.Format(LogStarting, string.Join(", ", Prefixes)));
+
             // Create a fresh linked token source for this server lifetime.
             _cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
@@ -163,6 +195,7 @@ public partial class HttpServer
                 // that identifies the offending prefixes and provides actionable guidance.
                 _state = ServerState.Stopped;
                 Prefixes.Unseal();
+                _logger.LogError(LogStartFailed, ex);
                 throw new ServerStartException(Prefixes, ex);
             }
 
@@ -172,6 +205,7 @@ public partial class HttpServer
             // so StopAsync can await it during shutdown.
             _requestLoopTask = RunRequestLoopAsync(_cts.Token);
 
+            _logger.LogInformation(LogStarted);
             FireEvent(AfterStarting);
         }
         finally
@@ -198,6 +232,8 @@ public partial class HttpServer
             _state = ServerState.Stopping;
 
             FireEvent(BeforeStopping);
+
+            _logger.LogInformation(LogStopping);
 
             // Cancel the request loop token to unblock GetContextAsync.
             _cts?.Cancel();
@@ -229,6 +265,7 @@ public partial class HttpServer
             _requestLoopTask = null;
             _state = ServerState.Stopped;
 
+            _logger.LogInformation(LogStopped);
             FireEvent(AfterStopping);
         }
         finally
@@ -325,6 +362,12 @@ public partial class HttpServer
                 // HttpListener was disposed. Exit the loop cleanly.
                 break;
             }
+            catch (Exception ex)
+            {
+                // An unexpected error occurred. Log it and continue so that
+                // one bad request does not bring down the entire server.
+                _logger.LogError(LogRequestLoopError, ex);
+            }
         }
 
         // Signal to channel consumers that no more contexts will be written.
@@ -366,11 +409,11 @@ public partial class HttpServer
             {
                 ((ServerEventHandler)handler).Invoke(this);
             }
-            catch
+            catch (Exception ex)
             {
                 // Observability hooks must never prevent lifecycle transitions.
-                // Exceptions from individual subscribers are swallowed here.
-                // Consider logging these in a future iteration.
+                // Exceptions from individual subscribers are logged and swallowed.
+                _logger.LogWarning(LogEventHandlerFailed, ex);
             }
         }
     }

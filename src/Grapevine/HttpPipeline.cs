@@ -1,7 +1,4 @@
-using System;
-using System.Threading;
 using System.Threading.Channels;
-using System.Threading.Tasks;
 using Grapevine.Abstractions;
 
 namespace Grapevine;
@@ -25,11 +22,14 @@ namespace Grapevine;
 /// </remarks>
 public class HttpPipeline : IHttpPipeline
 {
+    internal static readonly string LogHandlerError = "An unhandled exception occurred while processing a request.";
+
     private readonly Func<IHttpContext, Task> _handler;
+    private readonly IHttpLogger _logger;
 
     /// <summary>
     /// Initializes a new instance of <see cref="HttpPipeline"/> with the
-    /// specified terminal handler.
+    /// specified terminal handler and no logging.
     /// </summary>
     /// <param name="handler">
     /// The terminal handler invoked for each incoming <see cref="IHttpContext"/>.
@@ -38,9 +38,29 @@ public class HttpPipeline : IHttpPipeline
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="handler"/> is <see langword="null"/>.
     /// </exception>
-    public HttpPipeline(Func<IHttpContext, Task> handler)
+    public HttpPipeline(Func<IHttpContext, Task> handler) : this(handler, null)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="HttpPipeline"/> with the
+    /// specified terminal handler and logger.
+    /// </summary>
+    /// <param name="handler">
+    /// The terminal handler invoked for each incoming <see cref="IHttpContext"/>.
+    /// The handler is responsible for sending a response before returning.
+    /// </param>
+    /// <param name="logger">
+    /// The logger to use for unhandled handler exceptions. Pass
+    /// <see langword="null"/> to disable logging.
+    /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="handler"/> is <see langword="null"/>.
+    /// </exception>
+    public HttpPipeline(Func<IHttpContext, Task> handler, IHttpLogger? logger)
     {
         _handler = handler ?? throw new ArgumentNullException(nameof(handler));
+        _logger  = logger ?? HttpNullLogger.Instance;
     }
 
     /// <inheritdoc/>
@@ -50,7 +70,7 @@ public class HttpPipeline : IHttpPipeline
         {
             await _handler(context).ConfigureAwait(false);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             // If the handler throws and has not yet responded, abort the
             // context so the client receives a clean connection close rather
@@ -58,6 +78,7 @@ public class HttpPipeline : IHttpPipeline
             if (!context.WasRespondedTo)
                 context.Response.Abort();
 
+            _logger.LogError(LogHandlerError, ex);
             throw;
         }
     }
@@ -90,13 +111,10 @@ public class HttpPipeline : IHttpPipeline
             {
                 await RunAsync(context).ConfigureAwait(false);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                var message = $"Error processing request: {ex}";
-                // Exceptions from individual handlers are swallowed here so
-                // that a single failing request does not stop the pipeline
-                // loop. Error handling middleware will replace this in the
-                // full implementation.
+                // RunAsync has already logged the exception. Swallow here so
+                // that a single failing request does not stop the pipeline loop.
             }
             finally
             {
