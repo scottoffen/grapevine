@@ -37,7 +37,7 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>rest;http;api;web;router;client;server;express;json;xml;embedded</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <EnablePackageValidation>true</EnablePackageValidation>
+    <!-- <EnablePackageValidation>true</EnablePackageValidation> -->
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>

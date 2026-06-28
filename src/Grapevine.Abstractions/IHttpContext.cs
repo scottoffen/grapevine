@@ -1,5 +1,4 @@
 using System.Security.Claims;
-using System.Threading;
 
 namespace Grapevine;
 
@@ -98,4 +97,27 @@ public interface IHttpContext : IDisposable
     /// </para>
     /// </remarks>
     void Abort();
+
+    /// <summary>
+    /// Upgrades the HTTP connection to a WebSocket connection.
+    /// </summary>
+    /// <param name="subProtocol">
+    /// The subprotocol to negotiate with the client, e.g. <c>"mqtt"</c> or
+    /// <c>"graphql-ws"</c>. Pass <see langword="null"/> or omit to negotiate
+    /// no subprotocol.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// A token to cancel the upgrade operation.
+    /// </param>
+    /// <returns>
+    /// An <see cref="IWebSocketConnection"/> representing the accepted WebSocket
+    /// connection.
+    /// </returns>
+    /// <remarks>
+    /// Only call this method when <see cref="IHttpRequest.IsWebSocketRequest"/>
+    /// is <see langword="true"/>. Once called, the normal HTTP request/response
+    /// pipeline no longer applies and <see cref="IHttpResponse"/> must not be
+    /// used.
+    /// </remarks>
+    Task<IWebSocketConnection> AcceptWebSocketAsync(string? subProtocol = null, CancellationToken cancellationToken = default);
 }

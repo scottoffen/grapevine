@@ -11,6 +11,7 @@ namespace Grapevine;
 [ExcludeFromCodeCoverage]
 public class HttpContext : IHttpContext
 {
+    private readonly HttpListenerContext _context;
     private readonly CancellationTokenSource _cts;
     private bool _disposed;
 
@@ -30,6 +31,8 @@ public class HttpContext : IHttpContext
     public HttpContext(HttpListenerContext context, CancellationToken serverToken = default)
     {
         if (context == null) throw new ArgumentNullException(nameof(context));
+
+        _context = context;
 
         // Link the context's own source to the server token so that either a
         // server shutdown or an explicit call to Abort() will cancel RequestAborted.
@@ -69,6 +72,18 @@ public class HttpContext : IHttpContext
         // Cancel the linked source to signal to all in-flight async operations
         // holding RequestAborted that the client is no longer connected.
         _cts.Cancel();
+    }
+
+    /// <inheritdoc/>
+    public async Task<IWebSocketConnection> AcceptWebSocketAsync(
+        string? subProtocol = null,
+        CancellationToken cancellationToken = default)
+    {
+        var listenerWsContext = await _context
+            .AcceptWebSocketAsync(subProtocol)
+            .ConfigureAwait(false);
+
+        return new WebSocketConnection(listenerWsContext.WebSocket);
     }
 
     /// <summary>
